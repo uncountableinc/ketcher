@@ -175,11 +175,11 @@ export function fromSgroupDeletion(restruct, id, needPerform = true) {
 
   action.addOp(new SGroupDelete(id));
 
+  action.mergeWith(sGroupAttributeAction(id, attrs));
+
   if (needPerform) {
     action = action.perform(restruct);
   }
-
-  action.mergeWith(sGroupAttributeAction(id, attrs));
 
   return action;
 }
