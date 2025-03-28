@@ -26,7 +26,7 @@ interface SystemControlsProps {
   onSettingsOpen: () => void;
   onAboutOpen: () => void;
   onHistoryClick: () => void;
-  onFullscreen: (element: HTMLElement) => void;
+  onFullscreen: (element: HTMLDivElement) => void;
   onHelp: () => void;
 }
 
