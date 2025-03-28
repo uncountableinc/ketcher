@@ -19,7 +19,7 @@ import { TopToolbar } from './TopToolbar';
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 import { onAction } from '../../../state';
-import action, { UiActionAction } from 'src/script/ui/action/index';
+import action, { ActionFn } from 'src/script/ui/action/index';
 import { generateMenuShortcuts } from 'ketcher-core';
 import { removeStructAction } from 'src/script/ui/state/shared';
 import { createSelector } from 'reselect';
@@ -116,7 +116,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
         data: { menuName, isSelected },
       }),
     onFullscreen: (element: HTMLDivElement) =>
-      dispatch(onAction(action.fullscreen.action(element))),
+      dispatch(onAction((action.fullscreen.action as ActionFn)(element))),
     onHelp: () => dispatchAction('help'),
     onAbout: () => dispatchAction('about'),
     onToggleExplicitHydrogens: () => dispatchAction('explicit-hydrogens'),
