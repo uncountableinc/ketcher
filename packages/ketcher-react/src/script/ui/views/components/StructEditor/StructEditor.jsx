@@ -299,6 +299,7 @@ class StructEditor extends Component {
       /* eslint-enable @typescript-eslint/no-unused-vars */
       ...props
     } = this.props;
+    console.log('this.props.struct', this.props.struct);
 
     const { clientX = 0, clientY = 0 } = this.state;
 

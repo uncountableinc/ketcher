@@ -1,6 +1,6 @@
 import 'ketcher-react/dist/index.css';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ButtonsConfig, Editor, InfoModal } from 'ketcher-react';
 import {
   Ketcher,
@@ -54,6 +54,17 @@ const App = () => {
   const hiddenButtonsConfig = getHiddenButtonsConfig();
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [ketcher, setKetcher] = useState<Ketcher | null>(null);
+
+  const onInit = useCallback(
+    (initKetcher: Ketcher) => {
+      if (value) {
+        initKetcher.setMolecule(value.toString());
+      }
+      setKetcher(initKetcher);
+    },
+    [setKetcher, value],
+  );
 
   return (
     <>
