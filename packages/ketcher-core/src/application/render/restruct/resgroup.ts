@@ -504,6 +504,10 @@ function drawAttachedDat(restruct: ReStruct, sgroup: SGroup): any {
   return set;
 }
 
+// We decided that brackets will be always calculated using bounding box to avoid complexity.
+// See the PR discussion for more details.
+const USE_BOUNDING_BOX_FOR_BRACKETS = true;
+
 function getBracketParameters(
   atomSet: Pile,
   crossBondsPerAtom: Array<Array<number>>,
@@ -517,29 +521,59 @@ function getBracketParameters(
   const mol = render.ctab.molecule;
   const brackets: BracketParams[] = [];
   const bracketDirection = direction.rotateSC(1, 0);
-  const allVariables = {
-    atomSet,
-    crossBondsPerAtom,
-    crossBondsValues,
-    attachmentPoints,
-    bracketBox,
-    direction,
-    render,
-    id,
-    mol,
-  };
-  allVariables.atomSet;
 
-  getBracketParamersWithCrossBondsLessThan2(
-    direction,
-    bracketDirection,
-    bracketBox,
-    brackets,
-  );
+  if (USE_BOUNDING_BOX_FOR_BRACKETS) {
+    getBracketParamersWithCrossBondsLessThan2(
+      direction,
+      bracketDirection,
+      bracketBox,
+      brackets,
+    );
+    return brackets;
+  }
+
+  if (crossBondsValues.length < 2) {
+    getBracketParamersWithCrossBondsLessThan2(
+      direction,
+      bracketDirection,
+      bracketBox,
+      brackets,
+    );
+  } else if (crossBondsValues.length === 2 && crossBondsPerAtom.length === 2) {
+    getBracketParamersWithCrossBondsEquals2(
+      mol,
+      crossBondsValues,
+      id,
+      render,
+      attachmentPoints,
+      brackets,
+    );
+  } else if (crossBondsValues.length === 2 && crossBondsPerAtom.length === 1) {
+    getBracketParamersWithCrossBondsMoreThan2OnOneAtom(
+      crossBondsValues as [number, number],
+      mol,
+      attachmentPoints,
+      render,
+      brackets,
+    );
+  } else {
+    for (let i = 0; i < crossBondsValues.length; ++i) {
+      const bond = mol.bonds.get(Number(crossBondsValues[i]));
+      const center = bond?.getCenter(mol);
+      const direction = atomSet.has(bond?.begin)
+        ? bond?.getDir(mol)
+        : bond?.getDir(mol).negated();
+      if (center && direction) {
+        brackets.push(
+          new BracketParams(center, direction, 0.2, bracketBox.sz().y),
+        );
+      }
+    }
+  }
   return brackets;
 }
 
-export function _getBracketParamersWithCrossBondsMoreThan2OnOneAtom(
+function getBracketParamersWithCrossBondsMoreThan2OnOneAtom(
   crossBondsValues: [number, number],
   mol: Struct,
   attachmentPoints: number[],
@@ -603,7 +637,7 @@ export function _getBracketParamersWithCrossBondsMoreThan2OnOneAtom(
   return { crossBondsValues, attachmentPoints };
 }
 
-export function _getBracketParamersWithCrossBondsEquals2(
+function getBracketParamersWithCrossBondsEquals2(
   mol: Struct,
   crossBondsValues: number[],
   id: number,
