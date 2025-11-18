@@ -518,6 +518,16 @@ function getBracketParameters(
   const brackets: BracketParams[] = [];
   const bracketDirection = direction.rotateSC(1, 0);
 
+  const unusedVarReferences = {
+    atomSet,
+    crossBondsPerAtom,
+    crossBondsValues,
+    attachmentPoints,
+    id,
+    mol,
+  };
+  unusedVarReferences.atomSet;
+
   getBracketParamersWithCrossBondsLessThan2(
     direction,
     bracketDirection,
@@ -527,7 +537,7 @@ function getBracketParameters(
   return brackets;
 }
 
-function getBracketParamersWithCrossBondsMoreThan2OnOneAtom(
+export function _getBracketParamersWithCrossBondsMoreThan2OnOneAtom(
   crossBondsValues: [number, number],
   mol: Struct,
   attachmentPoints: number[],
@@ -591,7 +601,7 @@ function getBracketParamersWithCrossBondsMoreThan2OnOneAtom(
   return { crossBondsValues, attachmentPoints };
 }
 
-function getBracketParamersWithCrossBondsEquals2(
+export function _getBracketParamersWithCrossBondsEquals2(
   mol: Struct,
   crossBondsValues: number[],
   id: number,
