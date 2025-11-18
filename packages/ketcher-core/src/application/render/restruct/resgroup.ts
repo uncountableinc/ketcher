@@ -517,6 +517,19 @@ function getBracketParameters(
   const mol = render.ctab.molecule;
   const brackets: BracketParams[] = [];
   const bracketDirection = direction.rotateSC(1, 0);
+  const allVariables = {
+    atomSet,
+    crossBondsPerAtom,
+    crossBondsValues,
+    attachmentPoints,
+    bracketBox,
+    direction,
+    render,
+    id,
+    mol,
+  };
+  allVariables.atomSet;
+
   getBracketParamersWithCrossBondsLessThan2(
     direction,
     bracketDirection,
@@ -526,7 +539,7 @@ function getBracketParameters(
   return brackets;
 }
 
-function getBracketParamersWithCrossBondsMoreThan2OnOneAtom(
+export function _getBracketParamersWithCrossBondsMoreThan2OnOneAtom(
   crossBondsValues: [number, number],
   mol: Struct,
   attachmentPoints: number[],
@@ -590,7 +603,7 @@ function getBracketParamersWithCrossBondsMoreThan2OnOneAtom(
   return { crossBondsValues, attachmentPoints };
 }
 
-function getBracketParamersWithCrossBondsEquals2(
+export function _getBracketParamersWithCrossBondsEquals2(
   mol: Struct,
   crossBondsValues: number[],
   id: number,
