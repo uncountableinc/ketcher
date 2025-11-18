@@ -504,6 +504,10 @@ function drawAttachedDat(restruct: ReStruct, sgroup: SGroup): any {
   return set;
 }
 
+// We decided that brackets will be always calculated using bounding box to avoid complexity.
+// See the PR discussion for more details.
+const USE_BOUNDING_BOX_FOR_BRACKETS = true;
+
 function getBracketParameters(
   atomSet: Pile,
   crossBondsPerAtom: Array<Array<number>>,
@@ -517,6 +521,16 @@ function getBracketParameters(
   const mol = render.ctab.molecule;
   const brackets: BracketParams[] = [];
   const bracketDirection = direction.rotateSC(1, 0);
+
+  if (USE_BOUNDING_BOX_FOR_BRACKETS) {
+    getBracketParamersWithCrossBondsLessThan2(
+      direction,
+      bracketDirection,
+      bracketBox,
+      brackets,
+    );
+    return brackets;
+  }
 
   if (crossBondsValues.length < 2) {
     getBracketParamersWithCrossBondsLessThan2(
