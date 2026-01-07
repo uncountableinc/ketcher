@@ -10,6 +10,7 @@ import nodeResolve from '@rollup/plugin-node-resolve';
 import peerDepsExternal from 'rollup-plugin-peer-deps-external';
 import pkg from './package.json';
 import postcss from 'rollup-plugin-postcss';
+import postcssImport from 'postcss-import';
 import replace from '@rollup/plugin-replace';
 import strip from '@rollup/plugin-strip';
 import svgr from '@svgr/rollup';
@@ -75,7 +76,7 @@ const config = {
       runOnce: true,
     }),
     postcss({
-      plugins: [autoprefixer({ grid: 'autoplace' })],
+      plugins: [postcssImport(), autoprefixer({ grid: 'autoplace' })],
       extract: 'index.css',
       minimize: isProduction,
       sourceMap: true,

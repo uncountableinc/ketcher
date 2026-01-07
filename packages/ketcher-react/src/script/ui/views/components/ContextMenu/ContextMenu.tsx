@@ -15,7 +15,6 @@
  ***************************************************************************/
 import React, { useCallback } from 'react';
 import { Menu, MenuProps } from 'react-contexify';
-import 'react-contexify/ReactContexify.css';
 import { useAppContext } from 'src/hooks';
 import Editor from 'src/script/editor';
 import styles from './ContextMenu.module.less';
@@ -237,7 +236,7 @@ const ContextMenu: React.FC = () => {
             <MacromoleculeMenuItems />
           </Menu>
         </>,
-        ketcherEditorRootElement,
+        document.body,
       )
     : null;
 };

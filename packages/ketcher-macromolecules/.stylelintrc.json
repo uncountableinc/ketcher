@@ -1,5 +1,4 @@
 {
-  "extends": ["stylelint-config-standard", "stylelint-config-prettier"],
   "overrides": [
     {
       "files": ["**/*.less"],
@@ -8,8 +7,6 @@
   ],
   "rules": {
     "at-rule-no-unknown": null,
-    "function-no-unknown": null,
-    "selector-class-pattern": null,
     "selector-pseudo-class-no-unknown": [
       true,
       {
