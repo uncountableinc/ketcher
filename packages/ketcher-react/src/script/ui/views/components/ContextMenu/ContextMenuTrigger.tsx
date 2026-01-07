@@ -15,7 +15,7 @@
  ***************************************************************************/
 
 import { FunctionalGroup, MULTITAIL_ARROW_KEY } from 'ketcher-core';
-import { FC, PropsWithChildren, useCallback } from 'react';
+import { FC, PropsWithChildren, useCallback, useRef, useEffect } from 'react';
 import { useContextMenu } from 'react-contexify';
 import { useAppContext } from 'src/hooks';
 import Editor from 'src/script/editor';
@@ -30,6 +30,7 @@ import TemplateTool from 'src/script/editor/tool/template';
 const ContextMenuTrigger: FC<PropsWithChildren> = ({ children }) => {
   const { getKetcherInstance } = useAppContext();
   const { show } = useContextMenu<ContextMenuProps>();
+  const divRef = useRef<HTMLDivElement>(null);
 
   const getSelectedGroupsInfo = useCallback(() => {
     const editor = getKetcherInstance().editor as Editor;
@@ -158,8 +159,22 @@ const ContextMenuTrigger: FC<PropsWithChildren> = ({ children }) => {
     [getKetcherInstance, getSelectedGroupsInfo, show],
   );
 
+  useEffect(() => {
+    const divElement = divRef.current;
+    if (divElement) {
+      divElement.addEventListener('contextmenu', handleDisplay, {
+        capture: true,
+      });
+      return () => {
+        divElement.removeEventListener('contextmenu', handleDisplay, {
+          capture: true,
+        });
+      };
+    }
+  }, [handleDisplay]);
+
   return (
-    <div style={{ height: '100%' }} onContextMenu={handleDisplay}>
+    <div ref={divRef} style={{ height: '100%' }}>
       {children}
     </div>
   );
