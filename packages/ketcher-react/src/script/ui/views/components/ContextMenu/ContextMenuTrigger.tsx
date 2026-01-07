@@ -73,6 +73,7 @@ const ContextMenuTrigger: FC<PropsWithChildren> = ({ children }) => {
     (event: MouseEvent) => {
       event.preventDefault();
       event.stopPropagation();
+      event.stopImmediatePropagation();
 
       const editor = getKetcherInstance().editor as Editor;
 
@@ -162,11 +163,17 @@ const ContextMenuTrigger: FC<PropsWithChildren> = ({ children }) => {
   useEffect(() => {
     const divElement = divRef.current;
     if (divElement) {
-      divElement.addEventListener('contextmenu', handleDisplay, {
+      const documentHandler = (event: MouseEvent) => {
+        if (divElement.contains(event.target as Node)) {
+          handleDisplay(event);
+        }
+      };
+
+      document.addEventListener('contextmenu', documentHandler, {
         capture: true,
       });
       return () => {
-        divElement.removeEventListener('contextmenu', handleDisplay, {
+        document.removeEventListener('contextmenu', documentHandler, {
           capture: true,
         });
       };
