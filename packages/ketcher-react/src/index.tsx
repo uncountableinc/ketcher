@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************/
 
+import './contexify.css';
 export * from './Editor';
 export * from './script';
 export * from './constants';
