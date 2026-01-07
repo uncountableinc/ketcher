@@ -71,6 +71,7 @@ const ContextMenuTrigger: FC<PropsWithChildren> = ({ children }) => {
   const handleDisplay = useCallback<React.MouseEventHandler<HTMLDivElement>>(
     (event) => {
       event.preventDefault();
+      event.stopPropagation();
 
       const editor = getKetcherInstance().editor as Editor;
 
