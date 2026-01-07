@@ -69,8 +69,8 @@ const ContextMenuTrigger: FC<PropsWithChildren> = ({ children }) => {
     };
   }, [getKetcherInstance]);
 
-  const handleDisplay = useCallback<React.MouseEventHandler<HTMLDivElement>>(
-    (event) => {
+  const handleDisplay = useCallback(
+    (event: MouseEvent) => {
       event.preventDefault();
       event.stopPropagation();
 
@@ -171,6 +171,7 @@ const ContextMenuTrigger: FC<PropsWithChildren> = ({ children }) => {
         });
       };
     }
+    return undefined;
   }, [handleDisplay]);
 
   return (
