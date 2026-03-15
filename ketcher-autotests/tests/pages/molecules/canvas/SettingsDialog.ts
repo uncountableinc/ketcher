@@ -345,7 +345,7 @@ export const SettingsDialog = (page: Page) => {
     },
 
     async getOptionValue(
-      option: (typeof editboxOptions)[number],
+      option: typeof editboxOptions[number],
     ): Promise<string | null> {
       return await getElement(option).inputValue();
     },
@@ -392,13 +392,13 @@ function createOptionToSectionMap(): Map<string, SettingsSection> {
 
 export async function setSettingsOption(
   page: Page,
-  option: (typeof comboBoxOptions)[number],
+  option: typeof comboBoxOptions[number],
   value: ComboBoxValue,
 ): Promise<void>;
 
 export async function setSettingsOption(
   page: Page,
-  option: (typeof switcherOptions)[number],
+  option: typeof switcherOptions[number],
 ): Promise<void>;
 
 export async function setSettingsOption(
@@ -483,7 +483,7 @@ export async function setSettingsOptions(
 
 export async function getSettingsOptionValue(
   page: Page,
-  option: (typeof editboxOptions)[number],
+  option: typeof editboxOptions[number],
 ): Promise<string | null> {
   const optionsToSectionMap = createOptionToSectionMap();
   const section = optionsToSectionMap.get(option);

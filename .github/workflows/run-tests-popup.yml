@@ -44,7 +44,7 @@ jobs:
           path: example/dist
 
   popup-part:
-    timeout-minutes: 120
+    timeout-minutes: 720
     runs-on: ubuntu-latest
     needs: build_ketcher
     container: mcr.microsoft.com/playwright:v1.44.1-jammy

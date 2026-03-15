@@ -1,7 +1,7 @@
 import { Page, expect } from '@playwright/test';
+import { IndigoFunctionsToolbar } from '@tests/pages/molecules/IndigoFunctionsToolbar';
+
 export const waitForIndigoToLoad = async (page: Page) => {
-  if (process.env.ENABLE_POLYMER_EDITOR !== 'true') {
-    const someIndigoButton = await page.getByTitle('Aromatize (Alt+A)');
-    await expect(someIndigoButton).toBeEnabled({ timeout: 20_000 });
-  }
+  const { aromatizeButton: someIndigoButton } = IndigoFunctionsToolbar(page);
+  await expect(someIndigoButton).toBeEnabled({ timeout: 20_000 });
 };

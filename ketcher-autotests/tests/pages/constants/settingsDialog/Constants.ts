@@ -231,25 +231,25 @@ export const editboxOptions: AllSettingsOptions[] = [
 ];
 
 export type ComboBoxOptionEntry = {
-  option: (typeof comboBoxOptions)[number];
+  option: typeof comboBoxOptions[number];
   value: ComboBoxValue;
 };
 
 export type SwitcherOptionEntry = {
-  option: (typeof switcherOptions)[number];
+  option: typeof switcherOptions[number];
   // value is not needed for switcher options, as they are boolean
 };
 
 export type EditboxOptionEntry = {
-  option: (typeof editboxOptions)[number];
+  option: typeof editboxOptions[number];
   value: string;
 };
 export type OtherOptionEntry = {
   option: Exclude<
     AllSettingsOptions,
-    | (typeof comboBoxOptions)[number]
-    | (typeof switcherOptions)[number]
-    | (typeof editboxOptions)[number]
+    | typeof comboBoxOptions[number]
+    | typeof switcherOptions[number]
+    | typeof editboxOptions[number]
   >;
   value?: string;
 };

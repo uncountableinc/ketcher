@@ -16,8 +16,8 @@
         "type": "monomer",
         "id": "0",
         "position": {
-            "x": 13.875,
-            "y": -6.775
+            "x": 12.275,
+            "y": -8.700000000000001
         },
         "alias": "bAla",
         "templateId": "bAla___beta-Alanine"
@@ -28,56 +28,56 @@
             {
                 "label": "C",
                 "location": [
-                    0.1914,
-                    0.5523,
+                    0.378,
+                    0.491,
                     0
                 ]
             },
             {
                 "label": "C",
                 "location": [
-                    1.3074,
-                    0.1657,
+                    1.323,
+                    0.163,
                     0
                 ]
             },
             {
                 "label": "O",
                 "location": [
-                    1.5305,
-                    -0.9942,
+                    1.512,
+                    -0.819,
                     0
                 ]
             },
             {
                 "label": "O",
                 "location": [
-                    2.2002,
-                    0.9389,
+                    2.079,
+                    0.819,
                     0
                 ]
             },
             {
                 "label": "C",
                 "location": [
-                    -0.7015,
-                    -0.2209,
+                    -0.378,
+                    -0.163,
                     0
                 ]
             },
             {
                 "label": "N",
                 "location": [
-                    -1.8176,
-                    0.1657,
+                    -1.323,
+                    0.163,
                     0
                 ]
             },
             {
                 "label": "H",
                 "location": [
-                    -2.7104,
-                    -0.6075,
+                    -2.079,
+                    -0.491,
                     0
                 ]
             }
@@ -131,6 +131,7 @@
         "id": "bAla___beta-Alanine",
         "fullName": "beta-Alanine",
         "alias": "bAla",
+        "aliasHELM": "bAla",
         "attachmentPoints": [
             {
                 "attachmentAtom": 5,

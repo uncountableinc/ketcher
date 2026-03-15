@@ -1,24 +1,21 @@
 import { Page, test, TestInfo } from '@playwright/test';
-import { selectFlexLayoutModeTool } from '@utils/canvas';
-import {
-  chooseTab,
-  Tabs,
-  turnOnMacromoleculesEditor,
-  turnOnMicromoleculesEditor,
-} from '@utils/macromolecules';
+import { CommonTopRightToolbar } from '@tests/pages/common/CommonTopRightToolbar';
+import { LayoutMode } from '@tests/pages/constants/macromoleculesTopToolbar/Constants';
+import { Library } from '@tests/pages/macromolecules/Library';
+import { MacromoleculesTopToolbar } from '@tests/pages/macromolecules/MacromoleculesTopToolbar';
 
 const resetStateTypes = {
   defaultLayout: async (page: Page) => {
-    await selectFlexLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Flex);
   },
   tabSelection: async (page: Page) => {
-    await chooseTab(page, Tabs.Peptides);
+    await Library(page).switchToRNATab();
   },
   micromoleculesEditor: async (page: Page) => {
-    await turnOnMicromoleculesEditor(page);
+    await CommonTopRightToolbar(page).turnOnMicromoleculesEditor();
   },
   macromoleculesEditor: async (page: Page) => {
-    await turnOnMacromoleculesEditor(page);
+    await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
   },
 };
 
@@ -58,7 +55,7 @@ export const processResetToDefaultState = async (
   testInfo: TestInfo,
   page: Page,
 ) => {
-  if (testInfo.status != 'passed') {
+  if (testInfo.status !== 'passed') {
     return;
   }
 
