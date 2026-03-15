@@ -1,9 +1,24 @@
 import { AttachmentPointName } from 'domain/types';
+import type { FlipDirection } from 'application/editor/shared/utils.types';
 
 export enum KetNodeType {
   MONOMER = 'monomer',
   AMBIGUOUS_MONOMER = 'ambiguousMonomer',
 }
+
+export type MonomerTransformation = Partial<{
+  rotate: number;
+  shift: Partial<{
+    x: number;
+    y: number;
+  }>;
+  flip: FlipDirection;
+}>;
+
+export type AmbiguousMonomerTransformation = Pick<
+  MonomerTransformation,
+  'flip'
+>;
 
 export interface IKetMonomerNode {
   type: KetNodeType.MONOMER;
@@ -15,6 +30,9 @@ export interface IKetMonomerNode {
   };
   alias: string;
   templateId: string;
+  expanded?: boolean;
+  transformation?: MonomerTransformation;
+  selected?: boolean;
 }
 
 export interface IKetAmbiguousMonomerNode {
@@ -26,6 +44,8 @@ export interface IKetAmbiguousMonomerNode {
   };
   alias: string;
   templateId: string;
+  transformation?: AmbiguousMonomerTransformation;
+  selected?: boolean;
 }
 
 export type KetNode = IKetMonomerNode | IKetAmbiguousMonomerNode;
@@ -65,6 +85,7 @@ export interface IKetConnection {
   label?: string;
   endpoint1: IKetConnectionEndPoint;
   endpoint2: IKetConnectionEndPoint;
+  selected?: boolean;
 }
 
 export type monomerClass =
@@ -124,6 +145,11 @@ export interface KetAmbiguousMonomerTemplateOption {
   probability?: number;
 }
 
+export type KetMonomerTemplateAtom = {
+  label: string;
+  location: [number, number, number];
+};
+
 export interface IKetMonomerTemplate {
   type: KetTemplateType.MONOMER_TEMPLATE;
   class?: KetMonomerClass;
@@ -140,6 +166,7 @@ export interface IKetMonomerTemplate {
   id: string;
   fullName?: string;
   alias: string;
+  aliasHELM?: string;
   naturalAnalog?: string;
   attachmentPoints?: IKetAttachmentPoint[];
   root: {
@@ -149,8 +176,11 @@ export interface IKetMonomerTemplate {
   name?: string;
   idtAliases?: IKetIdtAliases;
   unresolved?: boolean;
-  atoms: [];
+  aliasAxoLabs?: string;
+  atoms: KetMonomerTemplateAtom[];
   bonds: [];
+  modificationTypes?: string[];
+  hidden?: boolean;
 }
 
 export interface IKetAmbiguousMonomerTemplate {

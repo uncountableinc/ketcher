@@ -19,19 +19,20 @@ import { EditorTheme } from '.';
 import { MonomerColorScheme } from 'ketcher-core';
 
 const monomerColors: Record<string, MonomerColorScheme> = {
-  colorA: { regular: '#CCCBD6', hover: '#B8BBCC' },
-  colorCM: { regular: '#FFE34C', hover: '#FFD700' },
+  colorA: { regular: '#5ADC11', hover: '#4FC218' },
+  colorCM: { regular: '#59D0FF', hover: '#3CB9EB' },
   colorDQ: { regular: '#AD4551', hover: '#AB0014' },
   colorEN: { regular: '#93F5F5', hover: '#00F0F0' },
   colorFY: { regular: '#5656BF', hover: '#2626BF' },
-  colorGX: { regular: '#E1E6ED', hover: '#CAD3E0' },
+  colorGX: { regular: '#FFE97B', hover: '#F8DC50' },
   colorH: { regular: '#BFC9FF', hover: '#99AAFF' },
   colorILV: { regular: '#50E576', hover: '#00D936' },
   colorKR: { regular: '#365CFF', hover: '#002CEB' },
   colorP: { regular: '#F2C5B6', hover: '#FFA98C' },
-  colorST: { regular: '#FFC44C', hover: '#FFAA00' },
+  colorST: { regular: '#FF8D8D', hover: '#ED6868' },
   colorW: { regular: '#99458B', hover: '#7F006B' },
-  colorU: { regular: '#99458B', hover: '#7F006B' },
+  colorU: { regular: '#FF973C', hover: '#2EE55D' },
+  colorX: { regular: '#CAD3DD', hover: '#B8BBCC' },
   chem: { regular: '#333333', hover: '#555555' },
   default: { regular: '#CCCBD6', hover: '#B8BBCC' },
 };
@@ -54,6 +55,7 @@ const peptideColorScheme: Record<string, MonomerColorScheme> = {
   I: { regular: '#4CBB17', hover: '#0097A8' },
   F: { regular: '#008A00', hover: '#0097A8' },
   A: { regular: '#008080', hover: '#0097A8' },
+  W: { regular: '#50E576', hover: '#0097A8' },
   P: { regular: '#D2D900', hover: '#0097A8' },
   G: { regular: '#BDB76B', hover: '#0097A8' },
   M: { regular: '#FFF600', hover: '#0097A8' },
@@ -82,7 +84,7 @@ export const defaultTheme: EditorTheme = {
     },
     tab: {
       regular: '#FFFFFF',
-      active: '#EFF2F5',
+      active: '#E1E5EA',
       hover: '#00838F',
       content: '#EFF2F5',
     },
@@ -202,7 +204,8 @@ export const defaultTheme: EditorTheme = {
       F: monomerColors.colorFY,
       Y: monomerColors.colorFY,
       G: monomerColors.colorGX,
-      X: monomerColors.colorGX,
+      X: monomerColors.colorX,
+      Other: monomerColors.colorX,
       H: monomerColors.colorH,
       I: monomerColors.colorILV,
       L: monomerColors.colorILV,
@@ -237,10 +240,12 @@ export const defaultTheme: EditorTheme = {
       I: peptideColorScheme.I,
       F: peptideColorScheme.F,
       A: peptideColorScheme.A,
+      W: peptideColorScheme.W,
       P: peptideColorScheme.P,
       G: peptideColorScheme.G,
       M: peptideColorScheme.M,
       V: peptideColorScheme.V,
+      Other: monomerColors.colorX,
     },
   },
   border: {
@@ -252,6 +257,7 @@ export const defaultTheme: EditorTheme = {
   },
   shadow: {
     regular: '0px 1px 1px rgba(197, 203, 207, 0.7)',
+    mainLayoutBlocks: '0px 2px 5px rgba(103, 104, 132, 0.15)',
   },
   outline: {
     small: '1px solid #B4B9D6',
@@ -268,6 +274,14 @@ export const defaultTheme: EditorTheme = {
   },
   transition: {
     regular: 'all .3s',
+  },
+  zIndex: {
+    base: 0,
+    toolbar: 10,
+    sticky: 100,
+    overlay: 200,
+    modal: 1000,
+    critical: 9999,
   },
 };
 

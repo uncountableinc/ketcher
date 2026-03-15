@@ -1,37 +1,42 @@
 import { KetMonomerClass } from 'application/formatters';
 
+export const UNRESOLVED_MONOMER_COLOR = '#585858';
+
+export const BAD_VALENCE_WARNING_COLOR = '#F00';
+export const BAD_VALENCE_LINE_OFFSET = 2;
+
 export const MONOMER_SYMBOLS_IDS = {
   [KetMonomerClass.AminoAcid]: {
     hover: '#peptide-hover',
-    selected: '#peptide-selection',
     body: '#peptide',
+    autochainPreview: '#peptide-autochain-preview',
   },
   [KetMonomerClass.CHEM]: {
     hover: '#chem-selection',
-    selected: '#chem-selection',
     body: '#chem',
+    autochainPreview: '#chem-autochain-preview',
   },
   [KetMonomerClass.Sugar]: {
     hover: '#sugar-selection',
-    selected: '#sugar-selection',
     body: '#sugar',
     variant: '#sugar-variant',
+    autochainPreview: '#sugar-autochain-preview',
   },
   [KetMonomerClass.Base]: {
     hover: '#rna-base-selection',
-    selected: '#rna-base-selection',
     body: '#rna-base',
     variant: '#rna-base-variant',
+    autochainPreview: '#rna-base-autochain-preview',
   },
   [KetMonomerClass.Phosphate]: {
     hover: '#phosphate-selection',
-    selected: '#phosphate-selection',
     body: '#phosphate',
     variant: '#phosphate-variant',
+    autochainPreview: '#phosphate-autochain-preview',
   },
   [KetMonomerClass.RNA]: {
     hover: '#nucleotide-hover',
-    selected: '#nucleotide-selection',
     body: '#nucleotide',
+    autochainPreview: '#nucleotide-autochain-preview',
   },
 };

@@ -26,8 +26,8 @@ export const StyledDropdownIcon = styled(Icon, {
   position: absolute;
   height: 7px;
   width: 7px;
-  right: 2px;
-  bottom: 2px;
+  right: 3px;
+  bottom: 3px;
   cursor: pointer;
 
   path {
@@ -49,19 +49,19 @@ export const RootContainer = styled.div`
 
 export const OptionsContainer = styled.div<OptionsContainerProps>`
   display: flex;
-  position: absolute;
-  left: ${({ isVertical }) => (isVertical ? '-34px' : '5px')};
-  top: ${({ isVertical, islayoutModeButton }) =>
-    isVertical && islayoutModeButton ? '24px' : isVertical ? '38px' : '0px'};
   border-radius: 4px;
   flex-direction: ${({ isVertical }) => (isVertical ? 'column' : 'row')};
   z-index: 1;
   background-color: white;
   padding: 2px;
+  width: ${({ isVertical, isAutoSize }) =>
+    isVertical && !isAutoSize ? '38px' : 'auto'};
+  height: ${({ isVertical, isAutoSize }) =>
+    isVertical || isAutoSize ? 'auto' : '38px'};
 `;
 
 export const OptionsItemsCollapse = styled(Collapse)`
-  position: relative;
+  position: absolute;
 `;
 
 export const VisibleItem = styled.div`

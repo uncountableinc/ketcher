@@ -1,30 +1,34 @@
 import { Vec2 } from 'domain/entities/vec2';
 import { PolymerBond } from 'domain/entities/PolymerBond';
 import { D3SvgElementSelection } from 'application/render/types';
-import { Selection, line } from 'd3';
+import { line, Selection } from 'd3';
 import { BaseMonomer } from './entities/BaseMonomer';
 import assert from 'assert';
 import {
   canvasToMonomerCoordinates,
-  findLabelPoint,
   Coordinates,
+  findLabelPoint,
   getSearchFunction,
 } from './helpers/attachmentPointCalculations';
 import { editorEvents } from 'application/editor/editorEvents';
 import { AttachmentPointConstructorParams, AttachmentPointName } from './types';
 import { MonomerToAtomBond } from 'domain/entities/MonomerToAtomBond';
+import { SnakeModePolymerBondRenderer } from 'application/render/renderers/PolymerBondRenderer/SnakeModePolymerBondRenderer';
+import { isNumber } from 'lodash';
+import { CoreEditor, SnakeMode } from 'application/editor';
+import { isBondBetweenSugarAndBaseOfRna } from 'domain/helpers/monomers';
 
 export class AttachmentPoint {
-  static attachmentPointVector = 6;
-  static attachmentPointLength = Math.hypot(
+  static readonly attachmentPointVector = 6;
+  static readonly attachmentPointLength = Math.hypot(
     AttachmentPoint.attachmentPointVector,
     AttachmentPoint.attachmentPointVector,
   );
 
-  static labelOffset = 3.5;
-  static radius = 3;
-  static labelSize = { x: 3.5, y: 2.5 };
-  static colors = {
+  static readonly labelOffset = 3.5;
+  static readonly radius = 3;
+  static readonly labelSize = { x: 3.5, y: 2.5 };
+  static readonly colors = {
     fillUsed: '#0097A8',
     fill: 'white',
     fillPotentially: '#167782',
@@ -50,10 +54,10 @@ export class AttachmentPoint {
     | undefined;
 
   protected initialAngle = 0;
-  private isUsed: boolean;
-  private isSnake;
-  private editorEvents: typeof editorEvents;
-  private applyZoomForPositionCalculation: boolean;
+  private readonly isUsed: boolean;
+  private readonly isSnake;
+  private readonly editorEvents: typeof editorEvents;
+  private readonly applyZoomForPositionCalculation: boolean;
 
   constructor(
     constructorParams: AttachmentPointConstructorParams,
@@ -144,6 +148,8 @@ export class AttachmentPoint {
       .attr('cy', attachmentPointCoordinates.y)
       .attr('stroke', fill === 'white' ? '#0097A8' : 'white')
       .attr('stroke-width', '1px')
+      .attr('data-testid', `${this.attachmentPointName}`)
+      .attr('data-monomerid', this.monomer.id)
       .attr('fill', fill);
 
     const labelGroup = this.attachmentPoint.append('text');
@@ -218,6 +224,9 @@ export class AttachmentPoint {
       .on('mouseleave', (event) => {
         this.editorEvents.mouseLeaveAttachmentPoint.dispatch(event);
       })
+      .on('mousemove', (event) => {
+        this.editorEvents.mouseMoveAttachmentPoint.dispatch(event);
+      })
       .on('mousedown', (event) => {
         event.attachmentPointName = this.attachmentPointName;
         this.editorEvents.mouseDownAttachmentPoint.dispatch(event);
@@ -235,23 +244,40 @@ export class AttachmentPoint {
     let angleRadians: number;
     const polymerBond =
       this.monomer.attachmentPointsToBonds[this.attachmentPointName];
+    const editor = CoreEditor.provideEditorInstance();
 
     const firstMonomer =
       polymerBond instanceof MonomerToAtomBond
         ? polymerBond.monomer
         : polymerBond?.firstMonomer;
     const flip = this.monomer.id === firstMonomer?.id;
-    const isAttachmentpointR1 = this.attachmentPointName === 'R1';
+    const isAttachmentpointR1 =
+      this.attachmentPointName === AttachmentPointName.R1;
+    const isAttachmentpointR2 =
+      this.attachmentPointName === AttachmentPointName.R2;
+
     if (!polymerBond) {
       angleDegrees = this.initialAngle;
     } else if (
       !(polymerBond instanceof MonomerToAtomBond) &&
-      this.isSnake &&
-      !polymerBond?.renderer?.isMonomersOnSameHorizontalLine()
+      !isBondBetweenSugarAndBaseOfRna(polymerBond) &&
+      ((this.isSnake && !polymerBond.isHorizontal) ||
+        (editor.mode instanceof SnakeMode && polymerBond.isSideChainConnection))
     ) {
-      angleRadians = isAttachmentpointR1
-        ? this.rotateToAngle(polymerBond, flip)
-        : Math.PI;
+      const bondRenderer =
+        polymerBond?.renderer as SnakeModePolymerBondRenderer;
+      const sideConnectionEndpointDirection =
+        bondRenderer.getSideConnectionEndpointAngle(this.monomer);
+
+      if (isAttachmentpointR1) {
+        angleRadians = Math.PI * 2;
+      } else if (isAttachmentpointR2) {
+        angleRadians = Math.PI;
+      } else if (isNumber(sideConnectionEndpointDirection)) {
+        angleRadians = sideConnectionEndpointDirection;
+      } else {
+        angleRadians = this.rotateToAngle(polymerBond, flip);
+      }
       angleDegrees = Vec2.radiansToDegrees(angleRadians);
     } else {
       angleRadians = this.rotateToAngle(polymerBond, flip);

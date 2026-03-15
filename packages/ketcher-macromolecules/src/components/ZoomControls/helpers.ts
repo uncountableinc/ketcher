@@ -4,11 +4,11 @@ import {
   ZoomTool,
 } from 'ketcher-core';
 
-export const shortcuts =
+export const hotkeysShortcuts =
   generateMenuShortcuts<typeof hotkeysConfiguration>(hotkeysConfiguration);
 
 export const getIntegerFromString = (zoomInput: string | undefined): number => {
-  const zoomNumber = parseInt(zoomInput || '');
+  const zoomNumber = parseInt(zoomInput ?? '');
   if (isNaN(zoomNumber)) {
     return 0;
   }

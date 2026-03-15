@@ -13,15 +13,34 @@ import assert from 'assert';
 import { EditorSelection } from './editor/editor.types';
 
 class KetcherProvider {
-  private ketcherInstance: Ketcher | undefined;
+  private readonly ketcherInstances = new Map<string, Ketcher>();
 
-  setKetcherInstance(ketcherInstance: Ketcher) {
-    this.ketcherInstance = ketcherInstance;
+  addKetcherInstance(instance: Ketcher) {
+    this.ketcherInstances.set(instance.id, instance);
   }
 
-  getKetcher() {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return this.ketcherInstance!;
+  removeKetcherInstance(id) {
+    this.ketcherInstances.delete(id);
+  }
+
+  getIndexById(id: string) {
+    return Array.from(this.ketcherInstances.keys()).indexOf(id);
+  }
+
+  getKetcher(id?: string) {
+    if (!id) {
+      return [...this.ketcherInstances.values()][
+        this.ketcherInstances.size - 1
+      ];
+    }
+
+    const ketcher = this.ketcherInstances.get(id);
+
+    if (!ketcher) {
+      throw Error(`couldnt find ketcher instance ${id}`);
+    }
+
+    return ketcher;
   }
 }
 
@@ -30,13 +49,15 @@ const ketcherProvider = new KetcherProvider();
 export { ketcherProvider };
 
 export function getStructure(
-  structureFormat = SupportedFormat.rxn,
+  ketcherId: string,
   formatterFactory: FormatterFactory,
   struct: Struct,
+  structureFormat = SupportedFormat.rxn,
   drawingEntitiesManager?: DrawingEntitiesManager,
   selection?: EditorSelection,
 ): Promise<string> {
-  const serverSettings = ketcherProvider.getKetcher().editor.serverSettings;
+  const serverSettings =
+    ketcherProvider.getKetcher(ketcherId).editor.serverSettings;
   const formatter = formatterFactory.create(structureFormat, serverSettings);
   const drawingEntitiesManagerCloningResult = drawingEntitiesManager?.mergeInto(
     new DrawingEntitiesManager(),
@@ -87,12 +108,15 @@ export function parseStruct(
 export function deleteAllEntitiesOnCanvas() {
   const editor = CoreEditor.provideEditorInstance();
   const modelChanges = editor.drawingEntitiesManager.deleteAllEntities();
+
+  EditorHistory.getInstance(editor).update(modelChanges);
   editor.renderersContainer.update(modelChanges);
 }
 
 export async function parseAndAddMacromoleculesOnCanvas(
   struct: string,
   structService: StructService,
+  mergeWithLatestHistoryCommand = false,
 ) {
   const editor = CoreEditor.provideEditorInstance();
   const ketSerializer = new KetSerializer();
@@ -114,6 +138,9 @@ export async function parseAndAddMacromoleculesOnCanvas(
       editor.drawingEntitiesManager,
     );
 
-  new EditorHistory(editor).update(modelChanges);
+  EditorHistory.getInstance(editor).update(
+    modelChanges,
+    mergeWithLatestHistoryCommand,
+  );
   editor.renderersContainer.update(modelChanges);
 }

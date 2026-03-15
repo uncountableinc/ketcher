@@ -1,13 +1,3 @@
-import { KetMonomerClass } from 'application/formatters';
-import {
-  Sugar,
-  UnsplitNucleotide,
-  RNABase,
-  Phosphate,
-  Peptide,
-  Chem,
-} from 'domain/entities/internal';
-
 export enum RNA_DNA_NON_MODIFIED_PART {
   SUGAR_RNA = 'R',
   SUGAR_DNA = 'dR',
@@ -41,6 +31,13 @@ export enum StandardAmbiguousRnaBase {
   S = 'S',
 }
 
+export enum StandardAmbiguousPeptide {
+  B = 'B', // Aspartic acid or Asparagine
+  J = 'J', // Leucine or Isoleucine
+  Z = 'Z', // Glutamic acid or Glutamine
+  X = 'X', // Any amino acid (note: also appears in unknownNaturalAnalogues for compatibility)
+}
+
 export const rnaDnaNaturalAnalogues = [
   RnaDnaNaturalAnaloguesEnum.ADENINE,
   RnaDnaNaturalAnaloguesEnum.THYMINE,
@@ -48,6 +45,28 @@ export const rnaDnaNaturalAnalogues = [
   RnaDnaNaturalAnaloguesEnum.CYTOSINE,
   RnaDnaNaturalAnaloguesEnum.URACIL,
 ] as string[];
+
+export const rnaDnaAmbiguousSymbols = [
+  StandardAmbiguousRnaBase.N,
+  StandardAmbiguousRnaBase.B,
+  StandardAmbiguousRnaBase.V,
+  StandardAmbiguousRnaBase.D,
+  StandardAmbiguousRnaBase.H,
+  StandardAmbiguousRnaBase.K,
+  StandardAmbiguousRnaBase.M,
+  StandardAmbiguousRnaBase.W,
+  StandardAmbiguousRnaBase.Y,
+  StandardAmbiguousRnaBase.R,
+  StandardAmbiguousRnaBase.S,
+] as string[];
+
+export const peptideAmbiguousSymbols = [
+  StandardAmbiguousPeptide.B,
+  StandardAmbiguousPeptide.J,
+  StandardAmbiguousPeptide.Z,
+  StandardAmbiguousPeptide.X,
+] as string[];
+
 export const unknownNaturalAnalogues = ['.', 'X'];
 export const peptideNaturalAnalogues = [
   'A',
@@ -76,11 +95,23 @@ export const peptideNaturalAnalogues = [
 
 export const NO_NATURAL_ANALOGUE = 'X';
 
-export const MONOMER_CLASS_TO_CONSTRUCTOR = {
-  [KetMonomerClass.CHEM]: Chem,
-  [KetMonomerClass.AminoAcid]: Peptide,
-  [KetMonomerClass.Phosphate]: Phosphate,
-  [KetMonomerClass.Sugar]: Sugar,
-  [KetMonomerClass.Base]: RNABase,
-  [KetMonomerClass.RNA]: UnsplitNucleotide,
+export const MONOMER_CONST = {
+  AMINO_ACID: 'AminoAcid',
+  PEPTIDE: 'PEPTIDE',
+  CHEM: 'CHEM',
+  RNA: 'RNA',
+  DNA: 'DNA',
+  MODDNA: 'MODDNA',
+  R: 'R', // states for Ribose
+  P: 'P', // states for Phosphate
+  SUGAR: 'SUGAR',
+  BASE: 'BASE',
+  PHOSPHATE: 'PHOSPHATE',
 };
+
+export const CREATE_MONOMER_TOOL_NAME = 'create-monomer';
+
+export const MonomerSize = 0.75;
+// Approximately equal to 15px on the screen and widely used as a measure of checking whether two vectors are in proximity
+export const HalfMonomerSize = MonomerSize / 2;
+export const StandardBondLength = MonomerSize * 2;

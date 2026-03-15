@@ -1,10 +1,31 @@
 'use client';
 
+import { StandaloneStructServiceProvider as StandaloneStructServiceProviderType } from 'ketcher-standalone';
+import { Editor } from 'ketcher-react';
+
 import 'ketcher-react/dist/index.css';
 
-import { StandaloneStructServiceProvider as StandaloneStructServiceProviderType } from 'ketcher-standalone';
+const safePostMessage = (
+  message: Record<string, unknown>,
+  fallbackOrigin: string = window.location.origin,
+): void => {
+  if (window.parent === window) return;
 
-import { Editor } from 'ketcher-react';
+  let parentOrigin = fallbackOrigin;
+  try {
+    parentOrigin = window.parent.location.origin || fallbackOrigin;
+  } catch {}
+
+  if (
+    !parentOrigin ||
+    parentOrigin === 'null' ||
+    parentOrigin === 'undefined'
+  ) {
+    parentOrigin = fallbackOrigin;
+  }
+
+  window.parent.postMessage(message, parentOrigin);
+};
 
 const StandaloneStructServiceProvider =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -22,13 +43,9 @@ export function EditorComponent() {
       }}
       onInit={(ketcher) => {
         window.ketcher = ketcher;
-
-        window.parent.postMessage(
-          {
-            eventType: 'init',
-          },
-          '*',
-        );
+        safePostMessage({
+          eventType: 'init',
+        });
       }}
     />
   );

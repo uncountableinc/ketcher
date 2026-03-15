@@ -14,9 +14,17 @@
  * limitations under the License.
  ***************************************************************************/
 
-import { Vec2, Axis, Axises, Struct } from 'domain/entities';
-import { cloneDeepWith, cloneDeep } from 'lodash';
+import { Axis, Axises, Struct, Vec2 } from 'domain/entities';
+import { cloneDeep, cloneDeepWith } from 'lodash';
 import { EditorSelection } from 'application/editor';
+import {
+  KetMonomerClass,
+  KetTemplateType,
+  MonomerTransformation,
+} from 'application/formatters';
+import { MONOMER_CONST, RNA_DNA_NON_MODIFIED_PART } from 'domain/constants';
+import { MonomerItemType } from 'domain/types';
+import { getMonomerUniqueKey } from 'domain/helpers/monomers';
 
 const customizer = (value: any) => {
   if (typeof value === 'object' && value.y) {
@@ -33,6 +41,9 @@ export const setMonomerTemplatePrefix = (templateName: string) =>
   `monomerTemplate-${templateName}`;
 export const setMonomerPrefix = (monomerId: number) => `monomer${monomerId}`;
 
+export const setMonomerGroupTemplatePrefix = (templateName: string) =>
+  `${KetTemplateType.MONOMER_GROUP_TEMPLATE}-${templateName}`;
+
 export const setAmbiguousMonomerTemplatePrefix = (templateName: string) =>
   `ambiguousMonomerTemplate-${templateName}`;
 
@@ -41,6 +52,51 @@ export const setAmbiguousMonomerPrefix = (monomerId: number) =>
 
 export const getKetRef = (entityId: string) => {
   return { $ref: entityId };
+};
+
+export const getMonomerTemplateRefFromMonomerItem = (
+  monomerItem: MonomerItemType,
+) => {
+  const { props } = monomerItem;
+
+  if (props.id) {
+    return setMonomerTemplatePrefix(props.id);
+  }
+
+  return setMonomerTemplatePrefix(getMonomerUniqueKey(monomerItem));
+};
+
+export const getHELMClassByKetMonomerClass = (
+  monomerClass: KetMonomerClass,
+) => {
+  if (monomerClass === KetMonomerClass.AminoAcid) {
+    return MONOMER_CONST.PEPTIDE;
+  }
+
+  if (monomerClass === KetMonomerClass.CHEM) {
+    return MONOMER_CONST.CHEM;
+  }
+
+  return MONOMER_CONST.RNA;
+};
+
+export const fillNaturalAnalogueForPhosphateAndSugar = (
+  naturalAnalogue: string,
+  monomerClass: KetMonomerClass,
+) => {
+  if (naturalAnalogue !== '') {
+    return naturalAnalogue;
+  }
+
+  if (monomerClass === KetMonomerClass.Sugar) {
+    return RNA_DNA_NON_MODIFIED_PART.SUGAR_RNA;
+  }
+
+  if (monomerClass === KetMonomerClass.Phosphate) {
+    return RNA_DNA_NON_MODIFIED_PART.PHOSPHATE;
+  }
+
+  return naturalAnalogue;
 };
 
 const rotateCoordAxisBy180Degrees = (position: Vec2, axis: Axises): Vec2 => {
@@ -67,9 +123,26 @@ export const switchIntoChemistryCoordSystem = (position: Vec2) => {
   return rotateCoordAxisBy180Degrees(position, Axis.y);
 };
 
+export const modifyTransformation = (transformation: MonomerTransformation) => {
+  const { rotate } = transformation;
+  const newTransformation = cloneDeep(transformation);
+
+  /*
+   * Ketcher provides rotation angle according to the rotation tool – 0 is in the middle, minus angle rotates anti-clockwise, plus angle rotates clockwise
+   * Indigo uses trigonometric circle – 0 is on the right, plus angle rotates anti-clockwise, minus angle rotates clockwise
+   * Hence, we have to invert the angle when saving and when loading from KET file
+   */
+  if (rotate) {
+    newTransformation.rotate = -rotate;
+  }
+
+  return newTransformation;
+};
+
 export const populateStructWithSelection = (
   populatedStruct: Struct,
   selection?: EditorSelection,
+  resetSelection = false,
 ) => {
   if (!selection) {
     return populatedStruct;
@@ -78,7 +151,13 @@ export const populateStructWithSelection = (
     const selectedEntities = selection[entity];
     populatedStruct[entity]?.forEach((value, key) => {
       if (typeof value.setInitiallySelected === 'function') {
-        value.setInitiallySelected(selectedEntities.includes(key) || undefined);
+        if (resetSelection) {
+          value.setInitiallySelected(
+            selectedEntities.includes(key) || undefined,
+          );
+        } else if (selectedEntities.includes(key)) {
+          value.setInitiallySelected(true);
+        }
       }
     });
   });

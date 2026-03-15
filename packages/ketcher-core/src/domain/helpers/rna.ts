@@ -1,17 +1,18 @@
 import { CoreEditor } from 'application/editor/internal';
 import { AmbiguousMonomer, SequenceType } from 'domain/entities';
 import {
+  MONOMER_CONST,
   RNA_DNA_NON_MODIFIED_PART,
   RnaDnaBaseNames,
 } from 'domain/constants/monomers';
-import { MONOMER_CONST } from 'application/editor';
 import { isAmbiguousMonomerLibraryItem } from 'domain/helpers/monomers';
 import { KetMonomerClass } from 'application/formatters';
 
 export function getRnaPartLibraryItem(
   editor: CoreEditor,
-  rnaBaseName: string,
+  libraryItemLabel: string,
   monomerClass?: KetMonomerClass,
+  isDna = false,
 ) {
   return editor.monomersLibrary.find((libraryItem) => {
     if (isAmbiguousMonomerLibraryItem(libraryItem)) {
@@ -22,30 +23,46 @@ export function getRnaPartLibraryItem(
         return false;
       }
 
-      if (libraryItem.label !== rnaBaseName) {
+      if (libraryItem.label !== libraryItemLabel) {
         return false;
       }
 
-      return libraryItem.options.every(
-        (option) =>
-          option.templateId.includes(RnaDnaBaseNames.URACIL) ||
-          !option.templateId.includes(RnaDnaBaseNames.THYMINE),
+      return libraryItem.options.every((option) =>
+        isDna
+          ? option.templateId.includes(RnaDnaBaseNames.THYMINE) ||
+            !option.templateId.includes(RnaDnaBaseNames.URACIL)
+          : option.templateId.includes(RnaDnaBaseNames.URACIL) ||
+            !option.templateId.includes(RnaDnaBaseNames.THYMINE),
       );
     }
 
     return (
       (!monomerClass || libraryItem.props.MonomerClass === monomerClass) &&
-      libraryItem.props.MonomerName === rnaBaseName
+      libraryItem.props.MonomerName === libraryItemLabel
     );
   });
 }
 
 export function getPeptideLibraryItem(editor: CoreEditor, peptideName: string) {
-  return editor.monomersLibrary.find(
-    (libraryItem) =>
+  return editor.monomersLibrary.find((libraryItem) => {
+    // Check for ambiguous peptides
+    if (isAmbiguousMonomerLibraryItem(libraryItem)) {
+      if (
+        AmbiguousMonomer.getMonomerClass(libraryItem.monomers) !==
+        KetMonomerClass.AminoAcid
+      ) {
+        return false;
+      }
+
+      return libraryItem.label === peptideName;
+    }
+
+    // Check for regular peptides
+    return (
       libraryItem.props.MonomerType === MONOMER_CONST.PEPTIDE &&
-      libraryItem.props.MonomerName === peptideName,
-  );
+      libraryItem.props.MonomerName === peptideName
+    );
+  });
 }
 
 export function getSugarBySequenceType(sequenceType: SequenceType) {

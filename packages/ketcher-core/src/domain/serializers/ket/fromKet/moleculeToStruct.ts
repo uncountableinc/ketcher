@@ -223,9 +223,6 @@ export function bondToStruct(source, atomOffset = 0) {
   ifDef(params, 'stereo', source.stereo);
   ifDef(params, 'cip', source.cip);
   ifDef(params, 'customQuery', source.customQuery);
-  // if (params.stereo)
-  // 	params.stereo = params.stereo > 1 ? params.stereo * 2 : params.stereo;
-  // params.xxx = 0;
   ifDef(params, 'begin', source.atoms[0] + atomOffset);
   ifDef(params, 'end', source.atoms[1] + atomOffset);
   ifDef(params, 'initiallySelected', source.selected);
@@ -275,6 +272,7 @@ export function sgroupToStruct(source) {
     case 'SUP': {
       ifDef(sgroup.data, 'name', source.name);
       ifDef(sgroup.data, 'expanded', source.expanded);
+      ifDef(sgroup.data, 'class', source.class);
       ifDef(sgroup, 'id', source.id);
       source.attachmentPoints?.forEach(
         (
@@ -312,10 +310,13 @@ function sgroupAttachmentPointToStruct(
   const atomId = source.attachmentAtom;
   const leavingAtomId = source.leavingAtom;
   const attachmentId = source.attachmentId;
+
   return new SGroupAttachmentPoint(
     atomId,
     leavingAtomId,
     attachmentId,
-    attachmentId ? Number(attachmentId) : attachmentPointNumber,
+    attachmentId && !isNaN(Number(attachmentId))
+      ? Number(attachmentId)
+      : attachmentPointNumber,
   );
 }

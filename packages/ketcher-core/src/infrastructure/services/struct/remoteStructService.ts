@@ -23,9 +23,12 @@ import {
   CalculateCipData,
   CalculateCipResult,
   CalculateData,
+  CalculateMacromoleculePropertiesData,
+  CalculateMacromoleculePropertiesResult,
   CalculateResult,
   CheckData,
   CheckResult,
+  ChemicalMimeType,
   CleanData,
   CleanResult,
   ConvertData,
@@ -43,7 +46,7 @@ import {
   StructService,
   StructServiceOptions,
 } from 'domain/services';
-import { KetcherLogger } from 'utilities';
+import { KetcherLogger, normalizeError } from 'utilities';
 import { getLabelRenderModeForIndigo } from 'infrastructure/services/helpers';
 import { ketcherProvider } from 'application/utils';
 
@@ -57,13 +60,13 @@ function pollDeferred(process, complete, timeGap, startTimeGap) {
             else setTimeout(iterate, timeGap);
           } catch (error) {
             KetcherLogger.error('remoteStructService.ts::pollDeferred', error);
-            reject(error);
+            reject(normalizeError(error));
           }
         },
-        (err) => reject(err),
+        (err) => reject(normalizeError(err)),
       );
     }
-    setTimeout(iterate, startTimeGap || 0);
+    setTimeout(iterate, startTimeGap ?? 0);
   });
 }
 
@@ -82,12 +85,10 @@ function request(
   if (data && method === 'GET') requestUrl = parametrizeUrl(url, data);
   let response: any = fetch(requestUrl, {
     method,
-    headers: Object.assign(
-      {
-        Accept: 'application/json',
-      },
-      headers,
-    ),
+    headers: {
+      Accept: 'application/json',
+      ...(headers || {}),
+    },
     body: method !== 'GET' ? data : undefined,
     credentials: 'same-origin',
   });
@@ -98,7 +99,9 @@ function request(
     response = response.then((response) =>
       response
         .json()
-        .then((res) => (response.ok ? res : Promise.reject(res.error))),
+        .then((res) =>
+          response.ok ? res : Promise.reject(new Error(res.error)),
+        ),
     );
   }
 
@@ -117,8 +120,12 @@ function indigoCall(
     options,
     responseHandler?: (promise: Promise<any>) => Promise<any>,
   ) {
-    const body = Object.assign({}, data);
-    body.options = Object.assign(body.options || {}, defaultOptions, options);
+    const body = { ...(data || {}) };
+    body.options = {
+      ...(body.options || {}),
+      ...(defaultOptions || {}),
+      ...(options || {}),
+    };
     return request(
       method,
       baseUrl + url,
@@ -132,11 +139,15 @@ function indigoCall(
   };
 }
 
-export function pickStandardServerOptions(options?: StructServiceOptions) {
-  const ketcherInstance = ketcherProvider.getKetcher();
+export function pickStandardServerOptions(
+  ketcherId: string,
+  options?: StructServiceOptions,
+) {
+  const ketcherInstance = ketcherProvider.getKetcher(ketcherId);
 
   return {
     'dearomatize-on-load': options?.['dearomatize-on-load'],
+    'aromaticity-model': 'generic',
     'smart-layout': options?.['smart-layout'],
     'ignore-stereochemistry-errors': options?.['ignore-stereochemistry-errors'],
     'mass-skip-error-on-pseudoatoms':
@@ -152,6 +163,7 @@ export class RemoteStructService implements StructService {
   private readonly apiPath: string;
   private readonly defaultOptions: StructServiceOptions;
   private readonly customHeaders?: Record<string, string>;
+  private ketcherId: string | null;
 
   constructor(
     apiPath: string,
@@ -161,6 +173,11 @@ export class RemoteStructService implements StructService {
     this.apiPath = apiPath;
     this.defaultOptions = defaultOptions;
     this.customHeaders = customHeaders;
+    this.ketcherId = null;
+  }
+
+  addKetcherId(ketcherId: string) {
+    this.ketcherId = ketcherId;
   }
 
   getInChIKey(struct: string): Promise<string> {
@@ -173,7 +190,7 @@ export class RemoteStructService implements StructService {
     )(
       {
         struct,
-        output_format: 'chemical/x-inchi',
+        output_format: ChemicalMimeType.InChIKey,
       },
       {},
     );
@@ -183,8 +200,11 @@ export class RemoteStructService implements StructService {
     if (!options) {
       return this.defaultOptions;
     }
+    if (!this.ketcherId) {
+      throw new Error('ketcherId is missed when options getting');
+    }
 
-    return pickStandardServerOptions(options);
+    return pickStandardServerOptions(this.ketcherId, options);
   }
 
   async info(): Promise<InfoResult> {
@@ -232,6 +252,10 @@ export class RemoteStructService implements StructService {
         options?.['reaction-component-margin-size'],
       'image-resolution': options?.['image-resolution'],
       'molfile-saving-mode': options?.['molfile-saving-mode'],
+      'monomer-library-saving-mode': options?.['monomer-library-saving-mode'],
+      'molfile-saving-skip-date': options?.['molfile-saving-skip-date'],
+      'output-content-type': options?.['output-content-type'],
+      'sequence-type': options?.['sequence-type'],
     };
 
     return indigoCall(
@@ -250,7 +274,9 @@ export class RemoteStructService implements StructService {
     const expandedOptions = {
       ...this.getStandardServerOptions(options),
 
-      'render-label-mode': getLabelRenderModeForIndigo(),
+      'render-label-mode': this.ketcherId
+        ? getLabelRenderModeForIndigo(this.ketcherId)
+        : undefined,
       'render-font-size': options?.['render-font-size'],
       'render-font-size-unit': options?.['render-font-size-unit'],
       'render-font-size-sub': options?.['render-font-size-sub'],
@@ -366,7 +392,7 @@ export class RemoteStructService implements StructService {
       this.apiPath + `imago/uploads${parVersion}`,
       blob,
       {
-        'Content-Type': blob.type || 'application/octet-stream',
+        'Content-Type': blob.type ?? 'application/octet-stream',
       },
     );
     const status = request.bind(
@@ -379,7 +405,8 @@ export class RemoteStructService implements StructService {
         pollDeferred(
           status.bind(null, { id: data.upload_id }),
           (response: any) => {
-            if (response.state === 'FAILURE') throw response;
+            if (response.state === 'FAILURE')
+              throw new Error(JSON.stringify(response));
             return response.state === 'SUCCESS';
           },
           500,
@@ -393,7 +420,7 @@ export class RemoteStructService implements StructService {
     data: string,
     options?: GenerateImageOptions,
   ): Promise<string> {
-    const outputFormat: OutputFormatType = options?.outputFormat || 'png';
+    const outputFormat: OutputFormatType = options?.outputFormat ?? 'png';
     const stereoStyle: undefined | string = options?.stereoStyle;
     const stereoStyleOption =
       stereoStyle != null ? { 'render-stereo-style': stereoStyle } : {};
@@ -422,12 +449,15 @@ export class RemoteStructService implements StructService {
         'render-stereo-bond-width': options?.['render-stereo-bond-width'],
         'render-stereo-bond-width-unit':
           options?.['render-stereo-bond-width-unit'],
+        'render-stereo-style': options?.['render-stereo-style'],
         'render-hash-spacing': options?.['render-hash-spacing'],
         'render-hash-spacing-unit': options?.['render-hash-spacing-unit'],
         'render-output-sheet-width': options?.['render-output-sheet-width'],
         'render-output-sheet-height': options?.['render-output-sheet-height'],
         'render-output-format': outputFormat,
-        'render-label-mode': getLabelRenderModeForIndigo(),
+        'render-label-mode': this.ketcherId
+          ? getLabelRenderModeForIndigo(this.ketcherId)
+          : undefined,
         ...stereoStyleOption,
       },
       (response) => response.then((resp) => resp.text()),
@@ -445,5 +475,22 @@ export class RemoteStructService implements StructService {
       this.defaultOptions,
       this.customHeaders,
     )(data, this.getStandardServerOptions(options));
+  }
+
+  calculateMacromoleculeProperties(
+    data: CalculateMacromoleculePropertiesData,
+    options?: StructServiceOptions,
+  ): Promise<CalculateMacromoleculePropertiesResult> {
+    return indigoCall(
+      'POST',
+      'indigo/calculateMacroProperties',
+      this.apiPath,
+      this.defaultOptions,
+      this.customHeaders,
+    )(data, {
+      ...this.getStandardServerOptions(options),
+      upc: options?.upc,
+      nac: options?.nac,
+    });
   }
 }

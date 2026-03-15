@@ -22,9 +22,16 @@ export interface Point {
   y?: number;
   z?: number;
 }
+
+// Optimize major GC in case of importing big sequences - only parse float when necessary
+// most of the time it is already a number from atom.clone
+function toNumber(value: number | string): number {
+  return typeof value === 'number' ? value : parseFloat(value);
+}
+
 export class Vec2 {
-  static ZERO = new Vec2(0, 0);
-  static UNIT = new Vec2(1, 1);
+  static readonly ZERO = new Vec2(0, 0);
+  static readonly UNIT = new Vec2(1, 1);
 
   x: number;
   y: number;
@@ -38,17 +45,18 @@ export class Vec2 {
       this.y = 0;
       this.z = 0;
     } else if (arguments.length === 1) {
-      this.x = parseFloat(args[0].x || 0);
-      this.y = parseFloat(args[0].y || 0);
-      this.z = parseFloat(args[0].z || 0);
+      const point = args[0];
+      this.x = toNumber(point.x || 0);
+      this.y = toNumber(point.y || 0);
+      this.z = toNumber(point.z || 0);
     } else if (arguments.length === 2) {
-      this.x = parseFloat(args[0] || 0);
-      this.y = parseFloat(args[1] || 0);
+      this.x = toNumber(args[0] || 0);
+      this.y = toNumber(args[1] || 0);
       this.z = 0;
     } else if (arguments.length === 3) {
-      this.x = parseFloat(args[0]);
-      this.y = parseFloat(args[1]);
-      this.z = parseFloat(args[2]);
+      this.x = toNumber(args[0]);
+      this.y = toNumber(args[1]);
+      this.z = toNumber(args[2]);
     } else {
       throw new Error('Vec2(): invalid arguments');
     }
@@ -274,20 +282,20 @@ export class Vec2 {
   }
 
   calculateDistanceToLine(line: [Vec2, Vec2]): number {
-    if (
-      (this.x <= Math.min(line[0].x, line[1].x) ||
-        this.x >= Math.max(line[0].x, line[1].x)) &&
-      (this.y <= Math.min(line[0].y, line[1].y) ||
-        this.y >= Math.max(line[0].y, line[1].y))
-    ) {
-      return Math.min(Vec2.dist(line[0], this), Vec2.dist(line[1], this));
-    } else {
-      const a = Vec2.dist(line[0], line[1]);
-      const b = Vec2.dist(line[0], this);
-      const c = Vec2.dist(line[1], this);
-      const per = (a + b + c) / 2;
-      return (2 / a) * Math.sqrt(per * (per - a) * (per - b) * (per - c));
-    }
+    const lineVec = Vec2.diff(line[1], line[0]);
+    const pointVec = Vec2.diff(this, line[0]);
+    const lineLength = Vec2.dist(line[0], line[1]);
+    const lineUnitVec = lineVec.normalized();
+    const projectionLength = Vec2.dot(lineUnitVec, pointVec);
+    const clampedProjectionLength = Math.max(
+      0,
+      Math.min(lineLength, projectionLength),
+    );
+    const closestPoint = Vec2.sum(
+      line[0],
+      lineUnitVec.scaled(clampedProjectionLength),
+    );
+    return Vec2.dist(closestPoint, this);
   }
 
   oxAngle(): number {

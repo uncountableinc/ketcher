@@ -17,23 +17,17 @@
 import { Menu } from 'components/menu';
 import { useAppSelector, useLayoutMode } from 'hooks';
 import { selectEditor, selectEditorActiveTool } from 'state/common';
-import {
-  ModeTypes,
-  generateMenuShortcuts,
-  hotkeysConfiguration,
-} from 'ketcher-core';
-
-const shortcuts =
-  generateMenuShortcuts<typeof hotkeysConfiguration>(hotkeysConfiguration);
+import { hotkeysShortcuts } from 'components/ZoomControls/helpers';
+import { SELECT_SUBMENU_ID } from 'components/menu/constants';
 
 export function LeftMenuComponent() {
   const activeTool = useAppSelector(selectEditorActiveTool);
   const editor = useAppSelector(selectEditor);
-  const isSequenceMode = useLayoutMode() === ModeTypes.sequence;
+  const isSequenceMode = useLayoutMode() === 'sequence-layout-mode';
   const activeMenuItems = [activeTool];
 
   const menuItemChanged = (name) => {
-    editor.events.selectTool.dispatch(name, { toolName: name });
+    editor?.events.selectTool.dispatch([name, { toolName: name }]);
   };
 
   return (
@@ -43,15 +37,37 @@ export function LeftMenuComponent() {
       activeMenuItems={activeMenuItems}
     >
       <Menu.Group divider={true}>
-        <Menu.Item itemId="hand" title="Hand Tool" testId="hand-tool" />
         <Menu.Item
-          itemId="select-rectangle"
-          title="Select Rectangle"
-          testId="select-rectangle"
+          itemId="hand"
+          title={`Hand Tool (${hotkeysShortcuts.hand})`}
+          testId="hand"
         />
+        <Menu.Group>
+          <Menu.Submenu
+            testId="select-drop-down-button"
+            subMenuId={SELECT_SUBMENU_ID}
+            needOpenByMenuItemClick={true}
+          >
+            <Menu.Item
+              itemId="select-rectangle"
+              title={`Select Rectangle (${hotkeysShortcuts.switchSelectTool})`}
+              testId="select-rectangle"
+            />
+            <Menu.Item
+              itemId="select-lasso"
+              title={`Lasso selection (${hotkeysShortcuts.switchSelectTool})`}
+              testId="select-lasso"
+            />
+            <Menu.Item
+              itemId="select-structure"
+              title={`Structure Selection (${hotkeysShortcuts.switchSelectTool})`}
+              testId="select-structure"
+            />
+          </Menu.Submenu>
+        </Menu.Group>
         <Menu.Item
           itemId="erase"
-          title={`Erase (${shortcuts.erase})`}
+          title={`Erase (${hotkeysShortcuts.erase})`}
           testId="erase"
           disabled={isSequenceMode}
         />
@@ -59,7 +75,7 @@ export function LeftMenuComponent() {
       <Menu.Group>
         <Menu.Submenu
           disabled={isSequenceMode}
-          testId="bond-tool-submenu"
+          testId="bonds-drop-down-button"
           needOpenByMenuItemClick={false}
         >
           <Menu.Item

@@ -5,7 +5,8 @@ import {
   Nucleotide,
   Vec2,
 } from 'domain/entities';
-import { BaseSubChain } from 'domain/entities/monomer-chains/BaseSubChain';
+import { Chain } from 'domain/entities/monomer-chains/Chain';
+import { ITwoStrandedChainItem } from 'domain/entities/monomer-chains/ChainsCollection';
 
 export abstract class RNASequenceItemRenderer extends BaseSequenceItemRenderer {
   constructor(
@@ -13,20 +14,26 @@ export abstract class RNASequenceItemRenderer extends BaseSequenceItemRenderer {
     _firstNodeInChainPosition: Vec2,
     _monomerIndexInChain: number,
     _isLastMonomerInChain: boolean,
-    _subChain: BaseSubChain,
-    _isEditingSymbol: boolean,
+    _chain: Chain,
+    _nodeIndexOverall: number,
+    _editingNodeIndexOverall: number,
     public monomerSize: { width: number; height: number },
     public scaledMonomerPosition: Vec2,
+    _twoStrandedNode: ITwoStrandedChainItem,
+    _previousRowsWithAntisense = 0,
   ) {
     super(
       node,
       _firstNodeInChainPosition,
       _monomerIndexInChain,
       _isLastMonomerInChain,
-      _subChain,
-      _isEditingSymbol,
+      _chain,
+      _nodeIndexOverall,
+      _editingNodeIndexOverall,
       monomerSize,
       scaledMonomerPosition,
+      _twoStrandedNode,
+      _previousRowsWithAntisense,
     );
   }
 
@@ -38,14 +45,15 @@ export abstract class RNASequenceItemRenderer extends BaseSequenceItemRenderer {
 
   protected drawCommonModification(node: Nucleoside | Nucleotide) {
     if (node.rnaBase.isModification) {
-      this.backgroundElement?.attr(
-        'fill',
-        this.node.monomer.selected
-          ? this.isSequenceEditInRnaBuilderModeTurnedOn
-            ? '#41A8B2'
-            : '#3ACA6A'
-          : '#CAD3DD',
-      );
+      let modificationFillColor = '#CAD3DD';
+
+      if (this.node.monomer.selected) {
+        modificationFillColor = this.isSequenceEditInRnaBuilderModeTurnedOn
+          ? '#41A8B2'
+          : '#3ACA6A';
+      }
+
+      this.backgroundElement?.attr('fill', modificationFillColor);
     }
 
     if (node.sugar.isModification) {

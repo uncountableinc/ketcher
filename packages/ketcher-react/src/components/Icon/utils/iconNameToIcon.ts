@@ -43,6 +43,7 @@ import ChiralFlagIcon from '../../../assets/icons/files/chiral-flag.svg';
 import CipIcon from '../../../assets/icons/files/cip.svg';
 import CleanIcon from '../../../assets/icons/files/clean.svg';
 import CopyIcon from '../../../assets/icons/files/copy.svg';
+import CopyNavBar from '../../../assets/icons/files/copy-for-nav-bar.svg';
 import CopyImageIcon from '../../../assets/icons/files/copy-image.svg';
 import CopyKetIcon from '../../../assets/icons/files/copy-ket.svg';
 import CopyMolIcon from '../../../assets/icons/files/copy-mol.svg';
@@ -105,6 +106,7 @@ import RgroupLabelIcon from '../../../assets/icons/files/rgroup-label.svg';
 import SaveIcon from '../../../assets/icons/files/save.svg';
 import SearchIcon from '../../../assets/icons/files/search.svg';
 import SelectFragmentIcon from '../../../assets/icons/files/select-fragment.svg';
+import SelectStructureIcon from '../../../assets/icons/files/select-structure.svg';
 import SelectLassoIcon from '../../../assets/icons/files/select-lasso.svg';
 import SelectRectangleIcon from '../../../assets/icons/files/select-rectangle.svg';
 import SettingsIcon from '../../../assets/icons/files/settings.svg';
@@ -217,6 +219,9 @@ import Sugar from '../../../assets/icons/files/sugar.svg';
 import Base from '../../../assets/icons/files/base.svg';
 import Phosphate from '../../../assets/icons/files/phosphate.svg';
 import Preset from '../../../assets/icons/files/preset.svg';
+import Nucleotide from '../../../assets/icons/files/nucleotide.svg';
+import Peptide from '../../../assets/icons/files/peptide.svg';
+import Chem from '../../../assets/icons/files/chem.svg';
 import EditFilled from '../../../assets/icons/files/edit-filled.svg';
 import VerticalDots from '../../../assets/icons/files/vertical-dots.svg';
 import ExpandIcon from '../../../assets/icons/files/expand.svg';
@@ -226,9 +231,25 @@ import FlexLayoutIcon from '../../../assets/icons/files/flex-layout-mode.svg';
 import SnakeLayoutIcon from '../../../assets/icons/files/snake-layout-mode.svg';
 import SequenceLayoutIcon from '../../../assets/icons/files/sequence-layout-mode.svg';
 import QuestionMark from '../../../assets/icons/files/questionMark.svg';
-import Nucleotide from '../../../assets/icons/files/nucleotide.svg';
-import { IMAGE_KEY, MULTITAIL_ARROW_TOOL_NAME } from 'ketcher-core';
+import ArrangeRingIcon from '../../../assets/icons/files/arrange-ring.svg';
+import {
+  CREATE_MONOMER_TOOL_NAME,
+  IMAGE_KEY,
+  MULTITAIL_ARROW_TOOL_NAME,
+} from 'ketcher-core';
 import CrossIcon from '../../../assets/icons/files/cross.svg';
+import PlusIcon from '../../../assets/icons/files/plus.svg';
+import ArrowsUpDownIcon from '../../../assets/icons/files/arrows-up-down.svg';
+import AntisenseStrandIcon from '../../../assets/icons/files/antisense-strand.svg';
+import DeleteContextMenu from '../../../assets/icons/files/deleteContextMenu.svg';
+import PasteContextMenu from '../../../assets/icons/files/paste-nav-bar.svg';
+import EditContextMenu from '../../../assets/icons/files/edit-nav-bar.svg';
+import MonomerAutochainIcon from '../../../assets/icons/files/monomer-autochain.svg';
+import CreateMonomerIcon from '../../../assets/icons/files/create-monomer.svg';
+import CheckFilledIcon from '../../../assets/icons/files/check-filled.svg';
+import WarningFilledIcon from '../../../assets/icons/files/warning-filled.svg';
+import LeavingGroup from '../../../assets/icons/files/leaving-group.svg';
+import ConnectionPoint from '../../../assets/icons/files/connection-point.svg';
 
 export const iconNameToIcon = {
   α,
@@ -312,9 +333,11 @@ export const iconNameToIcon = {
   'copy-image': CopyImageIcon,
   'copy-mol': CopyMolIcon,
   'copy-ket': CopyKetIcon,
+  copyMenu: CopyNavBar,
   cut: CutIcon,
   dearom: DearomIcon,
   delete: DeleteIcon,
+  deleteMenu: DeleteContextMenu,
   dropdown: DropdownIcon,
   'enhanced-stereo': EnhancedStereoIcon,
   edit: EditIcon,
@@ -338,6 +361,8 @@ export const iconNameToIcon = {
   clear: ClearIcon,
   open: OpenIcon,
   paste: PasteIcon,
+  editMenu: EditContextMenu,
+  pasteNavBar: PasteContextMenu,
   'period-table': PeriodTableIcon,
   arrows: ReactionArrowOpenAngleIcon,
   'reaction-arrow-elliptical-arc-arrow-filled-bow':
@@ -383,6 +408,7 @@ export const iconNameToIcon = {
   'rgroup-label': RgroupLabelIcon,
   save: SaveIcon,
   search: SearchIcon,
+  'select-structure': SelectStructureIcon,
   'select-fragment': SelectFragmentIcon,
   'select-lasso': SelectLassoIcon,
   'select-rectangle': SelectRectangleIcon,
@@ -452,6 +478,8 @@ export const iconNameToIcon = {
   phosphate: Phosphate,
   preset: Preset,
   nucleotide: Nucleotide,
+  peptide: Peptide,
+  chem: Chem,
   'edit-filled': EditFilled,
   'vertical-dots': VerticalDots,
   expand: ExpandIcon,
@@ -462,4 +490,16 @@ export const iconNameToIcon = {
   'sequence-layout-mode': SequenceLayoutIcon,
   questionMark: QuestionMark,
   'no-highlight-cross': CrossIcon,
+  arrowsUpDown: ArrowsUpDownIcon,
+  plus: PlusIcon,
+  antisenseStrand: AntisenseStrandIcon,
+  antisenseRnaStrand: AntisenseStrandIcon,
+  antisenseDnaStrand: AntisenseStrandIcon,
+  'arrange-ring': ArrangeRingIcon,
+  'monomer-autochain': MonomerAutochainIcon,
+  [CREATE_MONOMER_TOOL_NAME]: CreateMonomerIcon,
+  checkFilled: CheckFilledIcon,
+  warningFilled: WarningFilledIcon,
+  leavingGroup: LeavingGroup,
+  connectionPoint: ConnectionPoint,
 } as const;

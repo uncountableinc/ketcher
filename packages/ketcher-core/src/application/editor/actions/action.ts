@@ -22,7 +22,7 @@ import { ReStruct } from '../../render';
 export class Action {
   operations: BaseOperation[];
 
-  constructor(operations = []) {
+  constructor(operations: BaseOperation[] = []) {
     this.operations = operations;
   }
 
@@ -39,7 +39,7 @@ export class Action {
     return this;
   }
 
-  // Perform action and return inverted one
+  /** Perform action and return inverted one */
   perform(restruct: ReStruct): Action {
     const action = new Action();
     const sortedOperations = [...this.operations].sort(

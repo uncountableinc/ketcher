@@ -1,15 +1,18 @@
 import { Selection } from 'd3';
 import { Peptide } from 'domain/entities/Peptide';
 import { BaseMonomerRenderer } from 'application/render/renderers/BaseMonomerRenderer';
-import { MONOMER_SYMBOLS_IDS } from 'application/render/renderers/constants';
+import {
+  MONOMER_SYMBOLS_IDS,
+  UNRESOLVED_MONOMER_COLOR,
+} from 'application/render/renderers/constants';
 import { KetMonomerClass } from 'application/formatters';
 
-const PEPTIDE_SELECTED_ELEMENT_ID =
-  MONOMER_SYMBOLS_IDS[KetMonomerClass.AminoAcid].selected;
 const PEPTIDE_HOVERED_ELEMENT_ID =
   MONOMER_SYMBOLS_IDS[KetMonomerClass.AminoAcid].hover;
 const PEPTIDE_SYMBOL_ELEMENT_ID =
   MONOMER_SYMBOLS_IDS[KetMonomerClass.AminoAcid].body;
+const PEPTIDE_AUTOCHAIN_PREVIEW_ELEMENT_ID =
+  MONOMER_SYMBOLS_IDS[KetMonomerClass.AminoAcid].autochainPreview;
 
 export class PeptideRenderer extends BaseMonomerRenderer {
   public CHAIN_START_TERMINAL_INDICATOR_TEXT = 'N';
@@ -18,14 +21,17 @@ export class PeptideRenderer extends BaseMonomerRenderer {
   constructor(public monomer: Peptide, scale?: number) {
     super(
       monomer,
-      PEPTIDE_SELECTED_ELEMENT_ID,
       PEPTIDE_HOVERED_ELEMENT_ID,
       PEPTIDE_SYMBOL_ELEMENT_ID,
+      PEPTIDE_AUTOCHAIN_PREVIEW_ELEMENT_ID,
       scale,
     );
   }
 
   protected get modificationConfig() {
+    if (this.monomer.monomerItem.props.unresolved) {
+      return undefined;
+    }
     return { backgroundId: '#modified-background', requiresFill: true };
   }
 
@@ -33,16 +39,31 @@ export class PeptideRenderer extends BaseMonomerRenderer {
     rootElement: Selection<SVGGElement, void, HTMLElement, never>,
     theme,
   ) {
+    const isUnresolved = this.monomer.monomerItem.props.unresolved;
+    let color;
+    if (isUnresolved) {
+      color = UNRESOLVED_MONOMER_COLOR;
+    } else {
+      const isPeptide =
+        this.monomer.monomerItem.props?.MonomerType === 'PEPTIDE';
+      color = isPeptide
+        ? this.getPeptideColor(theme)
+        : this.getMonomerColor(theme);
+    }
     return rootElement
       .append('use')
       .data([this])
       .attr('href', PEPTIDE_SYMBOL_ELEMENT_ID)
-      .attr('fill', this.getPeptideColor(theme));
+      .attr('fill', color);
   }
 
   public get textColor() {
     const LIGHT_COLOR = 'white';
     const DARK_COLOR = '#333333';
+
+    if (this.monomer.monomerItem.props.unresolved) {
+      return LIGHT_COLOR;
+    }
 
     const peptideColorsMap: { [key: string]: string } = {
       D: DARK_COLOR,

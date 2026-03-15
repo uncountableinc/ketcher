@@ -16,8 +16,6 @@
 import { IKetMacromoleculesContent } from 'ketcher-core';
 
 // TODO add typings for Indigo standalone object
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type IndigoStandalone = any;
 
 export const enum Command {
   Info,
@@ -33,6 +31,7 @@ export const enum Command {
   GenerateImageAsBase64,
   GetInChIKey,
   ExplicitHydrogens,
+  CalculateMacromoleculeProperties,
 }
 
 export const enum WorkerEvent {
@@ -49,6 +48,7 @@ export const enum WorkerEvent {
   GenerateImageAsBase64 = 'generateImageAsBase64',
   GetInChIKey = 'getInChIKey',
   ExplicitHydrogens = 'convert_explicit_hydrogens',
+  CalculateMacromoleculeProperties = 'calculateMacroProperties',
 }
 
 export enum SupportedFormat {
@@ -68,8 +68,10 @@ export enum SupportedFormat {
   SEQUENCE = 'sequence',
   SEQUENCE_3_LETTER = 'peptide-sequence-3-letter',
   IDT = 'idt',
+  AXOLABS = 'axo-labs',
   HELM = 'helm',
   RDF = 'rdf',
+  MonomerLibrary = 'monomer-library',
 }
 
 export interface WithStruct {
@@ -168,6 +170,10 @@ export interface ExplicitHydrogensCommandData
     WithFormat {
   mode: 'auto' | 'fold' | 'unfold';
 }
+
+export interface CalculateMacromoleculePropertiesCommandData
+  extends CommandData,
+    WithStruct {}
 
 interface OutputMessageBase {
   type?: Command;

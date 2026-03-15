@@ -25,14 +25,14 @@ import {
   MonomerOrAmbiguousType,
 } from 'ketcher-core';
 import { useAppDispatch, useAppSelector } from 'hooks';
-import { selectEditor, selectTool, showPreview } from 'state/common';
+import { selectEditor, showPreview } from 'state/common';
 import { selectGroupItemValidations } from 'state/rna-builder';
 import { PreviewStyle, PreviewType } from 'state';
 import {
   calculateAmbiguousMonomerPreviewTop,
   calculateMonomerPreviewTop,
 } from 'ketcher-react';
-import { MONOMER_LIBRARY_PEPTIDES } from 'src/constants';
+import { needSkipPreviewForElement } from 'components/preview/helpers';
 
 const MonomerGroup = ({
   items,
@@ -46,7 +46,6 @@ const MonomerGroup = ({
   const dispatch = useAppDispatch();
   const editor = useAppSelector(selectEditor);
   const activeGroupItemValidations = useAppSelector(selectGroupItemValidations);
-  const isPeptideTab = libraryName === MONOMER_LIBRARY_PEPTIDES;
   const isMonomerDisabled = (monomer: MonomerOrAmbiguousType) => {
     let monomerDisabled = false;
     if (isAmbiguousMonomerLibraryItem(monomer)) {
@@ -59,8 +58,8 @@ const MonomerGroup = ({
       const monomerValidations =
         activeGroupItemValidations[`${monomer.props?.MonomerClass}s`];
       if (monomerValidations?.length > 0 && monomer.props?.MonomerCaps) {
-        for (let i = 0; i < monomerValidations.length; i++) {
-          if (!(monomerValidations[i] in monomer.props.MonomerCaps)) {
+        for (const monomerValidation of monomerValidations) {
+          if (!(monomerValidation in monomer.props.MonomerCaps)) {
             monomerDisabled = true;
           }
         }
@@ -89,6 +88,11 @@ const MonomerGroup = ({
     e: React.MouseEvent<HTMLDivElement, MouseEvent>,
   ) => {
     handleItemMouseLeave();
+
+    if (needSkipPreviewForElement(e.target as HTMLElement)) {
+      return;
+    }
+
     const cardCoordinates = e.currentTarget.getBoundingClientRect();
     let style: PreviewStyle;
     let previewType: PreviewType;
@@ -117,10 +121,8 @@ const MonomerGroup = ({
   };
 
   const selectMonomer = (monomer: MonomerOrAmbiguousType) => {
-    dispatch(selectTool('monomer'));
-
     if (['FAVORITES', 'PEPTIDE', 'CHEM'].includes(libraryName ?? '')) {
-      editor.events.selectMonomer.dispatch(monomer);
+      editor?.events.selectMonomer.dispatch(monomer);
     }
 
     onItemClick(monomer);
@@ -129,6 +131,11 @@ const MonomerGroup = ({
   const isMonomerSelected = (monomer: MonomerOrAmbiguousType) => {
     return selectedMonomerUniqueKey === getMonomerUniqueKey(monomer);
   };
+
+  // Don't render the group if there are no items
+  if (!items || items.length === 0) {
+    return null;
+  }
 
   return (
     <GroupContainerColumn>
@@ -143,7 +150,6 @@ const MonomerGroup = ({
               groupName={groupName}
               isSelected={isMonomerSelected(monomer)}
               onMouseLeave={handleItemMouseLeave}
-              isPeptideTab={isPeptideTab}
               onMouseMove={(e) => handleItemMouseMove(monomer, e)}
               onClick={() => selectMonomer(monomer)}
             />

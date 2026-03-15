@@ -5,13 +5,89 @@ import ZoomTool from 'application/editor/tools/Zoom';
 import { SequenceType } from 'domain/entities/monomer-chains/types';
 import { ToolName } from 'application/editor/tools/types';
 
-export let editorEvents;
+export interface IEditorEvents {
+  selectMonomer: Subscription;
+  selectPreset: Subscription;
+  selectTool: Subscription;
+  selectSelectionTool: Subscription;
+  createBondViaModal: Subscription;
+  cancelBondCreationViaModal: Subscription;
+  selectMode: Subscription;
+  layoutModeChange: Subscription;
+  selectHistory: Subscription;
+  error: Subscription;
+  openErrorModal: Subscription;
+  openMonomerConnectionModal: Subscription;
+  mouseOverPolymerBond: Subscription;
+  mouseLeavePolymerBond: Subscription;
+  mouseOnMovePolymerBond: Subscription;
+  mouseOverMonomer: Subscription;
+  mouseOnMoveMonomer: Subscription;
+  mouseLeaveMonomer: Subscription;
+  mouseOverAttachmentPoint: Subscription;
+  mouseMoveAttachmentPoint: Subscription;
+  mouseLeaveAttachmentPoint: Subscription;
+  mouseUpAttachmentPoint: Subscription;
+  mouseDownAttachmentPoint: Subscription;
+  mouseOverDrawingEntity: Subscription;
+  mouseLeaveDrawingEntity: Subscription;
+  mouseUpMonomer: Subscription;
+  rightClickSequence: Subscription;
+  rightClickCanvas: Subscription;
+  rightClickPolymerBond: Subscription;
+  rightClickSelectedMonomers: Subscription;
+  keyDown: Subscription;
+  editSequence: Subscription;
+  startNewSequence: Subscription;
+  establishHydrogenBond: Subscription;
+  deleteHydrogenBond: Subscription;
+  turnOnSequenceEditInRNABuilderMode: Subscription;
+  turnOffSequenceEditInRNABuilderMode: Subscription;
+  modifySequenceInRnaBuilder: Subscription;
+  mouseOverSequenceItem: Subscription;
+  mouseOnMoveSequenceItem: Subscription;
+  mouseLeaveSequenceItem: Subscription;
+  changeSequenceTypeEnterMode: Subscription;
+  toggleSequenceEditMode: Subscription;
+  toggleSequenceEditInRNABuilderMode: Subscription;
+  toggleIsSequenceSyncEditMode: Subscription;
+  resetSequenceEditMode: Subscription;
+  clickOnSequenceItem: Subscription;
+  mousedownBetweenSequenceItems: Subscription;
+  mouseDownOnSequenceItem: Subscription;
+  doubleClickOnSequenceItem: Subscription;
+  openConfirmationDialog: Subscription;
+  mouseUpAtom: Subscription;
+  updateMonomersLibrary: Subscription;
+  createAntisenseChain: Subscription;
+  copySelectedStructure: Subscription;
+  pasteFromClipboard: Subscription;
+  deleteSelectedStructure: Subscription;
+  selectEntities: Subscription;
+  toggleMacromoleculesPropertiesVisibility: Subscription;
+  modifyAminoAcids: Subscription;
+  setEditorLineLength: Subscription;
+  toggleLineLengthHighlighting: Subscription;
+  setLibraryItemDragState: Subscription;
+  placeLibraryItemOnCanvas: Subscription;
+  autochain: Subscription;
+  previewAutochain: Subscription;
+  removeAutochainPreview: Subscription;
+  switchToMacromoleculesMode: Subscription;
+  switchToMoleculesMode: Subscription;
+  layoutCircular: Subscription;
+  flipHorizontal: Subscription;
+  flipVertical: Subscription;
+}
+
+export let editorEvents: IEditorEvents;
 
 export function resetEditorEvents() {
   editorEvents = {
     selectMonomer: new Subscription(),
     selectPreset: new Subscription(),
     selectTool: new Subscription(),
+    selectSelectionTool: new Subscription(),
     createBondViaModal: new Subscription(),
     cancelBondCreationViaModal: new Subscription(),
     selectMode: new Subscription(),
@@ -27,6 +103,7 @@ export function resetEditorEvents() {
     mouseOnMoveMonomer: new Subscription(),
     mouseLeaveMonomer: new Subscription(),
     mouseOverAttachmentPoint: new Subscription(),
+    mouseMoveAttachmentPoint: new Subscription(),
     mouseLeaveAttachmentPoint: new Subscription(),
     mouseUpAttachmentPoint: new Subscription(),
     mouseDownAttachmentPoint: new Subscription(),
@@ -37,8 +114,11 @@ export function resetEditorEvents() {
     rightClickCanvas: new Subscription(),
     rightClickPolymerBond: new Subscription(),
     rightClickSelectedMonomers: new Subscription(),
+    keyDown: new Subscription(),
     editSequence: new Subscription(),
     startNewSequence: new Subscription(),
+    establishHydrogenBond: new Subscription(),
+    deleteHydrogenBond: new Subscription(),
     turnOnSequenceEditInRNABuilderMode: new Subscription(),
     turnOffSequenceEditInRNABuilderMode: new Subscription(),
     modifySequenceInRnaBuilder: new Subscription(),
@@ -48,6 +128,8 @@ export function resetEditorEvents() {
     changeSequenceTypeEnterMode: new Subscription(),
     toggleSequenceEditMode: new Subscription(),
     toggleSequenceEditInRNABuilderMode: new Subscription(),
+    toggleIsSequenceSyncEditMode: new Subscription(),
+    resetSequenceEditMode: new Subscription(),
     clickOnSequenceItem: new Subscription(),
     mousedownBetweenSequenceItems: new Subscription(),
     mouseDownOnSequenceItem: new Subscription(),
@@ -57,7 +139,23 @@ export function resetEditorEvents() {
     updateMonomersLibrary: new Subscription(),
     createAntisenseChain: new Subscription(),
     copySelectedStructure: new Subscription(),
+    pasteFromClipboard: new Subscription(),
     deleteSelectedStructure: new Subscription(),
+    selectEntities: new Subscription(),
+    toggleMacromoleculesPropertiesVisibility: new Subscription(),
+    modifyAminoAcids: new Subscription(),
+    setEditorLineLength: new Subscription(),
+    toggleLineLengthHighlighting: new Subscription(),
+    setLibraryItemDragState: new Subscription(),
+    placeLibraryItemOnCanvas: new Subscription(),
+    autochain: new Subscription(),
+    previewAutochain: new Subscription(),
+    removeAutochainPreview: new Subscription(),
+    switchToMacromoleculesMode: new Subscription(),
+    switchToMoleculesMode: new Subscription(),
+    layoutCircular: new Subscription(),
+    flipHorizontal: new Subscription(),
+    flipVertical: new Subscription(),
   };
 }
 resetEditorEvents();
@@ -95,7 +193,20 @@ export const renderersEvents: ToolEventHandlerName[] = [
   'mouseDownOnSequenceItem',
   'doubleClickOnSequenceItem',
   'mouseUpAtom',
+  'selectEntities',
 ];
+
+const selectTools = [
+  ToolName.selectRectangle,
+  ToolName.selectLasso,
+  ToolName.selectStructure,
+];
+let currentSelectToolIdx = 0;
+
+// Bond tools require toolName in options to select the bond type.
+const selectBondTool = (editor: CoreEditor, toolName: ToolName) => {
+  editor.events.selectTool.dispatch([toolName, { toolName }]);
+};
 
 export const hotkeysConfiguration = {
   RNASequenceType: {
@@ -117,9 +228,19 @@ export const hotkeysConfiguration = {
     },
   },
   exit: {
-    shortcut: ['Shift+Tab', 'Escape'],
+    shortcut: ['Escape'],
     handler: (editor: CoreEditor) => {
-      editor.events.selectTool.dispatch(ToolName.selectRectangle);
+      currentSelectToolIdx = 0;
+      editor.events.selectSelectionTool.dispatch();
+      editor.cancelLibraryItemDrag();
+    },
+  },
+  switchSelectTool: {
+    shortcut: ['Shift+Tab'],
+    handler: (editor: CoreEditor) => {
+      currentSelectToolIdx = (currentSelectToolIdx + 1) % selectTools.length;
+      editor.events.selectTool.dispatch([selectTools[currentSelectToolIdx]]);
+      editor.cancelLibraryItemDrag();
     },
   },
   undo: {
@@ -138,26 +259,46 @@ export const hotkeysConfiguration = {
     shortcut: ['Delete', 'Backspace'],
     handler: (editor: CoreEditor) => {
       // TODO create an ability to stop event propagation from mode event handlers to keyboard shortcuts handlers
-      if (editor.isSequenceEditMode) return;
-      editor.events.selectTool.dispatch(ToolName.erase);
-      editor.events.selectTool.dispatch(ToolName.selectRectangle);
+      // Sequence mode handles Delete/Backspace itself (even when not editing),
+      // so skip tool switching here.
+      if (editor.isSequenceMode) return;
+      const hasSelectedEntities =
+        editor.drawingEntitiesManager.selectedEntities.length > 0;
+      editor.events.selectTool.dispatch([ToolName.erase]);
+      if (hasSelectedEntities) {
+        editor.events.selectTool.dispatch([ToolName.selectRectangle]);
+      }
+    },
+  },
+  bondSingle: {
+    shortcut: '1',
+    handler: (editor: CoreEditor) => {
+      if (editor.isSequenceMode) return;
+      selectBondTool(editor, ToolName.bondSingle);
+    },
+  },
+  bondHydrogen: {
+    shortcut: '2',
+    handler: (editor: CoreEditor) => {
+      if (editor.isSequenceMode) return;
+      selectBondTool(editor, ToolName.bondHydrogen);
     },
   },
   clear: {
     shortcut: ['Mod+Delete', 'Mod+Backspace'],
     handler: (editor: CoreEditor) => {
-      editor.events.selectTool.dispatch(ToolName.clear);
-      editor.events.selectTool.dispatch(ToolName.selectRectangle);
+      editor.events.selectTool.dispatch([ToolName.clear]);
+      editor.events.selectTool.dispatch([ToolName.selectRectangle]);
     },
   },
   'zoom-plus': {
-    shortcut: 'Mod+=',
+    shortcut: ['Mod+Equal', 'Mod+NumpadAdd'],
     handler: () => {
       ZoomTool.instance.zoomIn();
     },
   },
   'zoom-minus': {
-    shortcut: 'Mod+-',
+    shortcut: ['Mod+Minus', 'Mod+NumpadSubtract'],
     handler: () => {
       ZoomTool.instance.zoomOut();
     },
@@ -179,7 +320,37 @@ export const hotkeysConfiguration = {
   hand: {
     shortcut: 'Mod+Alt+h',
     handler: (editor: CoreEditor) => {
-      editor.events.selectTool.dispatch(ToolName.hand);
+      editor.events.selectTool.dispatch([ToolName.hand]);
+    },
+  },
+  'hide-scrollbars': {
+    shortcut: 'Mod+b',
+    handler: () => {
+      ZoomTool.instance.drawScrollBars(true);
+    },
+  },
+  createRnaAntisenseStrand: {
+    shortcut: ['Shift+Alt+r'],
+    handler: (editor: CoreEditor) => {
+      editor.events.createAntisenseChain.dispatch(false);
+    },
+  },
+  createDnaAntisenseStrand: {
+    shortcut: ['Shift+Alt+d'],
+    handler: (editor: CoreEditor) => {
+      editor.events.createAntisenseChain.dispatch(true);
+    },
+  },
+  toggleMacromoleculesPropertiesVisibility: {
+    shortcut: 'Alt+c',
+    handler: (editor: CoreEditor) => {
+      editor.events.toggleMacromoleculesPropertiesVisibility.dispatch();
+    },
+  },
+  arrangeRing: {
+    shortcut: ['Shift+Alt+c'],
+    handler: (editor: CoreEditor) => {
+      editor.events.layoutCircular.dispatch();
     },
   },
 };

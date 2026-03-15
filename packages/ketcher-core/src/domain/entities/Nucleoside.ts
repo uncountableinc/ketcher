@@ -17,14 +17,17 @@ import { BaseMonomer } from 'domain/entities/BaseMonomer';
 import { AmbiguousMonomer } from 'domain/entities/AmbiguousMonomer';
 import { SugarRenderer } from 'application/render';
 import { RNA_DNA_NON_MODIFIED_PART } from 'domain/constants/monomers';
-import { CELL_WIDTH } from './DrawingEntitiesManager';
 import { KetMonomerClass } from 'application/formatters';
+import { SnakeLayoutCellWidth } from 'domain/constants';
 
 export class Nucleoside {
+  private readonly monomersCache: BaseMonomer[] = [];
   constructor(
-    public sugar: Sugar,
-    public rnaBase: RNABase | AmbiguousMonomer,
-  ) {}
+    public readonly sugar: Sugar,
+    public readonly rnaBase: RNABase | AmbiguousMonomer,
+  ) {
+    this.monomersCache = [sugar, rnaBase];
+  }
 
   static fromSugar(sugar: Sugar, needValidation = true) {
     if (needValidation) {
@@ -47,10 +50,12 @@ export class Nucleoside {
     isAntisense = false,
   ) {
     const editor = CoreEditor.provideEditorInstance();
+    const isDnaSugar = sugarName === RNA_DNA_NON_MODIFIED_PART.SUGAR_DNA;
     const rnaBaseLibraryItem = getRnaPartLibraryItem(
       editor,
       rnaBaseName,
       KetMonomerClass.Base,
+      isDnaSugar,
     );
     const sugarLibraryItem = getRnaPartLibraryItem(
       editor,
@@ -64,7 +69,7 @@ export class Nucleoside {
     const topLeftItemPosition = position;
     const bottomItemPosition = position.add(
       Coordinates.canvasToModel(
-        new Vec2(0, CELL_WIDTH + SugarRenderer.monomerSize.height),
+        new Vec2(0, SnakeLayoutCellWidth + SugarRenderer.monomerSize.height),
       ),
     );
     const modelChanges = new Command();
@@ -110,7 +115,7 @@ export class Nucleoside {
   }
 
   public get monomers(): BaseMonomer[] {
-    return [this.sugar, this.rnaBase];
+    return this.monomersCache;
   }
 
   public get firstMonomerInNode() {

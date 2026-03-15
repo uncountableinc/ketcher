@@ -24,7 +24,6 @@ import {
   selectMonomerGroups,
   selectMonomersInCategory,
   selectMonomersInFavorites,
-  getMonomerUniqueKey,
   selectAmbiguousMonomersInCategory,
   selectAmbiguousMonomersInFavorites,
 } from 'state/library';
@@ -33,7 +32,7 @@ import {
   MONOMER_LIBRARY_PEPTIDES,
   MonomerGroups,
 } from '../../../constants';
-import { MonomerItemType, MonomerOrAmbiguousType } from 'ketcher-core';
+import { MonomerItemType } from 'ketcher-core';
 import { selectEditorActiveTool } from 'state/common';
 import {
   selectFilteredPresets,
@@ -79,9 +78,6 @@ const MonomerList = ({
     ? selectAmbiguousMonomersInFavorites(monomers)
     : selectAmbiguousMonomersInCategory(monomers, MonomerGroups.PEPTIDES);
   const [selectedMonomers, setSelectedMonomers] = useState('');
-  const selectMonomer = (monomer: MonomerOrAmbiguousType) => {
-    setSelectedMonomers(getMonomerUniqueKey(monomer));
-  };
 
   useEffect(() => {
     if (activeTool !== 'monomer') {
@@ -98,9 +94,8 @@ const MonomerList = ({
             key={groupTitle}
             title={groups.length === 1 ? undefined : groupTitle}
             items={groupItems}
-            isPeptideTab={true}
             libraryName={libraryName}
-            onItemClick={onItemClick || selectMonomer}
+            onItemClick={onItemClick}
             selectedMonomerUniqueKey={selectedMonomers}
           />
         );
@@ -124,9 +119,8 @@ const MonomerList = ({
                 title={group.groupTitle}
                 items={group.groupItems}
                 libraryName={libraryName}
-                onItemClick={onItemClick || selectMonomer}
+                onItemClick={onItemClick}
                 selectedMonomerUniqueKey={selectedMonomers}
-                isPeptideTab={libraryName === MONOMER_LIBRARY_PEPTIDES}
               />
             );
           })}

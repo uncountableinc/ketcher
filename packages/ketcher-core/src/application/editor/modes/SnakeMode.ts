@@ -7,6 +7,7 @@ import { Command } from 'domain/entities/Command';
 import { ReinitializeModeOperation } from 'application/editor/operations/modes';
 import { Vec2 } from 'domain/entities';
 import { RenderersManager } from 'application/render/renderers/RenderersManager';
+import { DrawingEntitiesManager } from 'domain/entities/DrawingEntitiesManager';
 
 export class SnakeMode extends BaseMode {
   constructor(previousMode?: LayoutMode) {
@@ -22,16 +23,16 @@ export class SnakeMode extends BaseMode {
     // we need just redraw canvas to apply new bond view style (straight instead of curved)
     const modelChanges = _isUndo
       ? new Command()
-      : editor.drawingEntitiesManager.applySnakeLayout(
-          editor.canvas.width.baseVal.value,
-          true,
-        );
+      : editor.drawingEntitiesManager.applySnakeLayout(true);
 
     editor.drawingEntitiesManager.applyFlexLayoutMode();
     command.merge(modelChanges);
     editor.renderersContainer.update(modelChanges);
     command.setUndoOperationReverse();
-    editor.scrollToTopLeftCorner();
+
+    if (editor.drawingEntitiesManager.hasMonomers) {
+      editor.scrollToTopLeftCorner();
+    }
 
     return command;
   }
@@ -67,9 +68,18 @@ export class SnakeMode extends BaseMode {
     }
   }
 
-  applyAdditionalPasteOperations() {
+  applyAdditionalPasteOperations(
+    mergedDrawingEntities: DrawingEntitiesManager,
+  ) {
     const command = new Command();
+    const editor = CoreEditor.provideEditorInstance();
+
     command.addOperation(new ReinitializeModeOperation());
+    command.merge(
+      editor.drawingEntitiesManager.selectDrawingEntities(
+        mergedDrawingEntities.allEntitiesArray,
+      ),
+    );
 
     return command;
   }

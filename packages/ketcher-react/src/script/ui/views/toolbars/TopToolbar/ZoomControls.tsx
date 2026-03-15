@@ -14,14 +14,14 @@
  * limitations under the License.
  ***************************************************************************/
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, RefObject } from 'react';
 import styled from '@emotion/styled';
 import { Button, Popover } from '@mui/material';
 
-import { zoomList } from 'src/script/ui/action/zoom';
+import { zoomList } from '../../../action/zoom';
 import { ZoomInput, updateInputString } from './ZoomInput';
 import { Icon } from 'components';
-import { KETCHER_ROOT_NODE_CSS_SELECTOR } from 'src/constants';
+import { KETCHER_ROOT_NODE_CSS_SELECTOR } from '../../../../../constants';
 
 const isFullScreen = () => {
   return !!(
@@ -88,7 +88,7 @@ const ShortcutLabel = styled('span')`
 `;
 
 const getIntegerFromString = (zoomInput: string | undefined): number => {
-  const zoomNumber = parseInt(zoomInput || '');
+  const zoomNumber = parseInt(zoomInput ?? '');
   if (isNaN(zoomNumber)) {
     return 0;
   }
@@ -167,7 +167,7 @@ export const ZoomControls = ({
 
   return (
     <ElementAndDropdown ref={containerRef}>
-      <DropDownButton onClick={onExpand}>
+      <DropDownButton onClick={onExpand} data-testid="zoom-selector">
         <ZoomLabel data-testid="zoom-input">
           {Math.round(currentZoom)}%
         </ZoomLabel>
@@ -192,7 +192,7 @@ export const ZoomControls = ({
         <DropDownContent>
           <ZoomInput
             onZoomSubmit={onZoomSubmit}
-            inputRef={inputRef}
+            inputRef={inputRef as RefObject<HTMLInputElement>}
             currentZoom={currentZoom}
             shortcuts={shortcuts}
           />

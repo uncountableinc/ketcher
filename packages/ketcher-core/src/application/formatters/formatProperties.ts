@@ -138,6 +138,12 @@ const formatProperties: FormatPropertiesMap = {
     ['.idt'],
     false,
   ),
+  axoLabs: new SupportedFormatProperties(
+    'AxoLabs',
+    ChemicalMimeType.AXOLABS,
+    ['.axolabs'],
+    true,
+  ),
   helm: new SupportedFormatProperties(
     'HELM',
     ChemicalMimeType.HELM,
@@ -146,6 +152,13 @@ const formatProperties: FormatPropertiesMap = {
   ),
   sequence: new SupportedFormatProperties(
     'SEQUENCE',
+    ChemicalMimeType.SEQUENCE,
+    ['.seq'],
+    false,
+    {},
+  ),
+  'sequence-3-letter': new SupportedFormatProperties(
+    'SEQUENCE (3-letter code)',
     ChemicalMimeType.SEQUENCE,
     ['.seq'],
     false,

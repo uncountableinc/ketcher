@@ -363,7 +363,7 @@ const sgroup = {
         type: { enum: ['COP'] },
         subtype: {
           title: 'Subtype',
-          enum: ['', 'RAN', 'BLO', 'ALT'],
+          enum: [null, 'ran', 'blo', 'alt'],
           enumNames: ['Not Specified', 'Random', 'Block', 'Alternating'],
         },
         connectivity: {
@@ -445,6 +445,21 @@ const sgroup = {
       properties: {
         type: { enum: ['queryComponent'] },
       },
+    },
+    {
+      key: 'nucleotideComponent',
+      title: 'Nucleotide Component',
+      type: 'object',
+      properties: {
+        type: { enum: ['nucleotideComponent'] },
+        class: {
+          title: 'Component',
+          enum: ['SUGAR', 'BASE', 'PHOSPHATE'],
+          enumNames: ['Sugar', 'Base', 'Phosphate'],
+          default: 'Sugar',
+        },
+      },
+      required: ['class'],
     },
   ],
 };
