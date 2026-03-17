@@ -51,12 +51,12 @@ const App = () => {
           staticResourcesUrl={process.env.PUBLIC_URL}
           structServiceProvider={structServiceProvider}
           onInit={(ketcher: Ketcher) => {
+            window.ketcher = ketcher;
             ketcher.editor.setOptions(
               JSON.stringify({
                 externalZoomScale: EXTERNAL_ZOOM_SCALE,
               }),
             );
-            window.ketcher = ketcher;
             safePostMessage({
               eventType: 'init',
             });
