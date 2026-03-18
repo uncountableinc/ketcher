@@ -1,3 +1,19 @@
+/****************************************************************************
+ * Copyright 2021 EPAM Systems
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ***************************************************************************/
+
 import {
   AmbiguousMonomerRenderer,
   BaseMonomerRenderer,
@@ -23,24 +39,12 @@ import {
 import { KetMonomerClass } from 'application/formatters/types/ket';
 import { isAmbiguousMonomerLibraryItem } from 'domain/helpers/monomers';
 import {
+  MONOMER_CONST,
   rnaDnaNaturalAnalogues,
   unknownNaturalAnalogues,
 } from 'domain/constants/monomers';
 
 type DerivedClass<T> = new (...args: unknown[]) => T;
-export const MONOMER_CONST = {
-  AMINO_ACID: 'AminoAcid',
-  PEPTIDE: 'PEPTIDE',
-  CHEM: 'CHEM',
-  RNA: 'RNA',
-  DNA: 'DNA',
-  MODDNA: 'MODDNA',
-  R: 'R', // states for Ribose
-  P: 'P', // states for Phosphate
-  SUGAR: 'SUGAR',
-  BASE: 'BASE',
-  PHOSPHATE: 'PHOSPHATE',
-};
 
 type Monomer =
   | typeof Chem
@@ -64,10 +68,6 @@ export const monomerFactory = (
     Monomer = AmbiguousMonomer;
     MonomerRenderer = AmbiguousMonomerRenderer;
     ketMonomerClass = AmbiguousMonomer.getMonomerClass(monomer.monomers);
-  } else if (monomer.props.unresolved) {
-    Monomer = UnresolvedMonomer;
-    MonomerRenderer = UnresolvedMonomerRenderer;
-    ketMonomerClass = KetMonomerClass.CHEM;
   } else if (
     monomer.props.MonomerClass === KetMonomerClass.RNA ||
     monomer.props.MonomerClass === KetMonomerClass.DNA
@@ -108,6 +108,10 @@ export const monomerFactory = (
     Monomer = RNABase;
     MonomerRenderer = RNABaseRenderer;
     ketMonomerClass = KetMonomerClass.Base;
+  } else if (monomer.props.unresolved) {
+    Monomer = UnresolvedMonomer;
+    MonomerRenderer = UnresolvedMonomerRenderer;
+    ketMonomerClass = KetMonomerClass.CHEM;
   } else {
     Monomer = Chem;
     MonomerRenderer = ChemRenderer;

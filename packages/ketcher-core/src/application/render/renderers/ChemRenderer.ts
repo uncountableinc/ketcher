@@ -5,17 +5,18 @@ import { MONOMER_SYMBOLS_IDS } from 'application/render/renderers/constants';
 import { KetMonomerClass } from 'application/formatters';
 import { isMonomerSgroupWithAttachmentPoints } from '../../../utilities/monomers';
 
-const CHEM_SELECTED_ELEMENT_ID =
-  MONOMER_SYMBOLS_IDS[KetMonomerClass.CHEM].selected;
+const CHEM_HOVERED_ELEMENT_ID = MONOMER_SYMBOLS_IDS[KetMonomerClass.CHEM].hover;
 const CHEM_SYMBOL_ELEMENT_ID = MONOMER_SYMBOLS_IDS[KetMonomerClass.CHEM].body;
+const CHEM_AUTOCHAIN_PREVIEW_ELEMENT_ID =
+  MONOMER_SYMBOLS_IDS[KetMonomerClass.CHEM].autochainPreview;
 
 export class ChemRenderer extends BaseMonomerRenderer {
   constructor(public monomer: Chem, scale?: number) {
     super(
       monomer,
-      CHEM_SELECTED_ELEMENT_ID,
-      CHEM_SELECTED_ELEMENT_ID,
+      CHEM_HOVERED_ELEMENT_ID,
       CHEM_SYMBOL_ELEMENT_ID,
+      CHEM_AUTOCHAIN_PREVIEW_ELEMENT_ID,
       scale,
     );
   }
@@ -28,6 +29,7 @@ export class ChemRenderer extends BaseMonomerRenderer {
       .append('use')
       .data([this])
       .attr('href', CHEM_SYMBOL_ELEMENT_ID)
+      .attr('fill', '#F5F6F7')
       .attr('stroke', theme.monomer.color.CHEM.regular);
   }
 

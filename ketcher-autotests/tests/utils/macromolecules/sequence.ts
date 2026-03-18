@@ -1,81 +1,6 @@
 /* eslint-disable no-magic-numbers */
 import { Locator, Page } from '@playwright/test';
-import { moveMouseAway } from '@utils';
-
-export async function clickOnSequenceSymbol(
-  page: Page,
-  symbolText: string,
-  clickOptions?: { button?: 'right' | 'left'; nthNumber?: number },
-) {
-  const symbolLocator = getSequenceSymbolLocator(
-    page,
-    symbolText,
-    clickOptions?.nthNumber,
-  );
-  await symbolLocator.hover();
-  await symbolLocator.click(clickOptions);
-}
-
-export async function doubleClickOnSequenceSymbol(
-  page: Page,
-  symbolText: string,
-  clickOptions?: { button?: 'right' | 'left'; nthNumber?: number },
-) {
-  const symbolLocator = getSequenceSymbolLocator(
-    page,
-    symbolText,
-    clickOptions?.nthNumber,
-  );
-  await symbolLocator.hover();
-  await symbolLocator.dblclick(clickOptions);
-}
-
-export async function hoverOnSequenceSymbol(
-  page: Page,
-  symbolText: string,
-  nthNumber?: number,
-) {
-  const symbolLocator = getSequenceSymbolLocator(page, symbolText, nthNumber);
-  await symbolLocator.hover();
-}
-
-export async function clickOnSequenceSymbolByIndex(
-  page: Page,
-  symbolIndex: number,
-) {
-  const symbolLocator = page
-    .getByTestId('sequence-item')
-    .nth(symbolIndex)
-    .locator('> text')
-    .first();
-  await symbolLocator.hover();
-  await symbolLocator.click();
-}
-
-export async function doubleClickOnSequenceSymbolByIndex(
-  page: Page,
-  symbolIndex: number,
-) {
-  const symbolLocator = page
-    .getByTestId('sequence-item')
-    .nth(symbolIndex)
-    .locator('> text')
-    .first();
-  await symbolLocator.hover();
-  await symbolLocator.dblclick();
-}
-
-export function getSequenceSymbolLocator(
-  page: Page,
-  symbolText: string,
-  nthNumber = 0,
-) {
-  return page
-    .getByTestId('ketcher-canvas')
-    .getByText(symbolText)
-    .nth(nthNumber)
-    .locator('..');
-}
+import { moveMouseAway } from '../moveMouseAway';
 
 export async function selectSequenceRangeInEditMode(
   page: Page,
@@ -94,16 +19,4 @@ export async function selectSequenceRangeInEditMode(
 
   await page.mouse.up();
   await moveMouseAway(page);
-}
-
-export async function pressCancelInConfirmYourActionDialog(page: Page) {
-  await page.getByRole('button', { name: 'Cancel' }).click();
-}
-
-export async function pressYesInConfirmYourActionDialog(page: Page) {
-  await page.getByRole('button', { name: 'Yes' }).click();
-}
-
-export async function CloseConfirmYourActionDialog(page: Page) {
-  await page.getByRole('button', { name: 'Close window' }).click();
 }

@@ -39,12 +39,7 @@ import { fromAtomsFragmentAttr } from './atom';
 import { getRelSGroupsBySelection } from './utils';
 import { IMAGE_KEY, MULTITAIL_ARROW_KEY } from 'domain/constants';
 
-export function fromMultipleMove(
-  restruct,
-  lists,
-  d: Vec2,
-  shouldPerform = true,
-) {
+export function fromMultipleMove(restruct, lists, d: Vec2) {
   d = new Vec2(d);
 
   const action = new Action();
@@ -81,7 +76,8 @@ export function fromMultipleMove(
     });
 
     loops.forEach((loopId) => {
-      if (restruct.reloops.get(loopId) && restruct.reloops.get(loopId).visel) {
+      const loop = restruct.reloops.get(loopId);
+      if (loop?.visel) {
         // hack
         action.addOp(new LoopMove(loopId, d));
       }
@@ -91,7 +87,7 @@ export function fromMultipleMove(
       action.addOp(new AtomMove(aid, d, !atomsToInvalidate.has(aid)));
     });
 
-    if (lists.sgroupData && lists.sgroupData.length === 0) {
+    if (lists.sgroupData?.length === 0) {
       const sgroups = getRelSGroupsBySelection(struct, lists.atoms);
       sgroups.forEach((sg) => {
         action.addOp(new SGroupDataMove(sg.id, d));
@@ -147,7 +143,7 @@ export function fromMultipleMove(
     });
   }
 
-  return shouldPerform ? action.perform(restruct) : action;
+  return action.perform(restruct);
 }
 
 export function fromStereoFlagUpdate(restruct, frid, flag = null) {

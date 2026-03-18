@@ -14,6 +14,11 @@
  * limitations under the License.
  ***************************************************************************/
 
+import {
+  KETCHER_MACROMOLECULES_ROOT_NODE_SELECTOR,
+  EditorClassName,
+} from 'ketcher-core';
+
 export const ketcherInitEventName = (ketcherId?: string) =>
   ketcherId ? `ketcher-init-${ketcherId}` : 'ketcher-init';
 
@@ -32,8 +37,7 @@ export const KETCHER_ROOT_NODE_CSS_SELECTOR = `.${KETCHER_ROOT_NODE_CLASS_NAME}`
 export const ketcherIdCssSelector = (ketcherId: string) =>
   `.ketcher-id-${ketcherId}`;
 
-export const EditorClassName = 'Ketcher-polymer-editor-root';
-export const KETCHER_MACROMOLECULES_ROOT_NODE_SELECTOR = `.${EditorClassName}`;
+export { EditorClassName, KETCHER_MACROMOLECULES_ROOT_NODE_SELECTOR };
 export const STRUCT_SERVICE_NO_RENDER_INITIALIZED_EVENT =
   'struct-service-no-render-initialized';
 export const STRUCT_SERVICE_INITIALIZED_EVENT = 'struct-service-initialized';

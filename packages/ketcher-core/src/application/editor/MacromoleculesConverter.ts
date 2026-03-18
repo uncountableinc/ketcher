@@ -4,17 +4,27 @@ import {
   Bond,
   FunctionalGroup,
   Pile,
+  RxnArrow as MicromoleculesRxnArrow,
+  MultitailArrow as MicromoleculesMultitailArrow,
+  RxnPlus as MicromoleculesRxnPlus,
   SGroup,
   SGroupAttachmentPoint,
   Struct,
   Vec2,
 } from 'domain/entities';
 import { DrawingEntitiesManager } from 'domain/entities/DrawingEntitiesManager';
-import { ReAtom, ReBond, ReSGroup, ReStruct } from 'application/render';
+import {
+  ReAtom,
+  ReBond,
+  ReMultitailArrow,
+  ReRxnArrow,
+  ReRxnPlus,
+  ReSGroup,
+  ReStruct,
+} from 'application/render';
 import { BaseMonomer } from 'domain/entities/BaseMonomer';
 import { MonomerMicromolecule } from 'domain/entities/monomerMicromolecule';
 import { Command } from 'domain/entities/Command';
-import { MONOMER_CONST } from 'application/editor/operations/monomer/monomerFactory';
 import { PolymerBond } from 'domain/entities/PolymerBond';
 import assert from 'assert';
 import { AttachmentPointName } from 'domain/types';
@@ -30,10 +40,11 @@ import { Atom } from 'domain/entities/CoreAtom';
 import { AtomLabel } from 'domain/constants';
 import { isMonomerSgroupWithAttachmentPoints } from '../../utilities/monomers';
 import { HydrogenBond } from 'domain/entities/HydrogenBond';
-import { MACROMOLECULES_BOND_TYPES } from 'application/editor/tools/Bond';
+import { MONOMER_CONST } from 'domain/constants/monomers';
+import { MACROMOLECULES_BOND_TYPES } from 'application/editor/tools/types';
 
 export class MacromoleculesConverter {
-  private static convertMonomerToMonomerMicromolecule(
+  public static convertMonomerToMonomerMicromolecule(
     monomer: BaseMonomer,
     struct: Struct,
   ) {
@@ -44,7 +55,7 @@ export class MacromoleculesConverter {
     const sgroupId = struct.sgroups.add(monomerMicromolecule);
 
     monomerMicromolecule.data.name = monomer.monomerItem.label;
-    monomerMicromolecule.data.expanded = false;
+    monomerMicromolecule.data.expanded = monomer.monomerItem.expanded;
     monomerMicromolecule.id = sgroupId;
     monomerMicromolecule.pp = monomer.position;
 
@@ -70,6 +81,9 @@ export class MacromoleculesConverter {
   public static convertAttachmentPointNameToNumber(
     attachmentPointName: AttachmentPointName,
   ) {
+    if (attachmentPointName === 'hydrogen') {
+      return 0;
+    }
     return Number(attachmentPointName?.replace('R', ''));
   }
 
@@ -92,7 +106,9 @@ export class MacromoleculesConverter {
         attachmentPointName,
       );
     const attachmentPointIndex =
-      monomer.listOfAttachmentPoints.indexOf(attachmentPointName);
+      attachmentPointName === 'hydrogen'
+        ? 0
+        : monomer.listOfAttachmentPoints.indexOf(attachmentPointName);
     const attachmentPoint =
       monomer.monomerItem.attachmentPoints?.[attachmentPointIndex];
     const atomIdMap = monomerToAtomIdMap.get(monomer);
@@ -102,11 +118,37 @@ export class MacromoleculesConverter {
     return {
       globalAttachmentAtomId:
         isNumber(attachmentPointAtomId) &&
-        atomIdMap?.get(attachmentPointAtomId as number),
+        atomIdMap?.get(attachmentPointAtomId),
       attachmentAtomId:
         isNumber(attachmentPointAtomId) && attachmentPointAtomId,
       attachmentPointNumber,
     };
+  }
+
+  public static convertMonomerAttachmentPointsToSGroupAttachmentPoints(
+    monomer: BaseMonomer,
+    atomIdsMap?: Map<number, number>,
+  ) {
+    return monomer.listOfAttachmentPoints.map(
+      (attachmentPointName, attachmentPointIndex) => {
+        const attachmentPointNumber =
+          getAttachmentPointNumberFromLabel(attachmentPointName);
+        const attachmentPoint = monomer.monomerItem.attachmentPoints?.[
+          attachmentPointIndex
+        ] as IKetAttachmentPoint;
+
+        return new SGroupAttachmentPoint(
+          atomIdsMap
+            ? (atomIdsMap.get(attachmentPoint.attachmentAtom) as number)
+            : attachmentPoint.attachmentAtom,
+          atomIdsMap
+            ? atomIdsMap.get(attachmentPoint.leavingGroup?.atoms[0])
+            : attachmentPoint.leavingGroup?.atoms[0],
+          undefined,
+          attachmentPointNumber,
+        );
+      },
+    );
   }
 
   public static convertDrawingEntitiesToStruct(
@@ -115,10 +157,6 @@ export class MacromoleculesConverter {
     reStruct?: ReStruct,
   ) {
     const monomerToAtomIdMap = new Map<BaseMonomer, Map<number, number>>();
-    const monomerToMonomerMicromolecule = new Map<
-      BaseMonomer,
-      MonomerMicromolecule
-    >();
 
     drawingEntitiesManager.micromoleculesHiddenEntities.mergeInto(struct);
 
@@ -154,8 +192,6 @@ export class MacromoleculesConverter {
             ? monomer.monomers[0].monomerItem.struct.bonds
             : monomer.monomerItem.struct.bonds;
 
-        monomerToMonomerMicromolecule.set(monomer, monomerMicromolecule);
-
         monomerAtoms.forEach((oldAtom, oldAtomId) => {
           const { atom, atomId } = this.addMonomerAtomToStruct(
             oldAtom,
@@ -169,21 +205,9 @@ export class MacromoleculesConverter {
         });
 
         monomerMicromolecule.addAttachmentPoints(
-          monomer.listOfAttachmentPoints.map(
-            (attachmentPointName, attachmentPointIndex) => {
-              const attachmentPointNumber =
-                getAttachmentPointNumberFromLabel(attachmentPointName);
-              const attachmentPoint = monomer.monomerItem.attachmentPoints?.[
-                attachmentPointIndex
-              ] as IKetAttachmentPoint;
-
-              return new SGroupAttachmentPoint(
-                atomIdsMap.get(attachmentPoint.attachmentAtom) as number,
-                atomIdsMap.get(attachmentPoint.leavingGroup?.atoms[0]),
-                undefined,
-                attachmentPointNumber,
-              );
-            },
+          MacromoleculesConverter.convertMonomerAttachmentPointsToSGroupAttachmentPoints(
+            monomer,
+            atomIdsMap,
           ) || [],
           false,
         );
@@ -294,9 +318,41 @@ export class MacromoleculesConverter {
       reStruct?.bonds.set(bondId, new ReBond(bond));
     });
 
+    drawingEntitiesManager.rxnArrows.forEach((rxnArrow) => {
+      const micromoleculeRxnArrow = new MicromoleculesRxnArrow({
+        mode: rxnArrow.type,
+        pos: [rxnArrow.startPosition, rxnArrow.endPosition],
+        height: rxnArrow.height,
+        initiallySelected: rxnArrow.initiallySelected,
+      });
+      const arrowId = struct.rxnArrows.add(micromoleculeRxnArrow);
+      reStruct?.rxnArrows.set(arrowId, new ReRxnArrow(micromoleculeRxnArrow));
+    });
+
+    drawingEntitiesManager.multitailArrows.forEach((multitailArrow) => {
+      const micromoleculeMultitailArrow =
+        MicromoleculesMultitailArrow.fromKetNode(multitailArrow.toKetNode());
+      const arrowId = struct.multitailArrows.add(micromoleculeMultitailArrow);
+      reStruct?.multitailArrows.set(
+        arrowId,
+        new ReMultitailArrow(micromoleculeMultitailArrow),
+      );
+    });
+
+    drawingEntitiesManager.rxnPluses.forEach((rxnPlus) => {
+      const micromoleculeRxnPlus = new MicromoleculesRxnPlus({
+        pp: rxnPlus.position,
+        initiallySelected: rxnPlus.initiallySelected,
+      });
+      const rxnPlusId = struct.rxnPluses.add(micromoleculeRxnPlus);
+
+      reStruct?.rxnPluses.set(rxnPlusId, new ReRxnPlus(micromoleculeRxnPlus));
+    });
+
     struct.findConnectedComponents();
     struct.setImplicitHydrogen();
     struct.setStereoLabelsToAtoms();
+    struct.applyStereoBondsToExpandedMonomers();
     struct.markFragments();
 
     return { struct, reStruct, conversionErrorMessage };
@@ -457,9 +513,10 @@ export class MacromoleculesConverter {
       const atomsMap = new Map<number, Atom>();
 
       _fragment.forEach((fragmentId) => {
-        fragmentIdToMonomer.set(fragmentId as number, monomer);
+        fragmentIdToMonomer.set(fragmentId, monomer);
         fragmentIdToAtomIdMap.set(fragmentId, atomIdMap);
       });
+
       command.merge(monomerAddCommand);
 
       if (
@@ -478,6 +535,8 @@ export class MacromoleculesConverter {
               isotope: atom.isotope,
               radical: atom.radical,
               alias: atom.alias,
+              cip: atom.cip,
+              stereoLabel: atom.stereoLabel,
             },
           );
 
@@ -504,11 +563,11 @@ export class MacromoleculesConverter {
               bond.type,
               bond.stereo,
               bondId,
+              bond.cip,
             ),
           );
         });
       }
-
       fragmentNumber++;
     });
 
@@ -562,11 +621,11 @@ export class MacromoleculesConverter {
           atomIdInMicromolecules,
           globalAtomIdToMonomerMap.get(moleculeAtomId),
         );
+      const attachmentPointNumber =
+        bond.beginSuperatomAttachmentPointNumber ??
+        bond.endSuperatomAttachmentPointNumber;
 
-      if (
-        !atomToConnect ||
-        !isNumber(bond.beginSuperatomAttachmentPointNumber)
-      ) {
+      if (!atomToConnect || !isNumber(attachmentPointNumber)) {
         return;
       }
 
@@ -574,7 +633,7 @@ export class MacromoleculesConverter {
         drawingEntitiesManager.addMonomerToAtomBond(
           monomer,
           atomToConnect,
-          getAttachmentPointLabel(bond.beginSuperatomAttachmentPointNumber),
+          getAttachmentPointLabel(attachmentPointNumber),
         ),
       );
     });
@@ -671,7 +730,36 @@ export class MacromoleculesConverter {
       }
     });
 
+    // Arrows and pluses
+    struct.rxnArrows.forEach((rxnArrow) => {
+      const arrowAddCommand = drawingEntitiesManager.addRxnArrow(
+        rxnArrow.mode,
+        rxnArrow.pos as [Vec2, Vec2],
+        rxnArrow.height,
+        rxnArrow.initiallySelected,
+      );
+      command.merge(arrowAddCommand);
+    });
+
+    struct.multitailArrows.forEach((multitailArrow) => {
+      const arrowAddCommand = drawingEntitiesManager.addMultitailArrow(
+        multitailArrow.toKetNode(),
+      );
+
+      command.merge(arrowAddCommand);
+    });
+
+    struct.rxnPluses.forEach((rxnPlus) => {
+      const rxnPlusAddCommand = drawingEntitiesManager.addRxnPlus(
+        rxnPlus.pp,
+        rxnPlus.initiallySelected,
+      );
+
+      command.merge(rxnPlusAddCommand);
+    });
+
     drawingEntitiesManager.setMicromoleculesHiddenEntities(struct);
+    drawingEntitiesManager.detectBondsOverlappedByMonomers();
 
     if (editor) {
       editor.viewModel.initialize([...drawingEntitiesManager.bonds.values()]);

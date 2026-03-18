@@ -17,11 +17,10 @@
 import {
   Box2Abs,
   FunctionalGroup,
-  Pile,
   SGroup,
   Vec2,
-  Struct,
   MonomerMicromolecule,
+  SUPERATOM_CLASS,
 } from 'domain/entities';
 import { SgContexts } from 'application/editor/shared/constants';
 import ReDataSGroupData from './redatasgroupdata';
@@ -36,22 +35,61 @@ import { tfx } from 'utilities';
 import BracketParams from '../bracket-params';
 import { RaphaelPaper } from 'raphael';
 import { RenderOptions } from '../render.types';
+import paperjs from 'paper';
 interface SGroupdrawBracketsOptions {
   set: any;
   render: Render;
   sgroup: SGroup;
-  crossBonds: { [key: number]: Array<number> };
-  atomSet: Pile;
   bracketBox: Box2Abs;
   direction: Vec2;
   lowerIndexText?: string | null;
   upperIndexText?: string | null;
   indexAttribute?: object;
+  superatomClass?: SUPERATOM_CLASS;
+}
+
+export const SUPERATOM_CLASS_TEXT = {
+  [SUPERATOM_CLASS.BASE]: 'Base',
+  [SUPERATOM_CLASS.SUGAR]: 'Sugar',
+  [SUPERATOM_CLASS.PHOSPHATE]: 'Phosphate',
+};
+
+// Helper function to convert SVG elements into Paper.js paths
+export function paperPathFromSVGElement(element) {
+  const tagName = element.tagName;
+  let path;
+
+  if (tagName === 'circle') {
+    // Convert circle to Paper.js Path.Circle
+    const cx = parseFloat(element.getAttribute('cx'));
+    const cy = parseFloat(element.getAttribute('cy'));
+    const r = parseFloat(element.getAttribute('r'));
+    path = new paperjs.Path.Circle(new paperjs.Point(cx, cy), r);
+  } else if (tagName === 'rect') {
+    // Convert rectangle to Paper.js Path.Rectangle
+    const x = parseFloat(element.getAttribute('x'));
+    const y = parseFloat(element.getAttribute('y'));
+    const width = parseFloat(element.getAttribute('width'));
+    const height = parseFloat(element.getAttribute('height'));
+    path = new paperjs.Path.Rectangle(
+      new paperjs.Rectangle(x, y, width, height),
+      new paperjs.Size(
+        parseFloat(element.getAttribute('rx') || '0'),
+        parseFloat(element.getAttribute('ry') || '0'),
+      ),
+    );
+  } else if (tagName === 'path') {
+    // Use the `d` attribute directly for Path data
+    const d = element.getAttribute('d');
+    path = new paperjs.CompoundPath(d);
+  }
+  return path;
 }
 
 class ReSGroup extends ReObject {
   public item: SGroup | undefined;
   public render!: Render;
+  private expandedMonomerAttachmentPoints?: any; // Raphael paths
 
   constructor(sgroup: SGroup) {
     super('sgroup');
@@ -71,9 +109,7 @@ class ReSGroup extends ReObject {
   draw(remol: ReStruct, sgroup: SGroup): any {
     this.render = remol.render;
     let set = this.render.paper.set();
-    const atomSet = new Pile(sgroup.atoms);
-    const crossBonds = SGroup.getCrossBonds(remol.molecule, atomSet);
-    SGroup.bracketPos(sgroup, remol.molecule, crossBonds, remol, this.render);
+    SGroup.bracketPos(sgroup, remol.molecule, remol, this.render);
     const bracketBox = sgroup.bracketBox;
     const direction = sgroup.bracketDirection;
     sgroup.areas = [bracketBox];
@@ -82,8 +118,6 @@ class ReSGroup extends ReObject {
         set,
         render: this.render,
         sgroup,
-        crossBonds,
-        atomSet,
         bracketBox,
         direction,
       };
@@ -130,9 +164,11 @@ class ReSGroup extends ReObject {
           break;
         }
         case 'SUP': {
-          SGroupdrawBracketsOptions.lowerIndexText = sgroup.data.name;
+          SGroupdrawBracketsOptions.lowerIndexText =
+            sgroup.data.name || SUPERATOM_CLASS_TEXT[sgroup.data.class];
           SGroupdrawBracketsOptions.upperIndexText = null;
           SGroupdrawBracketsOptions.indexAttribute = { 'font-style': 'italic' };
+          SGroupdrawBracketsOptions.superatomClass = sgroup.data.class;
           break;
         }
         case 'GEN': {
@@ -170,8 +206,8 @@ class ReSGroup extends ReObject {
   }
 
   getTextHighlightDimensions(
-    padding = 0,
     render: Render,
+    padding = 0,
   ): { startX: number; startY: number; width: number; height: number } {
     let startX = 0;
     let startY = 0;
@@ -205,8 +241,8 @@ class ReSGroup extends ReObject {
     const { fontszInPx, radiusScaleFactor } = options;
     const radius = fontszInPx * radiusScaleFactor * 2;
     const { startX, startY, width, height } = this.getTextHighlightDimensions(
-      fontszInPx / 2,
       render,
+      fontszInPx / 2,
     );
     return paper.rect(startX, startY, width, height, radius);
   }
@@ -215,7 +251,7 @@ class ReSGroup extends ReObject {
     restruct: ReStruct,
     _paper: RaphaelPaper,
     options: any,
-  ): any | void {
+  ): any {
     const sgroup = this.item;
     const functionalGroups = restruct.molecule.functionalGroups;
     const render = restruct.render;
@@ -236,7 +272,9 @@ class ReSGroup extends ReObject {
     if (sGroupItem) {
       const { a0, a1, b0, b1 } = getHighlighPathInfo(sGroupItem, render);
       const functionalGroups = render.ctab.molecule.functionalGroups;
-      const set = paper.set();
+      const hoversToCombine: Array<any> = [];
+      const otherHovers = paper.set();
+
       if (
         FunctionalGroup.isContractedFunctionalGroup(
           sGroupItem.id,
@@ -246,6 +284,7 @@ class ReSGroup extends ReObject {
         sGroupItem.hovering = this.getContractedSelectionContour(render).attr(
           options.hoverStyle,
         );
+        hoversToCombine.push(sGroupItem.hovering);
       } else if (!this.selected) {
         sGroupItem.hovering = paper
           .path(
@@ -262,20 +301,105 @@ class ReSGroup extends ReObject {
             tfx(b0.y),
           )
           .attr(options.hoverStyle);
+        otherHovers.push(sGroupItem.hovering);
       }
-      set.push(sGroupItem.hovering);
 
       SGroup.getAtoms(render.ctab.molecule, sGroupItem).forEach((aid) => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore: raphael typing issues
-        set.push(render?.ctab?.atoms?.get(aid)?.makeHoverPlate(render));
+        const atom = render?.ctab?.atoms?.get(aid);
+
+        hoversToCombine.push(atom?.makeHoverPlate(render));
       }, this);
       SGroup.getBonds(render.ctab.molecule, sGroupItem).forEach((bid) => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore: raphael typing issues
-        set.push(render?.ctab?.bonds?.get(bid)?.makeHoverPlate(render));
+        hoversToCombine.push(
+          render?.ctab?.bonds?.get(bid)?.makeHoverPlate(render),
+        );
       }, this);
-      render.ctab.addReObjectPath(LayerMap.hovering, this.visel, set);
+
+      const elements: Element[] = [];
+
+      hoversToCombine.forEach((item) => {
+        if (item?.node) {
+          elements.push(item.node);
+          item.node.remove();
+        }
+      });
+
+      paperjs.setup(document.createElement('canvas')); // Paper.js works on an offscreen canvas
+
+      // Generate Paper.js paths from all SVG elements
+      let combinedPath: any = null;
+
+      elements.forEach((el) => {
+        const paperPath = paperPathFromSVGElement(el);
+
+        if (!paperPath) {
+          return;
+        }
+
+        if (!paperPath.closed) {
+          paperPath.closePath();
+        }
+
+        if (!combinedPath) {
+          combinedPath = paperPath;
+        } else {
+          combinedPath = combinedPath.unite(paperPath);
+        }
+      });
+
+      if (!combinedPath) {
+        return;
+      }
+
+      const combinedPathD = combinedPath.pathData;
+
+      render.ctab.addReObjectPath(
+        LayerMap.hovering,
+        this.visel,
+        paper.path(combinedPathD).attr(options.hoverStyle),
+      );
+      render.ctab.addReObjectPath(LayerMap.hovering, this.visel, otherHovers);
+    }
+  }
+
+  setHover(hover: boolean, render: Render) {
+    super.setHover(hover, render);
+
+    if (!hover || this.selected) {
+      this.expandedMonomerAttachmentPoints?.hide();
+
+      return;
+    }
+
+    if (
+      !this.expandedMonomerAttachmentPoints?.length ||
+      this.expandedMonomerAttachmentPoints?.[0]?.removed
+    ) {
+      this.expandedMonomerAttachmentPoints = undefined;
+    }
+
+    if (this.expandedMonomerAttachmentPoints) {
+      this.expandedMonomerAttachmentPoints.show();
+    } else {
+      const paper = render.paper;
+      const sGroupItem = this.item;
+
+      if (!sGroupItem) {
+        return;
+      }
+
+      const set = paper.set();
+
+      render.paper.setStart();
+
+      SGroup.getAtoms(render.ctab.molecule, sGroupItem).forEach((aid) => {
+        const atom = render?.ctab?.atoms?.get(aid);
+
+        set.push(atom?.makeMonomerAttachmentPointHighlightPlate(render));
+      }, this);
+
+      render.ctab.addReObjectPath(LayerMap.atom, this.visel, set);
+      this.expandedMonomerAttachmentPoints = render.paper.setFinish();
     }
   }
 
@@ -294,37 +418,16 @@ class ReSGroup extends ReObject {
 function SGroupdrawBrackets({
   set,
   render,
-  sgroup,
-  crossBonds,
-  atomSet,
   bracketBox,
   direction,
   lowerIndexText,
   upperIndexText,
   indexAttribute,
+  superatomClass,
 }: SGroupdrawBracketsOptions): void {
-  const attachmentPoints = [...atomSet].reduce((arr, atomId) => {
-    const rgroupAttachmentPointIds =
-      render.ctab.molecule.getRGroupAttachmentPointsByAtomId(atomId);
-    return [...arr, ...rgroupAttachmentPointIds];
-  }, []);
-  const crossBondsPerAtom = Object.values(crossBonds);
-  const crossBondsValues = crossBondsPerAtom.flat();
-  const brackets = getBracketParameters(
-    atomSet,
-    crossBondsPerAtom,
-    crossBondsValues,
-    attachmentPoints,
-    bracketBox,
-    direction,
-    render,
-    sgroup.id,
-  );
+  const brackets = getBracketParameters(bracketBox, direction);
   let rightBracketIndex = -1;
-  const isBracketContainAttachment =
-    crossBondsValues.length === 2 &&
-    crossBondsPerAtom.length === 1 &&
-    !!attachmentPoints.length;
+
   for (let i = 0; i < brackets.length; ++i) {
     const bracket = brackets[i];
     const path = draw.bracket(
@@ -335,7 +438,6 @@ function SGroupdrawBrackets({
       bracket.width,
       bracket.height,
       render.options,
-      isBracketContainAttachment,
     );
     set.push(path);
     if (
@@ -351,7 +453,11 @@ function SGroupdrawBrackets({
     }
   }
   const bracketR = brackets[rightBracketIndex];
-  function renderIndex(text: string, isLowerText = false): void {
+  function renderIndex(
+    text: string,
+    isLowerText = false,
+    superatomClass?: SUPERATOM_CLASS,
+  ): void {
     let path: Vec2;
     let lowerPath: Vec2;
     const bracketPoint1 = new Vec2(
@@ -381,11 +487,60 @@ function SGroupdrawBrackets({
     }
 
     const indexPos = new Vec2(path.x, path.y);
-    const indexPath = render.paper.text(indexPos.x, indexPos.y, text).attr({
-      font: render.options.font,
-      'font-size': render.options.fontszsubInPx,
-    });
+    const iconSize = superatomClass === SUPERATOM_CLASS.BASE ? 14 : 12;
+    const iconOffsetFromBracket = 8;
+    const textOffsetFromBracket = 2;
+    let icon;
+
+    // Draw icon for superatom classes
+    if (superatomClass === SUPERATOM_CLASS.SUGAR) {
+      icon = render.paper.rect(
+        indexPos.x + iconOffsetFromBracket,
+        indexPos.y - iconSize / 2,
+        iconSize,
+        iconSize,
+        2,
+      );
+    } else if (superatomClass === SUPERATOM_CLASS.PHOSPHATE) {
+      icon = render.paper.circle(
+        indexPos.x + iconSize / 2 + iconOffsetFromBracket,
+        indexPos.y,
+        iconSize / 2,
+      );
+    } else if (superatomClass === SUPERATOM_CLASS.BASE) {
+      const rhombusPath = `M${
+        indexPos.x + iconSize / 2 + iconOffsetFromBracket
+      },${indexPos.y - iconSize / 2}
+                         L${indexPos.x + iconSize + iconOffsetFromBracket},${
+        indexPos.y
+      }
+                         L${
+                           indexPos.x + iconSize / 2 + iconOffsetFromBracket
+                         },${indexPos.y + iconSize / 2}
+                         L${indexPos.x + iconOffsetFromBracket},${
+        indexPos.y
+      } Z`;
+      icon = render.paper.path(rhombusPath);
+    }
+
+    if (icon && indexAttribute) {
+      icon.attr({
+        stroke: '#B4B9D6',
+        strokeWidth: '1.4',
+      });
+      set.push(icon);
+    }
+
+    const textPosition = new Vec2(indexPos.x, indexPos.y);
+    const indexPath = render.paper
+      .text(textPosition.x, textPosition.y, text)
+      .attr({
+        font: render.options.font,
+        'font-size': render.options.fontszsubInPx,
+      });
     if (indexAttribute) indexPath.attr(indexAttribute);
+
+    // Bounding box adjustment and final positioning
     const indexBox = Box2Abs.fromRelBox(util.relBox(indexPath.getBBox()));
     const t =
       Math.max(
@@ -395,17 +550,16 @@ function SGroupdrawBrackets({
           indexBox,
         ),
         3,
-      ) + 2;
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore: raphael typing issues
+      ) + (icon ? iconOffsetFromBracket : textOffsetFromBracket);
     indexPath.translateAbs(
-      t * bracketR.bracketAngleDirection.x,
+      t * bracketR.bracketAngleDirection.x +
+        (icon ? iconSize + iconOffsetFromBracket / 2 : 0),
       t * bracketR.bracketAngleDirection.y,
     );
     set.push(indexPath);
   }
   if (lowerIndexText) {
-    renderIndex(lowerIndexText, true);
+    renderIndex(lowerIndexText, true, superatomClass);
   }
   if (upperIndexText) renderIndex(upperIndexText);
 }
@@ -484,7 +638,7 @@ function drawAttachedDat(restruct: ReStruct, sgroup: SGroup): any {
   const paper = render.paper;
   const set = paper.set();
 
-  SGroup.getAtoms(restruct, sgroup).forEach((aid) => {
+  SGroup.getAtoms(restruct.molecule, sgroup).forEach((aid) => {
     const atom = restruct.atoms.get(aid);
     if (atom) {
       const p = Scale.modelToCanvas(atom.a.pp, options);
@@ -506,223 +660,23 @@ function drawAttachedDat(restruct: ReStruct, sgroup: SGroup): any {
 
 // We decided that brackets will be always calculated using bounding box to avoid complexity.
 // See the PR discussion for more details.
-const USE_BOUNDING_BOX_FOR_BRACKETS = true;
+// const USE_BOUNDING_BOX_FOR_BRACKETS = true;
 
-function getBracketParameters(
-  atomSet: Pile,
-  crossBondsPerAtom: Array<Array<number>>,
-  crossBondsValues: Array<number>,
-  attachmentPoints: number[],
-  bracketBox: Box2Abs,
-  direction: Vec2,
-  render: Render,
-  id: number,
-) {
-  const mol = render.ctab.molecule;
+function getBracketParameters(bracketBox: Box2Abs, direction: Vec2) {
   const brackets: BracketParams[] = [];
   const bracketDirection = direction.rotateSC(1, 0);
 
-  if (USE_BOUNDING_BOX_FOR_BRACKETS) {
-    getBracketParamersWithCrossBondsLessThan2(
-      direction,
-      bracketDirection,
-      bracketBox,
-      brackets,
-    );
-    return brackets;
-  }
-
-  if (crossBondsValues.length < 2) {
-    getBracketParamersWithCrossBondsLessThan2(
-      direction,
-      bracketDirection,
-      bracketBox,
-      brackets,
-    );
-  } else if (crossBondsValues.length === 2 && crossBondsPerAtom.length === 2) {
-    getBracketParamersWithCrossBondsEquals2(
-      mol,
-      crossBondsValues,
-      id,
-      render,
-      attachmentPoints,
-      brackets,
-    );
-  } else if (crossBondsValues.length === 2 && crossBondsPerAtom.length === 1) {
-    getBracketParamersWithCrossBondsMoreThan2OnOneAtom(
-      crossBondsValues as [number, number],
-      mol,
-      attachmentPoints,
-      render,
-      brackets,
-    );
-  } else {
-    for (let i = 0; i < crossBondsValues.length; ++i) {
-      const bond = mol.bonds.get(Number(crossBondsValues[i]));
-      const center = bond?.getCenter(mol);
-      const direction = atomSet.has(bond?.begin)
-        ? bond?.getDir(mol)
-        : bond?.getDir(mol).negated();
-      if (center && direction) {
-        brackets.push(
-          new BracketParams(center, direction, 0.2, bracketBox.sz().y),
-        );
-      }
-    }
-  }
-  return brackets;
-}
-
-function getBracketParamersWithCrossBondsMoreThan2OnOneAtom(
-  crossBondsValues: [number, number],
-  mol: Struct,
-  attachmentPoints: number[],
-  render: Render,
-  brackets: BracketParams[],
-) {
-  let notTemplateShapeFirstAtom = false;
-  const bondDirections: Vec2[] = crossBondsValues.map((value) => {
-    const bond = mol.bonds.get(Number(value));
-    return bond?.getDir(mol) || new Vec2();
-  });
-  // if bonds direction is clockwise, then negated
-  const needNegated =
-    Vec2.crossProduct(bondDirections[0], bondDirections[1]) > 0;
-  notTemplateShapeFirstAtom =
-    Math.abs(Number(crossBondsValues[0]) - Number(crossBondsValues[1])) === 1;
-  if (notTemplateShapeFirstAtom && !needNegated) {
-    crossBondsValues.reverse();
-  }
-
-  for (let i = 0; i < crossBondsValues.length; ++i) {
-    const bond = mol.bonds.get(Number(crossBondsValues[i]));
-    let bondDirection = bond?.getDir(mol) || new Vec2();
-    let bracketDirection: Vec2;
-    let bracketAngleDirection: Vec2;
-    let attachmentDirection: Vec2;
-    if (attachmentPoints.length !== 2) {
-      if (needNegated && notTemplateShapeFirstAtom) {
-        bondDirection = bondDirection.negated();
-      }
-      bondDirection = i === 0 ? bondDirection : bondDirection.negated();
-      bracketDirection =
-        i === 0
-          ? bondDirection.rotateSC(1, 0).negated()
-          : bondDirection.rotateSC(1, 0);
-      bracketAngleDirection = bondDirection;
-    } else {
-      attachmentPoints = attachmentPoints.sort(
-        (point1, point2) => point1 - point2,
-      );
-      // if there are 2 attachment points then make brackets parallel to attachments
-      attachmentDirection =
-        render.ctab.rgroupAttachmentPoints.get(attachmentPoints[i])
-          ?.lineDirectionVector || new Vec2();
-      bracketDirection = attachmentDirection.negated();
-      bracketAngleDirection =
-        i === 0
-          ? bracketDirection.rotateSC(1, 0)
-          : bracketDirection.rotateSC(1, 0).negated();
-    }
-    brackets.push(
-      new BracketParams(
-        bond?.getCenter(mol) || new Vec2(),
-        bracketAngleDirection,
-        0.2,
-        attachmentPoints.length ? 1.8 : 1.0,
-        bracketDirection,
-      ),
-    );
-  }
-  return { crossBondsValues, attachmentPoints };
-}
-
-function getBracketParamersWithCrossBondsEquals2(
-  mol: Struct,
-  crossBondsValues: number[],
-  id: number,
-  render: Render,
-  attachmentPoints: number[],
-  brackets: BracketParams[],
-) {
-  const bond1 = mol.bonds.get(Number(crossBondsValues[0]));
-  const bond2 = mol.bonds.get(Number(crossBondsValues[1]));
-  if (bond1 && bond2) {
-    const leftCenter = bond1.getCenter(mol);
-    const rightCenter = bond2.getCenter(mol);
-    let leftShift = -1;
-    let rightShift = -1;
-    let bracketShift = -1;
-    let bracketShiftNegated = -1;
-    const centerConnection = Vec2.centre(leftCenter, rightCenter);
-    const rightDirection = Vec2.diff(rightCenter, leftCenter).normalized();
-    const leftDirection = rightDirection.negated();
-    const bracketDirection = rightDirection.rotateSC(1, 0);
-    const bracketDirectionNegated = bracketDirection.negated();
-
-    mol?.sGroupForest?.children?.get(id)?.forEach((sgid) => {
-      let boundingBox = render?.ctab?.sgroups?.get(sgid)?.visel.boundingBox;
-      boundingBox =
-        boundingBox
-          ?.translate((render.options.offset || new Vec2()).negated())
-          .transform(Scale.canvasToModel, render.options) || new Box2Abs();
-      leftShift = Math.max(
-        leftShift,
-        util.shiftRayBox(leftCenter, leftDirection, boundingBox),
-      );
-      rightShift = Math.max(
-        rightShift,
-        util.shiftRayBox(rightCenter, rightDirection, boundingBox),
-      );
-      bracketShift = Math.max(
-        bracketShift,
-        util.shiftRayBox(centerConnection, bracketDirection, boundingBox),
-      );
-      bracketShiftNegated = Math.max(
-        bracketShiftNegated,
-        util.shiftRayBox(
-          centerConnection,
-          bracketDirectionNegated,
-          boundingBox,
-        ),
-      );
-    });
-    leftShift = Math.max(leftShift + 0.2, 0);
-    rightShift = Math.max(rightShift + 0.2, 0);
-    bracketShift = Math.max(
-      Math.max(bracketShift, bracketShiftNegated) + 0.1,
-      0,
-    );
-    const bracketWidth = 0.25;
-    let bracketHeight = 1.5 + bracketShift;
-    if (attachmentPoints.length) {
-      bracketHeight = 2 + 2 * Math.sin(Math.PI / 6) + bracketShift;
-    }
-    brackets.push(
-      new BracketParams(
-        leftCenter.addScaled(leftDirection, leftShift),
-        leftDirection,
-        bracketWidth,
-        bracketHeight,
-      ),
-      new BracketParams(
-        rightCenter.addScaled(rightDirection, rightShift),
-        rightDirection,
-        bracketWidth,
-        bracketHeight,
-      ),
-    );
-  }
-}
-
-function getBracketParamersWithCrossBondsLessThan2(
-  direction: Vec2,
-  bracketDirection: Vec2,
-  bracketBox: Box2Abs,
-  brackets: BracketParams[],
-) {
-  direction = direction || new Vec2(1, 0);
-  bracketDirection = bracketDirection || direction.rotateSC(1, 0);
+  // FIXME: Unclear how to reconcile.
+  // - Tony
+  // if (USE_BOUNDING_BOX_FOR_BRACKETS) {
+  //   getBracketParamersWithCrossBondsLessThan2(
+  //     direction,
+  //     bracketDirection,
+  //     bracketBox,
+  //     brackets,
+  //   );
+  //   return brackets;
+  // }
   const bracketWidth = Math.min(0.25, bracketBox.sz().x * 0.3);
   const leftCenter = Vec2.lc2(
     direction,
@@ -747,6 +701,8 @@ function getBracketParamersWithCrossBondsLessThan2(
     ),
     new BracketParams(rightCenter, direction, bracketWidth, bracketHeight),
   );
+
+  return brackets;
 }
 
 /**

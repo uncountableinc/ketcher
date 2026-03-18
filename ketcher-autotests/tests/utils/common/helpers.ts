@@ -1,43 +1,27 @@
 import { Page } from '@playwright/test';
-import { turnOnMacromoleculesEditor } from '@utils/macromolecules';
-import { waitForKetcherInit, waitForIndigoToLoad } from './loaders';
+import { waitForKetcherInit } from './loaders/waitForKetcherInit/waitForKetcherInit';
+import { waitForIndigoToLoad } from './loaders/waitForIndigoToLoad';
+import { OpenStructureDialog } from '@tests/pages/common/OpenStructureDialog';
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-export async function emptyFunction() {}
+export async function emptyFunction() {
+  // Intentionally empty callback used as a default async no-op in wait helpers.
+}
 
 export async function pageReload(page: Page) {
-  /* In order to fix problem with label renderer (one pixel shift) 
-        we have to try to reload page
-    */
+  const { CommonTopRightToolbar } = await import(
+    './../../pages/common/CommonTopRightToolbar'
+  );
+  await page.reload();
+  await page.goto('', { waitUntil: 'domcontentloaded' });
+  await waitForKetcherInit(page);
+  await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
+}
+
+export async function pageReloadMicro(page: Page) {
   await page.reload();
   await page.goto('', { waitUntil: 'domcontentloaded' });
   await waitForKetcherInit(page);
   await waitForIndigoToLoad(page);
-  if (process.env.ENABLE_POLYMER_EDITOR === 'true') {
-    await turnOnMacromoleculesEditor(page);
-  }
-}
-
-export async function contextReload(page: Page): Promise<Page> {
-  /* In order to fix problem with label renderer (one pixel shift) 
-        we have to try to reload deeper than page - context!
-   */
-  const cntxt = page.context();
-  const brwsr = cntxt.browser();
-  await page.close();
-  await cntxt.close();
-  if (brwsr) {
-    const newContext = await brwsr.newContext();
-    page = await newContext.newPage();
-  }
-
-  await page.goto('', { waitUntil: 'domcontentloaded' });
-  await waitForKetcherInit(page);
-  await waitForIndigoToLoad(page);
-  if (process.env.ENABLE_POLYMER_EDITOR === 'true') {
-    await turnOnMacromoleculesEditor(page);
-  }
-  return page;
 }
 
 /**
@@ -52,37 +36,10 @@ export async function clearLocalStorage(page: Page) {
   });
 }
 
-export async function closeErrorMessage(page: Page) {
-  const errorMessage = page.getByText('Error message', {
-    exact: true,
-  });
-  const closeWindowButton = page.getByRole('button', {
-    name: 'Close window',
-  });
-
-  await closeWindowButton.click();
-  await errorMessage.waitFor({ state: 'hidden' });
-}
-
 export async function closeOpenStructure(page: Page) {
-  const closeWindowButton = page.getByRole('button', {
-    name: 'Close window',
-  });
   const openStructure = page.getByText('Open Structure', {
     exact: true,
   });
-  await closeWindowButton.click();
+  await OpenStructureDialog(page).closeWindow();
   await openStructure.waitFor({ state: 'hidden' });
-}
-
-export async function closeErrorAndInfoModals(page: Page) {
-  const closeButton = page.getByRole('button', { name: 'Close' });
-  if (await closeButton.isVisible()) {
-    await closeButton.click();
-  }
-
-  const closeIcon = page.locator('[data-testid="close-icon"]');
-  if (await closeIcon.isVisible()) {
-    await closeIcon.click();
-  }
 }

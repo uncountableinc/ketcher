@@ -30,6 +30,7 @@ import {
   ModeTypes,
   SnakeMode,
   FlexMode,
+  normalizeError,
 } from 'ketcher-core';
 import { IndigoProvider } from 'ketcher-react';
 import { RequiredModalProps } from '../modalContainer';
@@ -122,11 +123,12 @@ const ONE_LETTER = 'one-letter';
 const THREE_LETTER = 'three-letter';
 
 const options: Array<Option> = [
-  { id: 'ket', label: 'Ket' },
+  { id: 'ket', label: 'Ket Format' },
   { id: 'mol', label: 'MDL Molfile V3000' },
   { id: 'seq', label: 'Sequence' },
   { id: 'fasta', label: 'FASTA' },
   { id: 'idt', label: 'IDT' },
+  { id: 'axo-labs', label: 'AxoLabs' },
   { id: 'helm', label: 'HELM' },
 ];
 
@@ -173,26 +175,21 @@ const addToCanvas = ({
     deserialisedKet.drawingEntitiesManager.mergeInto(
       editor.drawingEntitiesManager,
     );
-  const editorHistory = new EditorHistory(editor);
+  const editorHistory = EditorHistory.getInstance(editor);
   const isSequenceMode = editor.mode instanceof SequenceMode;
   const isSnakeMode = editor.mode instanceof SnakeMode;
   const isFlexMode = editor.mode instanceof FlexMode;
 
   if (isFlexMode) {
-    editor.drawingEntitiesManager.recalculateAntisenseChains();
-
     if (editor.drawingEntitiesManager.hasAntisenseChains) {
       modelChanges.merge(
-        editor.drawingEntitiesManager.applySnakeLayout(
-          editor.canvas.width.baseVal.value,
-          true,
-          true,
-          true,
-        ),
+        editor.drawingEntitiesManager.applySnakeLayout(true, true, true),
       );
       modelChanges.setUndoOperationsByPriority();
     }
   }
+
+  editor.drawingEntitiesManager.detectBondsOverlappedByMonomers();
 
   editor.renderersContainer.update(modelChanges);
   editorHistory.update(modelChanges);
@@ -216,6 +213,10 @@ const addToCanvas = ({
   if (isCanvasEmptyBeforeOpenStructure) {
     editor.zoomToStructuresIfNeeded();
   }
+
+  editor.calculateAndStoreNextAutochainPosition(
+    deserialisedKet.drawingEntitiesManager,
+  );
 };
 
 // TODO: replace after the implementation of the function for processing the structure from the file
@@ -286,8 +287,7 @@ const onOk = async ({
     addToCanvas({ struct: ketStruct.struct, ketSerializer, editor });
     onCloseCallback();
   } catch (error) {
-    const stringError =
-      typeof error === 'string' ? error : JSON.stringify(error);
+    const stringError = normalizeError(error).message;
     showParsingError(stringError);
     KetcherLogger.error(error);
   } finally {
@@ -364,7 +364,7 @@ const Open = ({ isModalOpen, onClose }: RequiredModalProps) => {
 
   const openHandler = () => {
     const editor = CoreEditor.provideEditorInstance();
-    const history = new EditorHistory(editor);
+    const history = EditorHistory.getInstance(editor);
     const modelChanges = editor.drawingEntitiesManager.deleteAllEntities();
 
     history.update(modelChanges);
@@ -414,14 +414,15 @@ const Open = ({ isModalOpen, onClose }: RequiredModalProps) => {
       <FooterButtonContainer>
         <FooterButton
           key="openButton"
-          disabled={!structStr}
+          disabled={!structStr.trim()}
           clickHandler={openHandler}
           label="Open as New"
           styleType="secondary"
+          data-testid="open-as-new-button"
         />
         <FooterButton
           key="copyButton"
-          disabled={!structStr}
+          disabled={!structStr.trim()}
           clickHandler={addToCanvasHandler}
           label="Add to Canvas"
           title="Structure will be loaded as fragment and added to Clipboard"
@@ -437,6 +438,7 @@ const Open = ({ isModalOpen, onClose }: RequiredModalProps) => {
       title="Open Structure"
       onClose={onCloseCallback}
       modalWidth={currentState === MODAL_STATES.textEditor ? '620px' : ''}
+      testId="openStructureModal"
     >
       <Modal.Content>
         <OpenFileWrapper currentState={currentState}>

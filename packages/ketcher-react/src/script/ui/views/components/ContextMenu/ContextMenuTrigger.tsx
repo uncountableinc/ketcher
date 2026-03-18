@@ -14,12 +14,20 @@
  * limitations under the License.
  ***************************************************************************/
 
-import { FunctionalGroup, MULTITAIL_ARROW_KEY } from 'ketcher-core';
+import {
+  FunctionalGroup,
+  ketcherProvider,
+  MULTITAIL_ARROW_KEY,
+} from 'ketcher-core';
 import { FC, PropsWithChildren, useCallback, useRef, useEffect } from 'react';
 import { useContextMenu } from 'react-contexify';
 import { useAppContext } from 'src/hooks';
 import Editor from 'src/script/editor';
-import { ContextMenuProps, ContextMenuTriggerType } from './contextMenu.types';
+import {
+  ContextMenuProps,
+  ContextMenuTriggerType,
+  CONTEXT_MENU_ID,
+} from './contextMenu.types';
 import {
   getIsItemInSelection,
   getMenuPropsForClosestItem,
@@ -28,12 +36,12 @@ import {
 import TemplateTool from 'src/script/editor/tool/template';
 
 const ContextMenuTrigger: FC<PropsWithChildren> = ({ children }) => {
-  const { getKetcherInstance } = useAppContext();
+  const { ketcherId } = useAppContext();
   const { show } = useContextMenu<ContextMenuProps>();
   const divRef = useRef<HTMLDivElement>(null);
 
   const getSelectedGroupsInfo = useCallback(() => {
-    const editor = getKetcherInstance().editor as Editor;
+    const editor = ketcherProvider.getKetcher(ketcherId).editor as Editor;
     const struct = editor.struct();
     const selectedAtomIds = editor.selection()?.atoms;
     // Map and Set can do deduplication
@@ -47,13 +55,18 @@ const ContextMenuTrigger: FC<PropsWithChildren> = ({ children }) => {
         true,
       );
 
-      functionalGroup !== null &&
-        functionalGroup.relatedSGroup &&
-        !functionalGroup.relatedSGroup.isSuperatomWithoutLabel &&
+      const relatedSGroup = functionalGroup?.relatedSGroup;
+
+      if (
+        functionalGroup !== null &&
+        relatedSGroup &&
+        !relatedSGroup.isSuperatomWithoutLabel
+      ) {
         selectedFunctionalGroups.set(
           functionalGroup.relatedSGroupId,
           functionalGroup,
         );
+      }
 
       const sGroupId = struct.sgroups.find(
         (_, sGroup) =>
@@ -67,7 +80,7 @@ const ContextMenuTrigger: FC<PropsWithChildren> = ({ children }) => {
       selectedFunctionalGroups,
       selectedSGroupsIds,
     };
-  }, [getKetcherInstance]);
+  }, [ketcherId]);
 
   const handleDisplay = useCallback(
     (event: MouseEvent) => {
@@ -75,7 +88,8 @@ const ContextMenuTrigger: FC<PropsWithChildren> = ({ children }) => {
       event.stopPropagation();
       event.stopImmediatePropagation();
 
-      const editor = getKetcherInstance().editor as Editor;
+      const ketcher = ketcherProvider.getKetcher(ketcherId);
+      const editor = ketcher.editor as Editor;
 
       if (editor.render.options.viewOnlyMode) {
         return;
@@ -84,6 +98,28 @@ const ContextMenuTrigger: FC<PropsWithChildren> = ({ children }) => {
       const currentTool = editor.tool();
       if (currentTool instanceof TemplateTool) {
         currentTool.cancel();
+      }
+
+      // TODO: Consider a better approach to handle context menus for auxiliary UI elements
+      const target = event.target as Element;
+      if (editor.isMonomerCreationWizardActive) {
+        const rLabelElement = target.closest('[data-attachment-point-name]');
+        if (rLabelElement) {
+          const attachmentPointName = rLabelElement.getAttribute(
+            'data-attachment-point-name',
+          );
+          if (attachmentPointName) {
+            show({
+              id: CONTEXT_MENU_ID.FOR_ATTACHMENT_POINT_LABEL + ketcherId,
+              event,
+              props: {
+                attachmentPointName,
+                ketcherId,
+              },
+            });
+            return;
+          }
+        }
       }
 
       const closestItem = editor.findItem(event, null);
@@ -101,6 +137,7 @@ const ContextMenuTrigger: FC<PropsWithChildren> = ({ children }) => {
           // if it was a click outside of any item
           editor.selection(null);
         }
+
         return;
       } else if (!selection) {
         triggerType = ContextMenuTriggerType.ClosestItem;
@@ -137,7 +174,11 @@ const ContextMenuTrigger: FC<PropsWithChildren> = ({ children }) => {
         }
 
         case ContextMenuTriggerType.ClosestItem: {
-          showProps = getMenuPropsForClosestItem(editor, closestItem);
+          showProps = getMenuPropsForClosestItem(
+            editor,
+            closestItem,
+            ketcherId,
+          );
           break;
         }
 
@@ -145,6 +186,7 @@ const ContextMenuTrigger: FC<PropsWithChildren> = ({ children }) => {
           showProps = getMenuPropsForSelection(
             selection,
             selectedFunctionalGroups,
+            ketcherId,
           );
           break;
         }
@@ -154,10 +196,10 @@ const ContextMenuTrigger: FC<PropsWithChildren> = ({ children }) => {
         show({
           id: showProps.id,
           event,
-          props: showProps,
+          props: { ...showProps, ketcherId },
         });
     },
-    [getKetcherInstance, getSelectedGroupsInfo, show],
+    [getSelectedGroupsInfo, show, ketcherId],
   );
 
   useEffect(() => {
@@ -182,7 +224,7 @@ const ContextMenuTrigger: FC<PropsWithChildren> = ({ children }) => {
   }, [handleDisplay]);
 
   return (
-    <div ref={divRef} style={{ height: '100%' }}>
+    <div ref={divRef} style={{ height: '100%' }} role="application">
       {children}
     </div>
   );

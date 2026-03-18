@@ -7,6 +7,7 @@ import {
   canvasSelector,
   drawnStructuresSelector,
 } from 'application/editor/constants';
+import { Vec2 } from 'domain/entities';
 
 export interface IBaseRenderer {
   show(theme): void;
@@ -29,19 +30,21 @@ export abstract class BaseRenderer implements IBaseRenderer {
     | D3SvgElementSelection<SVGRectElement, void>
     | D3SvgElementSelection<SVGPathElement, void>;
 
-  protected hoverAreaElement?: D3SvgElementSelection<
-    SVGGElement | SVGLineElement,
-    void
-  >;
+  // An extra invisible area around `bodyElement` to make it easier for a user to hover over it.
+  protected hoverAreaElement?:
+    | D3SvgElementSelection<SVGGElement, void>
+    | D3SvgElementSelection<SVGPathElement, void>
+    | D3SvgElementSelection<SVGRectElement, void>
+    | D3SvgElementSelection<SVGLineElement, void>;
 
   protected hoverCircleAreaElement?: D3SvgElementSelection<
-    SVGGElement | SVGCircleElement,
+    SVGCircleElement,
     void
   >;
 
   protected canvasWrapper: D3SvgElementSelection<SVGSVGElement, void>;
 
-  protected canvas: D3SvgElementSelection<SVGSVGElement, void>;
+  protected canvas: D3SvgElementSelection<SVGGElement, void>;
   protected constructor(public drawingEntity: DrawingEntity) {
     this.canvasWrapper =
       ZoomTool.instance?.canvasWrapper || select(canvasSelector);
@@ -54,14 +57,14 @@ export abstract class BaseRenderer implements IBaseRenderer {
 
   public get rootBBox() {
     const rootNode = this.rootElement?.node();
-    if (!rootNode) return;
+    if (!rootNode) return undefined;
 
     return rootNode.getBBox();
   }
 
   public get rootBoundingClientRect() {
     const rootNode = this.rootElement?.node();
-    if (!rootNode) return;
+    if (!rootNode) return undefined;
 
     return rootNode.getBoundingClientRect();
   }
@@ -80,6 +83,10 @@ export abstract class BaseRenderer implements IBaseRenderer {
 
   public get y() {
     return this.rootBBox?.y || 0;
+  }
+
+  public get selectionPoints(): Vec2[] | undefined {
+    return undefined;
   }
 
   public abstract show(theme, force?: boolean): void;
@@ -113,6 +120,10 @@ export abstract class BaseRenderer implements IBaseRenderer {
       this.removeHover();
       this.hoverElement = undefined;
     }
+  }
+
+  public setVisibility(isVisible: boolean) {
+    this.rootElement?.style('opacity', isVisible ? 1 : 0);
   }
 
   move() {}

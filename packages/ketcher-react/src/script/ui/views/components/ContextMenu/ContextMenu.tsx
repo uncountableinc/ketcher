@@ -28,6 +28,8 @@ import { createPortal } from 'react-dom';
 import { KETCHER_ROOT_NODE_CSS_SELECTOR } from 'src/constants';
 import { MultitailArrowMenuItems } from './menuItems/MultitailArrowMenuItems';
 import MacromoleculeMenuItems from './menuItems/MacromoleculeMenuItems';
+import { ketcherProvider } from 'ketcher-core';
+import AttachmentPointLabelMenuItems from './menuItems/AttachmentPointLabelMenuItems';
 
 const props: Partial<MenuProps> = {
   animation: false,
@@ -35,7 +37,7 @@ const props: Partial<MenuProps> = {
 };
 
 const ContextMenu: React.FC = () => {
-  const { getKetcherInstance } = useAppContext();
+  const { ketcherId } = useAppContext();
 
   const adjustSubmenuPosition = (submenuElement: HTMLElement) => {
     const rect = submenuElement.getBoundingClientRect();
@@ -43,10 +45,10 @@ const ContextMenu: React.FC = () => {
       KETCHER_ROOT_NODE_CSS_SELECTOR,
     );
     const ketcherRootElementRect = ketcherRootElement?.getBoundingClientRect();
-    const ketcherEditorWidth = ketcherRootElementRect?.width || 0;
-    const ketcherEditorHeight = ketcherRootElementRect?.height || 0;
-    const ketcherEditorLeft = ketcherRootElementRect?.left || 0;
-    const ketcherEditorTop = ketcherRootElementRect?.top || 0;
+    const ketcherEditorWidth = ketcherRootElementRect?.width ?? 0;
+    const ketcherEditorHeight = ketcherRootElementRect?.height ?? 0;
+    const ketcherEditorLeft = ketcherRootElementRect?.left ?? 0;
+    const ketcherEditorTop = ketcherRootElementRect?.top ?? 0;
 
     if (rect.right - ketcherEditorLeft > ketcherEditorWidth) {
       submenuElement.style.left = 'auto';
@@ -67,9 +69,9 @@ const ContextMenu: React.FC = () => {
 
   const resetMenuPosition = (menuElement: HTMLElement) => {
     const contextMenuElement = menuElement;
-    const ketcherRootElement = document.querySelector(
+    const ketcherRootElement = document.querySelectorAll(
       KETCHER_ROOT_NODE_CSS_SELECTOR,
-    );
+    )[ketcherProvider.getIndexById(ketcherId)];
 
     if (!contextMenuElement || !ketcherRootElement) {
       return;
@@ -129,16 +131,15 @@ const ContextMenu: React.FC = () => {
   };
 
   const trackVisibility = useCallback(
-    (id: CONTEXT_MENU_ID, visible: boolean) => {
-      const editor = getKetcherInstance().editor as Editor;
+    (id: string, visible: boolean) => {
+      const editor = ketcherProvider.getKetcher(ketcherId).editor as Editor;
       if (visible) {
         editor.hoverIcon.hide();
-        const contextMenuElement = document.querySelector(
+        const contextMenuElement = document.querySelector<HTMLElement>(
           '.contexify:last-of-type',
-        ) as HTMLDivElement | null;
-        const submenuElements = document.querySelectorAll(
-          '.contexify_submenu',
-        ) as NodeListOf<HTMLElement>;
+        );
+        const submenuElements =
+          document.querySelectorAll<HTMLElement>('.contexify_submenu');
         if (contextMenuElement) {
           // Timeout is needed to ensure that the context menu is rendered by react-contexify library.
           // Without timeout library overrides the position of the context menu which we set.
@@ -153,7 +154,7 @@ const ContextMenu: React.FC = () => {
       }
       editor.contextMenu[id] = visible;
     },
-    [getKetcherInstance],
+    [ketcherId],
   );
 
   const ketcherEditorRootElement = document.querySelector(
@@ -165,9 +166,9 @@ const ContextMenu: React.FC = () => {
         <>
           <Menu
             {...props}
-            id={CONTEXT_MENU_ID.FOR_BONDS}
+            id={CONTEXT_MENU_ID.FOR_BONDS + ketcherId}
             onVisibilityChange={(visible) =>
-              trackVisibility(CONTEXT_MENU_ID.FOR_BONDS, visible)
+              trackVisibility(CONTEXT_MENU_ID.FOR_BONDS + ketcherId, visible)
             }
           >
             <BondMenuItems />
@@ -175,9 +176,9 @@ const ContextMenu: React.FC = () => {
 
           <Menu
             {...props}
-            id={CONTEXT_MENU_ID.FOR_ATOMS}
+            id={CONTEXT_MENU_ID.FOR_ATOMS + ketcherId}
             onVisibilityChange={(visible) =>
-              trackVisibility(CONTEXT_MENU_ID.FOR_ATOMS, visible)
+              trackVisibility(CONTEXT_MENU_ID.FOR_ATOMS + ketcherId, visible)
             }
           >
             <AtomMenuItems />
@@ -185,9 +186,12 @@ const ContextMenu: React.FC = () => {
 
           <Menu
             {...props}
-            id={CONTEXT_MENU_ID.FOR_SELECTION}
+            id={CONTEXT_MENU_ID.FOR_SELECTION + ketcherId}
             onVisibilityChange={(visible) =>
-              trackVisibility(CONTEXT_MENU_ID.FOR_SELECTION, visible)
+              trackVisibility(
+                CONTEXT_MENU_ID.FOR_SELECTION + ketcherId,
+                visible,
+              )
             }
           >
             <SelectionMenuItems />
@@ -195,9 +199,12 @@ const ContextMenu: React.FC = () => {
 
           <Menu
             {...props}
-            id={CONTEXT_MENU_ID.FOR_FUNCTIONAL_GROUPS}
+            id={CONTEXT_MENU_ID.FOR_FUNCTIONAL_GROUPS + ketcherId}
             onVisibilityChange={(visible) =>
-              trackVisibility(CONTEXT_MENU_ID.FOR_FUNCTIONAL_GROUPS, visible)
+              trackVisibility(
+                CONTEXT_MENU_ID.FOR_FUNCTIONAL_GROUPS + ketcherId,
+                visible,
+              )
             }
           >
             <FunctionalGroupMenuItems />
@@ -205,10 +212,10 @@ const ContextMenu: React.FC = () => {
 
           <Menu
             {...props}
-            id={CONTEXT_MENU_ID.FOR_R_GROUP_ATTACHMENT_POINT}
+            id={CONTEXT_MENU_ID.FOR_R_GROUP_ATTACHMENT_POINT + ketcherId}
             onVisibilityChange={(visible) =>
               trackVisibility(
-                CONTEXT_MENU_ID.FOR_R_GROUP_ATTACHMENT_POINT,
+                CONTEXT_MENU_ID.FOR_R_GROUP_ATTACHMENT_POINT + ketcherId,
                 visible,
               )
             }
@@ -218,9 +225,12 @@ const ContextMenu: React.FC = () => {
 
           <Menu
             {...props}
-            id={CONTEXT_MENU_ID.FOR_MULTITAIL_ARROW}
+            id={CONTEXT_MENU_ID.FOR_MULTITAIL_ARROW + ketcherId}
             onVisibilityChange={(visible) =>
-              trackVisibility(CONTEXT_MENU_ID.FOR_MULTITAIL_ARROW, visible)
+              trackVisibility(
+                CONTEXT_MENU_ID.FOR_MULTITAIL_ARROW + ketcherId,
+                visible,
+              )
             }
           >
             <MultitailArrowMenuItems />
@@ -228,12 +238,28 @@ const ContextMenu: React.FC = () => {
 
           <Menu
             {...props}
-            id={CONTEXT_MENU_ID.FOR_MACROMOLECULE}
+            id={CONTEXT_MENU_ID.FOR_MACROMOLECULE + ketcherId}
             onVisibilityChange={(visible) =>
-              trackVisibility(CONTEXT_MENU_ID.FOR_MACROMOLECULE, visible)
+              trackVisibility(
+                CONTEXT_MENU_ID.FOR_MACROMOLECULE + ketcherId,
+                visible,
+              )
             }
           >
             <MacromoleculeMenuItems />
+          </Menu>
+
+          <Menu
+            {...props}
+            id={CONTEXT_MENU_ID.FOR_ATTACHMENT_POINT_LABEL + ketcherId}
+            onVisibilityChange={(visible) =>
+              trackVisibility(
+                CONTEXT_MENU_ID.FOR_ATTACHMENT_POINT_LABEL + ketcherId,
+                visible,
+              )
+            }
+          >
+            <AttachmentPointLabelMenuItems />
           </Menu>
         </>,
         document.body,

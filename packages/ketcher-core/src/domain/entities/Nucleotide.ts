@@ -16,15 +16,26 @@ import { RNA_DNA_NON_MODIFIED_PART } from 'domain/constants/monomers';
 import { BaseMonomer } from 'domain/entities/BaseMonomer';
 import { AmbiguousMonomer } from 'domain/entities/AmbiguousMonomer';
 import { SugarRenderer } from 'application/render';
-import { CELL_WIDTH } from 'domain/entities/DrawingEntitiesManager';
 import { KetMonomerClass } from 'application/formatters';
+import { SnakeLayoutCellWidth } from 'domain/constants';
 
 export class Nucleotide {
+  private readonly monomersCache: BaseMonomer[] = [];
   constructor(
-    public sugar: Sugar,
-    public rnaBase: RNABase | AmbiguousMonomer,
-    public phosphate: Phosphate,
-  ) {}
+    public readonly sugar: Sugar,
+    public readonly rnaBase: RNABase | AmbiguousMonomer,
+    public readonly phosphate: Phosphate,
+  ) {
+    this.monomersCache = [sugar, rnaBase, phosphate];
+  }
+
+  toString() {
+    return (
+      `sugar: ${this.sugar.constructor.name}, ` +
+      `rnaBase: ${this.rnaBase.constructor.name}, ` +
+      `phosphate: ${this.phosphate.constructor.name}`
+    );
+  }
 
   static fromSugar(sugar: Sugar, needValidation = true) {
     if (needValidation) {
@@ -53,10 +64,12 @@ export class Nucleotide {
     sugarName: RNA_DNA_NON_MODIFIED_PART = RNA_DNA_NON_MODIFIED_PART.SUGAR_RNA,
   ) {
     const editor = CoreEditor.provideEditorInstance();
+    const isDnaSugar = sugarName === RNA_DNA_NON_MODIFIED_PART.SUGAR_DNA;
     const rnaBaseLibraryItem = getRnaPartLibraryItem(
       editor,
       rnaBaseName,
       KetMonomerClass.Base,
+      isDnaSugar,
     );
     const phosphateLibraryItem = getRnaPartLibraryItem(
       editor,
@@ -75,7 +88,7 @@ export class Nucleotide {
     const topLeftItemPosition = position;
     const bottomItemPosition = position.add(
       Coordinates.canvasToModel(
-        new Vec2(0, CELL_WIDTH + SugarRenderer.monomerSize.height),
+        new Vec2(0, SnakeLayoutCellWidth + SugarRenderer.monomerSize.height),
       ),
     );
 
@@ -87,7 +100,7 @@ export class Nucleotide {
         rnaBasePosition: bottomItemPosition,
         phosphate: phosphateLibraryItem,
         phosphatePosition: topLeftItemPosition.add(
-          Coordinates.canvasToModel(new Vec2(CELL_WIDTH, 0)),
+          Coordinates.canvasToModel(new Vec2(SnakeLayoutCellWidth, 0)),
         ),
       });
 
@@ -109,7 +122,7 @@ export class Nucleotide {
   }
 
   public get monomers(): BaseMonomer[] {
-    return [this.sugar, this.rnaBase, this.phosphate];
+    return this.monomersCache;
   }
 
   public get firstMonomerInNode() {

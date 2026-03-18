@@ -107,7 +107,7 @@ export function sdataReducer(state, action) {
     return correctErrors(
       {
         ...state,
-        result: Object.assign({}, state.result, action.data.result),
+        result: { ...state.result, ...action.data.result },
       },
       action.data,
     );
@@ -125,8 +125,19 @@ export function sdataReducer(state, action) {
 
   newstate = newstate || {
     ...state,
-    result: Object.assign({}, state.result, action.data.result),
+    result: { ...state.result, ...action.data.result },
   };
 
   return correctErrors(newstate, action.data);
+}
+
+export function nucleotideComponentReducer(state, action) {
+  return {
+    ...state,
+    result: {
+      ...state.result,
+      ...action.data.result,
+      type: 'nucleotideComponent',
+    },
+  };
 }

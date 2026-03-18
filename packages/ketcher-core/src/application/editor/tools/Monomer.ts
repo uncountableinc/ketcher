@@ -39,12 +39,12 @@ class MonomerTool implements BaseTool {
   readonly MONOMER_PREVIEW_OFFSET_Y = 30;
   history: EditorHistory;
   constructor(
-    private editor: CoreEditor,
-    private monomer: MonomerOrAmbiguousType,
+    private readonly editor: CoreEditor,
+    private readonly monomer: MonomerOrAmbiguousType,
   ) {
     this.editor = editor;
     this.monomer = monomer;
-    this.history = new EditorHistory(this.editor);
+    this.history = EditorHistory.getInstance(this.editor);
   }
 
   mousedown() {
@@ -72,6 +72,9 @@ class MonomerTool implements BaseTool {
 
     this.history.update(modelChanges);
     this.editor.renderersContainer.update(modelChanges);
+    this.editor.calculateAndStoreNextAutochainPosition(
+      modelChanges.operations[0].monomer as BaseMonomer,
+    );
   }
 
   mousemove() {

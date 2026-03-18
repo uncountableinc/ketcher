@@ -42,14 +42,25 @@ import { openInfoModalWithCustomMessage } from '../shared';
 export default function initEditor(dispatch, getState) {
   const updateAction = debounce(100, () => dispatch({ type: 'UPDATE' }));
   const sleep = (time) => new Promise((resolve) => setTimeout(resolve, time));
+  const getSelectedSruCount = () => {
+    const editor = getState().editor;
+    if (!editor?.structSelected) return 0;
+    const selectedStruct = editor.structSelected();
+    let count = 0;
+    for (const sgroup of selectedStruct.sgroups.values()) {
+      if (sgroup.type === 'SRU') {
+        count += 1;
+      }
+    }
+    return count;
+  };
 
   const resetToSelect =
     (force = false) =>
-    (dispatch) => {
-      // eslint-disable-line no-shadow
-      const state = global.currentState;
-      const activeTool = state.actionState.activeTool.tool;
-      if (activeTool === 'select' && !force) return;
+    async (dispatch) => {
+      const state = getState();
+      const activeTool = state.actionState?.activeTool.tool;
+      if (!activeTool || (activeTool === 'select' && !force)) return;
       const selectMode = state.toolbar.visibleTools.select;
       const resetOption = state.options.settings.resetToSelect;
       if (resetOption === true || resetOption === activeTool || force === true)
@@ -65,9 +76,10 @@ export default function initEditor(dispatch, getState) {
     onChange: (action) => {
       if (action === undefined) sleep(0).then(() => dispatch(resetToSelect()));
       // Editor switched to view only mode
-      if (action === 'force') dispatch(resetToSelect(true));
+      if (action === 'force')
+        sleep(0).then(() => dispatch(resetToSelect(true)));
       // new tool in reducer
-      else dispatch(resetToSelect());
+      else sleep(0).then(() => dispatch(resetToSelect()));
     },
     onSelectionChange: () => {
       updateAction();
@@ -154,11 +166,7 @@ export default function initEditor(dispatch, getState) {
         const rgroupLabels = Array.from(struct.rgroups.keys());
         if (!rgroup.range) rgroup.range = '>0';
 
-        return openDialog(
-          dispatch,
-          'rgroupLogic',
-          Object.assign({ rgroupLabels }, rgroup),
-        );
+        return openDialog(dispatch, 'rgroupLogic', { rgroupLabels, ...rgroup });
       }
 
       const disabledIds = Array.from(struct.atoms.values()).reduce(
@@ -181,7 +189,12 @@ export default function initEditor(dispatch, getState) {
     },
     onSgroupEdit: (sgroup) =>
       sleep(0) // huck to open dialog after dispatch sgroup tool action
-        .then(() => openDialog(dispatch, 'sgroup', fromSgroup(sgroup)))
+        .then(() =>
+          openDialog(dispatch, 'sgroup', {
+            ...fromSgroup(sgroup),
+            selectedSruCount: getSelectedSruCount(),
+          }),
+        )
         .then(toSgroup),
     onRemoveFG: (result) =>
       sleep(0).then(() => openDialog(dispatch, 'removeFG', result)),
@@ -243,6 +256,7 @@ export default function initEditor(dispatch, getState) {
 
     onZoomIn: updateAction,
     onZoomOut: updateAction,
+    onZoomChanged: updateAction,
 
     onShowMacromoleculesErrorMessage: (payload) =>
       dispatch(openInfoModalWithCustomMessage(payload)),

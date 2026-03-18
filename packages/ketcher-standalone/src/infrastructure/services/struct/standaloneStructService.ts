@@ -19,6 +19,7 @@ import {
   AutomapCommandData,
   CalculateCipCommandData,
   CalculateCommandData,
+  CalculateMacromoleculePropertiesCommandData,
   CalculateProps,
   CheckCommandData,
   CleanCommandData,
@@ -66,16 +67,18 @@ import {
   StructService,
   StructServiceOptions,
   pickStandardServerOptions,
+  CalculateMacromoleculePropertiesData,
+  CalculateMacromoleculePropertiesResult,
 } from 'ketcher-core';
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import IndigoWorker from 'web-worker:./indigoWorker';
 import EventEmitter from 'events';
 import {
   STRUCT_SERVICE_INITIALIZED_EVENT,
   STRUCT_SERVICE_NO_RENDER_INITIALIZED_EVENT,
 } from './constants';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { indigoWorker } from '_indigo-worker-import-alias_';
 
 interface KeyValuePair {
   [key: string]: number | string | boolean | object;
@@ -151,12 +154,19 @@ function convertMimeTypeToOutputFormat(
       format = SupportedFormat.IDT;
       break;
     }
+    case ChemicalMimeType.AXOLABS: {
+      format = SupportedFormat.AXOLABS;
+      break;
+    }
     case ChemicalMimeType.HELM: {
       format = SupportedFormat.HELM;
       break;
     }
     case ChemicalMimeType.RDF:
       format = SupportedFormat.RDF;
+      break;
+    case ChemicalMimeType.MonomerLibrary:
+      format = SupportedFormat.MonomerLibrary;
       break;
     case ChemicalMimeType.UNKNOWN:
     default: {
@@ -168,33 +178,17 @@ function convertMimeTypeToOutputFormat(
 }
 
 function mapCalculatedPropertyName(property: CalculateProps) {
-  let mappedProperty: CalculateProps | undefined;
-  switch (property) {
-    case 'gross-formula': {
-      mappedProperty = 'gross';
-      break;
-    }
-    default:
-      mappedProperty = property;
-      break;
+  if (property === 'gross-formula') {
+    return 'gross';
   }
-
-  return mappedProperty;
+  return property;
 }
 
 function mapWarningGroup(property: string) {
-  let mappedProperty: string | undefined;
-  switch (property) {
-    case 'OVERLAP_BOND': {
-      mappedProperty = 'overlapping_bonds';
-      break;
-    }
-    default:
-      mappedProperty = property.toLowerCase();
-      break;
+  if (property === 'OVERLAP_BOND') {
+    return 'overlapping_bonds';
   }
-
-  return mappedProperty;
+  return property.toLowerCase();
 }
 
 const messageTypeToEventMapping: {
@@ -213,19 +207,19 @@ const messageTypeToEventMapping: {
   [Command.GenerateImageAsBase64]: WorkerEvent.GenerateImageAsBase64,
   [Command.GetInChIKey]: WorkerEvent.GetInChIKey,
   [Command.ExplicitHydrogens]: WorkerEvent.ExplicitHydrogens,
+  [Command.CalculateMacromoleculeProperties]:
+    WorkerEvent.CalculateMacromoleculeProperties,
 };
-
-let worker: IndigoWorker;
 
 class IndigoService implements StructService {
   private readonly defaultOptions: StructServiceOptions;
-  private worker: IndigoWorker;
+  private readonly worker: Worker;
   private readonly EE: EventEmitter = new EventEmitter();
+  private ketcherId: string | null = null;
 
   constructor(defaultOptions: StructServiceOptions) {
     this.defaultOptions = defaultOptions;
-    this.worker = worker || new IndigoWorker();
-    worker = this.worker;
+    this.worker = indigoWorker;
     this.worker.onmessage = (e: MessageEvent<OutputMessage<string>>) => {
       if (e.data.type === Command.Info) {
         const callbackMethod = process.env.SEPARATE_INDIGO_RENDER
@@ -243,12 +237,19 @@ class IndigoService implements StructService {
     };
   }
 
+  public addKetcherId(ketcherId: string) {
+    this.ketcherId = ketcherId;
+  }
+
   private getStandardServerOptions(options?: StructServiceOptions) {
     if (!options) {
       return this.defaultOptions;
     }
+    if (!this.ketcherId) {
+      throw new Error('Cannot getting options because there are no ketcherId');
+    }
 
-    return pickStandardServerOptions(options);
+    return pickStandardServerOptions(this.ketcherId, options);
   }
 
   private callIndigoNoRenderLoadedCallback() {
@@ -266,7 +267,7 @@ class IndigoService implements StructService {
         if (!msg.hasError) {
           resolve(msg.payload || '');
         } else {
-          reject(msg.error);
+          reject(new Error(msg.error));
         }
       };
 
@@ -275,8 +276,7 @@ class IndigoService implements StructService {
         data: { struct },
       };
 
-      this.EE.removeListener(WorkerEvent.GetInChIKey, action);
-      this.EE.addListener(WorkerEvent.GetInChIKey, action);
+      this.EE.once(WorkerEvent.GetInChIKey, action);
 
       this.worker.postMessage(inputMessage);
     });
@@ -295,12 +295,11 @@ class IndigoService implements StructService {
           };
           resolve(result);
         } else {
-          reject(msg.error);
+          reject(new Error(msg.error));
         }
       };
 
-      this.EE.removeListener(WorkerEvent.Info, action);
-      this.EE.addListener(WorkerEvent.Info, action);
+      this.EE.once(WorkerEvent.Info, action);
 
       this.worker.postMessage({ type: Command.Info });
     });
@@ -329,7 +328,7 @@ class IndigoService implements StructService {
             };
             resolve(result);
           } else {
-            reject(msg.error);
+            reject(new Error(msg.error));
           }
         }
       };
@@ -347,6 +346,10 @@ class IndigoService implements StructService {
         'image-resolution': options?.['image-resolution'],
         'input-format': inputFormat,
         'molfile-saving-mode': options?.['molfile-saving-mode'],
+        'monomer-library-saving-mode': options?.['monomer-library-saving-mode'],
+        'molfile-saving-skip-date': options?.['molfile-saving-skip-date'],
+        'sequence-type': options?.['sequence-type'],
+        'output-content-type': options?.['output-content-type'],
         monomerLibrary,
       };
 
@@ -361,8 +364,7 @@ class IndigoService implements StructService {
         data: commandData,
       };
 
-      this.EE.removeListener(WorkerEvent.Convert, action);
-      this.EE.addListener(WorkerEvent.Convert, action);
+      this.EE.once(WorkerEvent.Convert, action);
 
       this.worker.postMessage(inputMessage);
     });
@@ -397,7 +399,7 @@ class IndigoService implements StructService {
           };
           resolve(result);
         } else {
-          reject(msg.error);
+          reject(new Error(msg.error));
         }
       };
 
@@ -405,7 +407,9 @@ class IndigoService implements StructService {
         ...this.getStandardServerOptions(options),
         'output-content-type': 'application/json',
 
-        'render-label-mode': getLabelRenderModeForIndigo(),
+        'render-label-mode': this.ketcherId
+          ? getLabelRenderModeForIndigo(this.ketcherId)
+          : undefined,
         'render-font-size': options?.['render-font-size'],
         'render-font-size-unit': options?.['render-font-size-unit'],
         'render-font-size-sub': options?.['render-font-size-sub'],
@@ -430,8 +434,7 @@ class IndigoService implements StructService {
         data: commandData,
       };
 
-      this.EE.removeListener(WorkerEvent.Layout, action);
-      this.EE.addListener(WorkerEvent.Layout, action);
+      this.EE.once(WorkerEvent.Layout, action);
 
       this.worker.postMessage(inputMessage);
     });
@@ -451,7 +454,7 @@ class IndigoService implements StructService {
           };
           resolve(result);
         } else {
-          reject(msg.error);
+          reject(new Error(msg.error));
         }
       };
 
@@ -467,8 +470,7 @@ class IndigoService implements StructService {
         data: commandData,
       };
 
-      this.EE.removeListener(WorkerEvent.Clean, action);
-      this.EE.addListener(WorkerEvent.Clean, action);
+      this.EE.once(WorkerEvent.Clean, action);
 
       this.worker.postMessage(inputMessage);
     });
@@ -491,7 +493,7 @@ class IndigoService implements StructService {
           };
           resolve(result);
         } else {
-          reject(msg.error);
+          reject(new Error(msg.error));
         }
       };
 
@@ -506,8 +508,7 @@ class IndigoService implements StructService {
         data: commandData,
       };
 
-      this.EE.removeListener(WorkerEvent.Aromatize, action);
-      this.EE.addListener(WorkerEvent.Aromatize, action);
+      this.EE.once(WorkerEvent.Aromatize, action);
 
       this.worker.postMessage(inputMessage);
     });
@@ -530,7 +531,7 @@ class IndigoService implements StructService {
           };
           resolve(result);
         } else {
-          reject(msg.error);
+          reject(new Error(msg.error));
         }
       };
 
@@ -545,8 +546,7 @@ class IndigoService implements StructService {
         data: commandData,
       };
 
-      this.EE.removeListener(WorkerEvent.Dearomatize, action);
-      this.EE.addListener(WorkerEvent.Dearomatize, action);
+      this.EE.once(WorkerEvent.Dearomatize, action);
 
       this.worker.postMessage(inputMessage);
     });
@@ -569,7 +569,7 @@ class IndigoService implements StructService {
           };
           resolve(result);
         } else {
-          reject(msg.error);
+          reject(new Error(msg.error));
         }
       };
 
@@ -584,8 +584,7 @@ class IndigoService implements StructService {
         data: commandData,
       };
 
-      this.EE.removeListener(WorkerEvent.CalculateCip, action);
-      this.EE.addListener(WorkerEvent.CalculateCip, action);
+      this.EE.once(WorkerEvent.CalculateCip, action);
 
       this.worker.postMessage(inputMessage);
     });
@@ -608,7 +607,7 @@ class IndigoService implements StructService {
           };
           resolve(result);
         } else {
-          reject(msg.error);
+          reject(new Error(msg.error));
         }
       };
 
@@ -624,8 +623,7 @@ class IndigoService implements StructService {
         data: commandData,
       };
 
-      this.EE.removeListener(WorkerEvent.Automap, action);
-      this.EE.addListener(WorkerEvent.Automap, action);
+      this.EE.once(WorkerEvent.Automap, action);
 
       this.worker.postMessage(inputMessage);
     });
@@ -644,15 +642,15 @@ class IndigoService implements StructService {
             (acc, curr) => {
               const [key, value] = curr;
               const mappedPropertyName = mapWarningGroup(key);
-              acc[mappedPropertyName] = value;
+              acc[mappedPropertyName] = value as string;
 
               return acc;
             },
-            {},
+            {} as CheckResult,
           );
           resolve(result);
         } else {
-          reject(msg.error);
+          reject(new Error(msg.error));
         }
       };
 
@@ -667,8 +665,7 @@ class IndigoService implements StructService {
         data: commandData,
       };
 
-      this.EE.removeListener(WorkerEvent.Check, action);
-      this.EE.addListener(WorkerEvent.Check, action);
+      this.EE.once(WorkerEvent.Check, action);
 
       this.worker.postMessage(inputMessage);
     });
@@ -699,7 +696,7 @@ class IndigoService implements StructService {
           }, {} as CalculateResult);
           resolve(result);
         } else {
-          reject(msg.error);
+          reject(new Error(msg.error));
         }
       };
 
@@ -715,8 +712,7 @@ class IndigoService implements StructService {
         data: commandData,
       };
 
-      this.EE.removeListener(WorkerEvent.Calculate, action);
-      this.EE.addListener(WorkerEvent.Calculate, action);
+      this.EE.once(WorkerEvent.Calculate, action);
 
       this.worker.postMessage(inputMessage);
     });
@@ -742,14 +738,16 @@ class IndigoService implements StructService {
           if (!msg.hasError) {
             resolve(msg.payload);
           } else {
-            reject(msg.error);
+            reject(new Error(msg.error));
           }
         }
       };
 
       const commandOptions: CommandOptions = {
         ...this.getStandardServerOptions(restOptions),
-        'render-label-mode': getLabelRenderModeForIndigo(),
+        'render-label-mode': this.ketcherId
+          ? getLabelRenderModeForIndigo(this.ketcherId)
+          : undefined,
         'render-coloring': restOptions['render-coloring'],
         'render-font-size': restOptions['render-font-size'],
         'render-font-size-unit': restOptions['render-font-size-unit'],
@@ -764,6 +762,7 @@ class IndigoService implements StructService {
         'render-stereo-bond-width': restOptions['render-stereo-bond-width'],
         'render-stereo-bond-width-unit':
           restOptions['render-stereo-bond-width-unit'],
+        'render-stereo-style': restOptions['render-stereo-style'],
         'render-hash-spacing': restOptions['render-hash-spacing'],
         'render-hash-spacing-unit': restOptions['render-hash-spacing-unit'],
         'render-output-sheet-width': restOptions['render-output-sheet-width'],
@@ -782,8 +781,7 @@ class IndigoService implements StructService {
         data: commandData,
       };
 
-      this.EE.removeListener(WorkerEvent.GenerateImageAsBase64, action);
-      this.EE.addListener(WorkerEvent.GenerateImageAsBase64, action);
+      this.EE.once(WorkerEvent.GenerateImageAsBase64, action);
 
       this.worker.postMessage(inputMessage);
     });
@@ -807,7 +805,7 @@ class IndigoService implements StructService {
           };
           resolve(result);
         } else {
-          reject(msg.error);
+          reject(new Error(msg.error));
         }
       };
 
@@ -823,9 +821,43 @@ class IndigoService implements StructService {
         data: commandData,
       };
 
-      this.EE.removeListener(WorkerEvent.ExplicitHydrogens, action);
-      this.EE.addListener(WorkerEvent.ExplicitHydrogens, action);
+      this.EE.once(WorkerEvent.ExplicitHydrogens, action);
 
+      this.worker.postMessage(inputMessage);
+    });
+  }
+
+  calculateMacromoleculeProperties(
+    data: CalculateMacromoleculePropertiesData,
+    options?: StructServiceOptions,
+  ): Promise<CalculateMacromoleculePropertiesResult> {
+    const { struct } = data;
+
+    return new Promise((resolve, reject) => {
+      const action = ({ data }: OutputMessageWrapper) => {
+        const msg: OutputMessage<string> = data;
+
+        if (!msg.hasError) {
+          resolve(JSON.parse(msg.payload));
+        } else {
+          reject(new Error(msg.error));
+        }
+      };
+
+      const commandData: CalculateMacromoleculePropertiesCommandData = {
+        struct,
+        options: {
+          ...this.getStandardServerOptions(options),
+          upc: options?.upc,
+          nac: options?.nac,
+        },
+      };
+      const inputMessage: InputMessage<CalculateMacromoleculePropertiesData> = {
+        type: Command.CalculateMacromoleculeProperties,
+        data: commandData,
+      };
+
+      this.EE.once(WorkerEvent.CalculateMacromoleculeProperties, action);
       this.worker.postMessage(inputMessage);
     });
   }
@@ -833,8 +865,6 @@ class IndigoService implements StructService {
   public destroy() {
     this.worker.terminate();
     this.worker.onmessage = null;
-    this.worker = null;
-    worker = null;
   }
 }
 

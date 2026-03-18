@@ -1,23 +1,5 @@
-import { ketcherProvider } from 'application/utils';
-import { BaseMode } from './modes/BaseMode';
-import {
-  DEFAULT_LAYOUT_MODE,
-  HAS_CONTENT_LAYOUT_MODE,
-  modesMap,
-} from './modes';
 import { KetSerializer } from 'domain/serializers';
-
-export const initializeMode = (mode?: BaseMode): BaseMode => {
-  if (mode) {
-    return mode;
-  }
-  const ketcher = ketcherProvider.getKetcher();
-  const isBlank = ketcher?.editor?.struct().isBlank();
-  if (isBlank) {
-    return new modesMap[DEFAULT_LAYOUT_MODE]();
-  }
-  return new modesMap[HAS_CONTENT_LAYOUT_MODE]();
-};
+import { IKetMacromoleculesContent } from 'application/formatters';
 
 export const parseMonomersLibrary = (monomersDataRaw: string | JSON) => {
   const monomersLibraryParsedJson =
@@ -31,3 +13,17 @@ export const parseMonomersLibrary = (monomersDataRaw: string | JSON) => {
 
   return { monomersLibraryParsedJson, monomersLibrary };
 };
+
+export const getEmptyMonomersLibraryJson =
+  function (): IKetMacromoleculesContent {
+    // TODO fix types
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    return {
+      root: {
+        templates: [],
+        nodes: [],
+        connections: [],
+      },
+    };
+  };

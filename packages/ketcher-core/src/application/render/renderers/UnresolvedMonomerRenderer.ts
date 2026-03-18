@@ -2,17 +2,18 @@ import { BaseMonomerRenderer } from 'application/render/renderers/BaseMonomerRen
 import { UnresolvedMonomer } from 'domain/entities';
 import { Selection } from 'd3';
 
-const UNRESOLVED_MONOMER_SELECTED_ELEMENT_ID = '#unresolved-monomer-selection';
 const UNRESOLVED_MONOMER_HOVERED_ELEMENT_ID = '#unresolved-monomer-hover';
 const UNRESOLVED_MONOMER_SYMBOL_ELEMENT_ID = '#unresolved-monomer';
+const UNRESOLVED_MONOMER_AUTOCHAIN_PREVIEW_ELEMENT_ID =
+  '#unresolved-monomer-autochain-preview';
 
 export class UnresolvedMonomerRenderer extends BaseMonomerRenderer {
   constructor(public monomer: UnresolvedMonomer, scale?: number) {
     super(
       monomer,
-      UNRESOLVED_MONOMER_SELECTED_ELEMENT_ID,
       UNRESOLVED_MONOMER_HOVERED_ELEMENT_ID,
       UNRESOLVED_MONOMER_SYMBOL_ELEMENT_ID,
+      UNRESOLVED_MONOMER_AUTOCHAIN_PREVIEW_ELEMENT_ID,
       scale,
     );
   }

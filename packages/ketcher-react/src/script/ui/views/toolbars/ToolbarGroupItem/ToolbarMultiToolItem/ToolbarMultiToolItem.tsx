@@ -114,7 +114,7 @@ const ToolbarMultiToolItem = (props: Props) => {
 
     if (!currentId) {
       currentId =
-        options.filter((option) => !status[option.id]?.hidden)[0]?.id ||
+        options.filter((option) => !status[option.id]?.hidden)[0]?.id ??
         options[0].id;
     }
   }
@@ -139,7 +139,7 @@ const ToolbarMultiToolItem = (props: Props) => {
     <div
       ref={ref}
       className={classes.root}
-      data-testid={`${dataTestId || iconName}-in-toolbar`}
+      data-testid={`${id}-drop-down-button`}
     >
       <ActionButton
         {...actionButtonProps}
@@ -148,7 +148,7 @@ const ToolbarMultiToolItem = (props: Props) => {
         action={action[currentId]}
         status={currentStatus as ActionButtonProps['status']}
         selected={selected}
-        dataTestId={dataTestId || iconName}
+        dataTestId={dataTestId ?? iconName}
       />
       {!isOpen && !isDisabled && (
         <Icon
@@ -156,6 +156,7 @@ const ToolbarMultiToolItem = (props: Props) => {
             currentStatus?.selected && classes.iconSelected
           }`}
           name="dropdown"
+          dataTestId={`dropdown-expand`}
           onClick={onOpenOptions}
         />
       )}
@@ -169,6 +170,7 @@ const ToolbarMultiToolItem = (props: Props) => {
             portalClassName,
           )}
           style={portalStyle}
+          testId="multi-tool-dropdown"
         >
           <Component
             options={options}

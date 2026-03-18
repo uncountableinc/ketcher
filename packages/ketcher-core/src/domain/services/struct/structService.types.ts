@@ -36,8 +36,10 @@ export enum ChemicalMimeType {
   DNA = 'chemical/x-dna-sequence',
   PEPTIDE = 'chemical/x-peptide-sequence',
   IDT = 'chemical/x-idt',
+  AXOLABS = 'chemical/x-axo-labs',
   HELM = 'chemical/x-helm',
   RDF = 'chemical/x-rdf',
+  MonomerLibrary = 'chemical/x-monomer-library',
 }
 
 export interface WithStruct {
@@ -114,6 +116,25 @@ export interface ExplicitHydrogensData extends WithStruct, WithOutputFormat {
   mode?: 'auto' | 'fold' | 'unfold';
 }
 
+export type CalculateMacromoleculePropertiesData = WithStruct;
+
+export interface SingleChainMacromoleculeProperties {
+  grossFormula?: string;
+  mass?: number;
+  monomerCount: {
+    nucleotides?: Record<string, number>;
+    peptides?: Record<string, number>;
+  };
+  pKa?: number;
+  extinctionCoefficient?: number;
+  hydrophobicity?: number[];
+  Tm?: number;
+}
+
+export interface CalculateMacromoleculePropertiesResult {
+  properties: string;
+}
+
 export interface ExplicitHydrogensResult extends WithStruct, WithFormat {}
 
 export type CalculateProps =
@@ -159,6 +180,7 @@ export interface GenerateImageOptions extends StructServiceOptions {
 }
 
 export interface StructService {
+  addKetcherId: (id: string) => void;
   info: () => Promise<InfoResult>;
   convert: (
     data: ConvertData,
@@ -206,5 +228,9 @@ export interface StructService {
     data: ExplicitHydrogensData,
     options?: StructServiceOptions,
   ) => Promise<ExplicitHydrogensResult>;
+  calculateMacromoleculeProperties: (
+    data: CalculateMacromoleculePropertiesData,
+    options?: StructServiceOptions,
+  ) => Promise<CalculateMacromoleculePropertiesResult>;
   destroy?: () => void;
 }

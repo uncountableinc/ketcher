@@ -7,6 +7,7 @@ Object {
     <div>
       <div
         class="dialog infoModal"
+        data-testid="info-modal-window"
         role="dialog"
         tabindex="-1"
       >
@@ -21,20 +22,22 @@ Object {
           >
             <button
               class="buttonTop"
-              data-testid="close-icon"
+              data-testid="close-window-button"
             >
               <icon-close.svg
-                classname="closeButton"
+                class="closeButton"
               />
             </button>
           </div>
         </header>
         <div
           class="body withMargin"
+          data-testid="info-modal-body"
         >
           <div>
             <div
               class="pasteErrorModalBody"
+              data-testid="error-message-body"
             >
               <div>
                 Your browser doesn't allow pasting clipboard content via button. Please use shortcut instead.
@@ -64,6 +67,7 @@ Object {
         >
           <button
             class="ok"
+            data-testid="info-modal-close"
           >
             Close
           </button>
@@ -74,6 +78,7 @@ Object {
   "container": <div>
     <div
       class="dialog infoModal"
+      data-testid="info-modal-window"
       role="dialog"
       tabindex="-1"
     >
@@ -88,20 +93,22 @@ Object {
         >
           <button
             class="buttonTop"
-            data-testid="close-icon"
+            data-testid="close-window-button"
           >
             <icon-close.svg
-              classname="closeButton"
+              class="closeButton"
             />
           </button>
         </div>
       </header>
       <div
         class="body withMargin"
+        data-testid="info-modal-body"
       >
         <div>
           <div
             class="pasteErrorModalBody"
+            data-testid="error-message-body"
           >
             <div>
               Your browser doesn't allow pasting clipboard content via button. Please use shortcut instead.
@@ -131,6 +138,7 @@ Object {
       >
         <button
           class="ok"
+          data-testid="info-modal-close"
         >
           Close
         </button>
@@ -205,6 +213,7 @@ Object {
     <div>
       <div
         class="dialog infoModal"
+        data-testid="info-modal-window"
         role="dialog"
         tabindex="-1"
       >
@@ -219,16 +228,17 @@ Object {
           >
             <button
               class="buttonTop"
-              data-testid="close-icon"
+              data-testid="close-window-button"
             >
               <icon-close.svg
-                classname="closeButton"
+                class="closeButton"
               />
             </button>
           </div>
         </header>
         <div
           class="body withMargin"
+          data-testid="info-modal-body"
         >
           <div>
             This action is unavailable via menu. Instead, use shortcut to Cut.
@@ -239,6 +249,7 @@ Object {
         >
           <button
             class="ok"
+            data-testid="info-modal-close"
           >
             Close
           </button>
@@ -249,6 +260,7 @@ Object {
   "container": <div>
     <div
       class="dialog infoModal"
+      data-testid="info-modal-window"
       role="dialog"
       tabindex="-1"
     >
@@ -263,16 +275,17 @@ Object {
         >
           <button
             class="buttonTop"
-            data-testid="close-icon"
+            data-testid="close-window-button"
           >
             <icon-close.svg
-              classname="closeButton"
+              class="closeButton"
             />
           </button>
         </div>
       </header>
       <div
         class="body withMargin"
+        data-testid="info-modal-body"
       >
         <div>
           This action is unavailable via menu. Instead, use shortcut to Cut.
@@ -283,6 +296,7 @@ Object {
       >
         <button
           class="ok"
+          data-testid="info-modal-close"
         >
           Close
         </button>

@@ -1,4 +1,4 @@
-import { CoreEditor, SnakeMode } from 'application/editor';
+import { CoreEditor } from 'application/editor';
 import { FlexModePolymerBondRenderer } from 'application/render/renderers/PolymerBondRenderer/FlexModePolymerBondRenderer';
 import { SnakeModePolymerBondRenderer } from 'application/render/renderers/PolymerBondRenderer/SnakeModePolymerBondRenderer';
 import { PolymerBond } from 'domain/entities/PolymerBond';
@@ -30,10 +30,7 @@ export class PolymerBondRendererFactory {
     const mode = checkIfIsSnakeMode() ? LayoutMode.Snake : LayoutMode.Flex;
     return polymerBond instanceof HydrogenBond
       ? new SnakeModePolymerBondRenderer(polymerBond)
-      : (PolymerBondRendererFactory.createInstanceByMode(
-          mode,
-          polymerBond,
-        ) as PolymerBondRendererClass);
+      : PolymerBondRendererFactory.createInstanceByMode(mode, polymerBond);
   }
 
   public static createInstanceByMode(
@@ -52,5 +49,5 @@ export class PolymerBondRendererFactory {
 
 function checkIfIsSnakeMode(): boolean {
   const editor = CoreEditor.provideEditorInstance();
-  return editor?.mode instanceof SnakeMode;
+  return editor?.mode.modeName === 'snake-layout-mode';
 }

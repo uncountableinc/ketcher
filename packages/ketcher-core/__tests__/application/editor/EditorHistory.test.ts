@@ -1,18 +1,15 @@
-import { CoreEditor, EditorHistory, FlexMode } from 'application/editor';
+import { CoreEditor, EditorHistory } from 'application/editor';
 import { createPolymerEditorCanvas } from '../../helpers/dom';
 import { Command } from 'domain/entities/Command';
-import { BaseMode } from 'application/editor/modes/BaseMode';
 
 describe('EditorHistory', () => {
   let canvas;
   let editor: CoreEditor;
   let history: EditorHistory;
-  let mode: BaseMode;
   beforeEach(() => {
-    mode = new FlexMode();
     canvas = createPolymerEditorCanvas();
-    editor = new CoreEditor({ theme: {}, canvas, mode });
-    history = new EditorHistory(editor);
+    editor = new CoreEditor({ theme: {}, canvas });
+    history = EditorHistory.getInstance(editor);
   });
 
   afterEach(() => {
@@ -20,13 +17,13 @@ describe('EditorHistory', () => {
   });
 
   it('should be a singletone', () => {
-    const historyInstance2 = new EditorHistory(editor);
+    const historyInstance2 = EditorHistory.getInstance(editor);
     expect(history).toBe(historyInstance2);
   });
 
   it('should create another instance after destroy', () => {
     history.destroy();
-    const historyInstance2 = new EditorHistory(editor);
+    const historyInstance2 = EditorHistory.getInstance(editor);
     expect(history).not.toBe(historyInstance2);
   });
 

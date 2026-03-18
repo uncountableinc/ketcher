@@ -33,9 +33,10 @@ const StyledFormControl = styled(FormControl)`
 
 const DropDownSelect = styled(Select)`
   height: 24px;
-  border: 1px solid #5b6077;
+  border: 1px solid #e1e5ea;
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 12px;
+  background-color: white;
 
   ${({ open }) =>
     open &&
@@ -48,10 +49,12 @@ const DropDownSelect = styled(Select)`
   & .MuiSelect-select {
     padding: 0 24px 0 8px;
     height: 100%;
+    display: flex;
+    align-items: center;
   }
 
   & span {
-    ${({ theme }) => `font-size: ${theme.ketcher.font.size.medium}`}
+    ${({ theme }) => `font-size: ${theme.ketcher.font.size.regular}`}
   }
 
   & .MuiOutlinedInput-notchedOutline {
@@ -60,7 +63,6 @@ const DropDownSelect = styled(Select)`
 `;
 
 const stylesForExpanded: CSSProperties = {
-  width: '120px',
   backgroundColor: 'white',
   border: '1px solid #5B6077',
   borderTopWidth: '0',
@@ -74,14 +76,14 @@ const DropDownItem = styled(MenuItem)`
   justify-content: space-between;
   padding: 0 8px;
   height: 28px;
-  font-size: 14px;
+  font-size: 12px;
 
   &.MuiButtonBase-root:hover {
     border-left: 2px solid #167782;
   }
 
   & .MuiTypography-root {
-    ${({ theme }) => `font-size: ${theme.ketcher.font.size.medium}`}
+    ${({ theme }) => `font-size: ${theme.ketcher.font.size.regular}`}
   }
 `;
 
@@ -150,7 +152,7 @@ export const DropDown = ({
         IconComponent={ChevronIcon}
         disabled={disabled}
         fullWidth
-        data-testid={testId || 'dropdown-select'}
+        data-testid={testId ?? 'dropdown-select'}
         MenuProps={{
           PaperProps: {
             style: { ...stylesForExpanded, ...customStylesForExpanded },
@@ -161,7 +163,11 @@ export const DropDown = ({
         }}
       >
         {options.map((item: Option) => (
-          <DropDownItem key={item.id} value={item.id}>
+          <DropDownItem
+            key={item.id}
+            value={item.id}
+            data-testid={`${item.label}-option`}
+          >
             <ListItemText primary={item.label} />
           </DropDownItem>
         ))}

@@ -31,6 +31,7 @@ import styled from '@emotion/styled';
 import classes from './template-lib.module.less';
 import { css } from '@emotion/react';
 import { Button } from '@mui/material';
+import { ketcherProvider } from 'ketcher-core';
 
 // @TODO When theming is implemented, use theme wherever possible
 const TemplateEditDialog = styled(Dialog)`
@@ -207,6 +208,13 @@ class Attach extends Component {
     this.tmpl = initTmpl(props.tmpl);
     onInit(this.tmpl.struct.name, this.tmpl.props);
     this.onResult = this.onResult.bind(this);
+    const ketcher = ketcherProvider.getKetcher(props.ketcherId);
+    this.oldKetcherEditor = ketcher.editor;
+  }
+
+  componentWillUnmount() {
+    const ketcher = ketcherProvider.getKetcher(this.props.ketcherId);
+    ketcher.addEditor(this.oldKetcherEditor);
   }
 
   onResult() {
@@ -284,6 +292,7 @@ class Attach extends Component {
             <Editor>
               <StructEditor
                 className="structEditor"
+                ketcherId={this.props.ketcherId}
                 struct={struct}
                 onAttachEdit={onAttachEdit}
                 tool="attach"
@@ -304,7 +313,7 @@ class Attach extends Component {
               placeholder="template"
             />
             <span>Selected attachment points</span>
-            <AttachmentOutput>
+            <AttachmentOutput data-testid="attach-output">
               Atom ID: <strong>{atomid}</strong> Bond ID:{' '}
               <strong>{bondid}</strong>
             </AttachmentOutput>
@@ -313,6 +322,7 @@ class Attach extends Component {
                 variant="outlined"
                 onClick={this.props.onCancel}
                 className={classes.button}
+                data-testid="template-cancel-button"
               >
                 Cancel
               </CancelButton>
@@ -321,6 +331,11 @@ class Attach extends Component {
                 onClick={() => this.props.onOk(this.onResult())}
                 className={classes.button}
                 disabled={!this.checkIsValidName(name)}
+                data-testid={
+                  this.mode === this.MODES.SAVE
+                    ? 'template-save-button'
+                    : 'template-edit-button'
+                }
               >
                 {this.mode === this.MODES.SAVE ? 'Save' : 'Edit'}
               </SaveButton>

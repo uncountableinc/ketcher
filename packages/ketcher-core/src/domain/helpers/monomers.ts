@@ -1,6 +1,8 @@
 import {
   AmbiguousMonomer,
   BaseMonomer,
+  HydrogenBond,
+  MONOMER_CLASS_TO_CONSTRUCTOR,
   Peptide,
   Phosphate,
   RNABase,
@@ -15,9 +17,12 @@ import {
 } from 'domain/types';
 import { PolymerBond } from 'domain/entities/PolymerBond';
 import { IVariantMonomer } from 'domain/entities/types';
-import { KetMonomerClass } from 'application/formatters';
-import { MONOMER_CLASS_TO_CONSTRUCTOR } from 'domain/constants/monomers';
+import {
+  KetMonomerClass,
+  KetMonomerTemplateAtom,
+} from 'application/formatters';
 import { MonomerToAtomBond } from 'domain/entities/MonomerToAtomBond';
+import { IRnaPreset } from 'application/editor';
 
 export function getMonomerUniqueKey(monomer: MonomerItemType) {
   return `${monomer.props.MonomerName}___${monomer.props.Name}`;
@@ -166,6 +171,19 @@ export function getSugarFromRnaBase(monomer?: BaseMonomer) {
     : undefined;
 }
 
+export function isBondBetweenSugarAndBaseOfRna(polymerBond: PolymerBond) {
+  return (
+    (polymerBond.firstMonomerAttachmentPoint === AttachmentPointName.R1 &&
+      isRnaBaseOrAmbiguousRnaBase(polymerBond.firstMonomer) &&
+      polymerBond.secondMonomerAttachmentPoint === AttachmentPointName.R3 &&
+      polymerBond.secondMonomer instanceof Sugar) ||
+    (polymerBond.firstMonomerAttachmentPoint === AttachmentPointName.R3 &&
+      polymerBond.firstMonomer instanceof Sugar &&
+      polymerBond.secondMonomerAttachmentPoint === AttachmentPointName.R1 &&
+      isRnaBaseOrAmbiguousRnaBase(polymerBond.secondMonomer))
+  );
+}
+
 export function getPhosphateFromSugar(monomer?: BaseMonomer) {
   if (!monomer) return undefined;
   const nextMonomerInChain = getNextMonomerInChain(monomer);
@@ -243,6 +261,7 @@ export function isValidNucleoside(
   }
 
   const nextMonomerAfterPhosphate = getNextMonomerInChain(phosphate);
+
   return !nextMonomerAfterPhosphate;
 }
 
@@ -255,6 +274,33 @@ export function isAmbiguousMonomerLibraryItem(
 ): monomer is AmbiguousMonomerType {
   return Boolean(monomer && monomer.isAmbiguous);
 }
+
+export const isLibraryItemRnaPreset = (
+  item: IRnaPreset | MonomerOrAmbiguousType,
+): item is IRnaPreset => {
+  return 'sugar' in item;
+};
+
+export const libraryItemHasR1AttachmentPoint = (
+  libraryItem: MonomerOrAmbiguousType | IRnaPreset,
+  attachmentPointName: AttachmentPointName = AttachmentPointName.R1,
+) => {
+  // Rely on MonomerCaps field is not the best approach,
+  // but for indeterminate library items it is universal and easy.
+  if (isLibraryItemRnaPreset(libraryItem)) {
+    return Boolean(
+      libraryItem.sugar?.props?.MonomerCaps?.[attachmentPointName],
+    );
+  } else if (isAmbiguousMonomerLibraryItem(libraryItem)) {
+    return libraryItem.monomers.every((monomer) =>
+      monomer.isAttachmentPointExistAndFree(
+        AttachmentPointName[attachmentPointName],
+      ),
+    );
+  } else {
+    return libraryItem.props.MonomerCaps?.[attachmentPointName];
+  }
+};
 
 export function isPeptideOrAmbiguousPeptide(
   monomer?: BaseMonomer,
@@ -275,3 +321,152 @@ export function isRnaBaseOrAmbiguousRnaBase(
       monomer.monomerClass === KetMonomerClass.Base)
   );
 }
+
+export function isRnaBaseApplicableForAntisense(monomer?: BaseMonomer) {
+  return (
+    monomer instanceof UnsplitNucleotide ||
+    (isRnaBaseOrAmbiguousRnaBase(monomer) &&
+      Boolean(getSugarFromRnaBase(monomer)))
+  );
+}
+
+export function getAllConnectedMonomersRecursively(
+  monomer: BaseMonomer,
+): BaseMonomer[] {
+  const stack = [monomer];
+  const visited = new Set<BaseMonomer>();
+  const connectedMonomers: BaseMonomer[] = [];
+
+  while (stack.length > 0) {
+    const currentMonomer = stack.pop();
+
+    if (!currentMonomer || visited.has(currentMonomer)) {
+      continue;
+    }
+
+    visited.add(currentMonomer);
+    connectedMonomers.push(currentMonomer);
+
+    currentMonomer.forEachBond((bond) => {
+      if (bond instanceof PolymerBond || bond instanceof HydrogenBond) {
+        const anotherMonomer = bond.getAnotherMonomer(currentMonomer);
+        if (anotherMonomer && !visited.has(anotherMonomer)) {
+          stack.push(anotherMonomer);
+        }
+      }
+    });
+  }
+
+  return connectedMonomers;
+}
+
+export const canModifyAminoAcid = (
+  monomer: BaseMonomer,
+  modificationMonomerLibraryItem: MonomerItemType,
+) => {
+  return (
+    (monomer.isAttachmentPointExistAndFree(AttachmentPointName.R1) ||
+      modificationMonomerLibraryItem.props.MonomerCaps?.R1) &&
+    (monomer.isAttachmentPointExistAndFree(AttachmentPointName.R2) ||
+      modificationMonomerLibraryItem.props.MonomerCaps?.R2)
+  );
+};
+
+export const getAminoAcidsToModify = (
+  monomers: BaseMonomer[],
+  modificationType: string,
+  monomersLibrary: MonomerItemType[],
+) => {
+  const naturalAnalogueToModifiedMonomerItem = new Map<
+    string,
+    MonomerItemType
+  >();
+  const aminoAcidsToModify = new Map<BaseMonomer, MonomerItemType>();
+
+  monomersLibrary.forEach((libraryItem) => {
+    if (!libraryItem.props?.modificationTypes?.includes(modificationType)) {
+      return;
+    }
+    const monomerNaturalAnalogCode = libraryItem.props.MonomerNaturalAnalogCode;
+
+    if (monomerNaturalAnalogCode) {
+      naturalAnalogueToModifiedMonomerItem.set(
+        monomerNaturalAnalogCode,
+        libraryItem,
+      );
+    }
+  });
+
+  monomers.forEach((monomer) => {
+    const monomerNaturalAnalogCode =
+      monomer.monomerItem.props.MonomerNaturalAnalogCode;
+    const modifiedMonomerItem = naturalAnalogueToModifiedMonomerItem.get(
+      monomerNaturalAnalogCode,
+    );
+
+    if (
+      modifiedMonomerItem &&
+      monomer.label !== modifiedMonomerItem.label &&
+      canModifyAminoAcid(monomer, modifiedMonomerItem)
+    ) {
+      aminoAcidsToModify.set(monomer, modifiedMonomerItem);
+    }
+  });
+
+  return aminoAcidsToModify;
+};
+
+export const isHelmCompatible = (
+  monomers: BaseMonomer[],
+  monomersLibrary: MonomerItemType[],
+) => {
+  return monomers
+    .map((monomer) =>
+      monomersLibrary.find((libraryMonomer) =>
+        isAmbiguousMonomerLibraryItem(libraryMonomer)
+          ? libraryMonomer.id === monomer.monomerItem.props.id
+          : libraryMonomer.props?.id === monomer.monomerItem.props.id,
+      ),
+    )
+    .every((monomer) => Boolean(monomer?.props.aliasHELM));
+};
+
+export const normalizeMonomerAtomsPositions = (
+  atoms: KetMonomerTemplateAtom[],
+) => {
+  const bbox = {
+    x: 99999,
+    y: -99999,
+    x2: -9999,
+    y2: 9999,
+  };
+
+  atoms.forEach((atom) => {
+    if (atom.location[0] < bbox.x) {
+      bbox.x = atom.location[0];
+    }
+    if (atom.location[0] > bbox.x2) {
+      bbox.x2 = atom.location[0];
+    }
+    if (atom.location[1] > bbox.y) {
+      bbox.y = atom.location[1];
+    }
+    if (atom.location[1] < bbox.y2) {
+      bbox.y2 = atom.location[1];
+    }
+  });
+
+  const center = {
+    x: (bbox.x2 - bbox.x) / 2,
+    y: (bbox.y2 - bbox.y) / 2,
+  };
+
+  return atoms.map((atom) => ({
+    ...atom,
+    location: [
+      Number((atom.location[0] - bbox.x - center.x).toFixed(3)),
+      Number((atom.location[1] - bbox.y - center.y).toFixed(3)),
+      atom.location[2],
+    ] as [number, number, number],
+  }));
+};

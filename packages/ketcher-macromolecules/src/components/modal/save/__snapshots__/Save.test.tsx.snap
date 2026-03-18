@@ -29,14 +29,16 @@ Object {
         tabindex="-1"
       >
         <div
-          aria-labelledby=":r0:"
+          aria-labelledby="«r0»"
           class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation24 MuiDialog-paper MuiDialog-paperScrollPaper MuiDialog-paperWidthSm css-1t1j96h-MuiPaper-root-MuiDialog-paper"
+          data-testid="save-structure-dialog"
           role="dialog"
           style="background: rgb(255, 255, 255); border-radius: 8px; color: rgb(51, 51, 51);"
+          testid="save-structure-dialog"
         >
           <h2
-            class="MuiTypography-root MuiTypography-h6 MuiDialogTitle-root css-o07hi-MuiTypography-root-MuiDialogTitle-root"
-            id=":r0:"
+            class="MuiTypography-root MuiTypography-h6 MuiDialogTitle-root css-15hei83-MuiTypography-root-MuiDialogTitle-root"
+            id="«r0»"
           >
             <div
               class="css-1uarmuk"
@@ -46,6 +48,7 @@ Object {
             <span>
               <button
                 class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                data-testid="close-window-button"
                 tabindex="0"
                 title="Close window"
                 type="button"
@@ -90,6 +93,7 @@ Object {
                     </span>
                     <input
                       class="css-1w4st8l"
+                      data-testid="filename-input"
                       id="filename"
                       type="text"
                       value="ketcher"
@@ -97,7 +101,7 @@ Object {
                   </label>
                 </div>
                 <div
-                  class="MuiFormControl-root css-11lzrtt-MuiFormControl-root"
+                  class="MuiFormControl-root css-lvo21p-MuiFormControl-root"
                 >
                   <label
                     for="fileformat"
@@ -105,11 +109,11 @@ Object {
                     File format:
                   </label>
                   <div
-                    class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-1h8rp84-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root"
-                    data-testid="dropdown-select"
+                    class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-1ydgb7t-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root"
+                    data-testid="file-format-list"
                   >
                     <div
-                      aria-controls=":r1:"
+                      aria-controls="«r1»"
                       aria-expanded="false"
                       aria-haspopup="listbox"
                       class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input css-11u53oe-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
@@ -117,7 +121,7 @@ Object {
                       tabindex="0"
                     >
                       <span>
-                        Ket
+                        Ket Format
                       </span>
                     </div>
                     <input
@@ -142,10 +146,10 @@ Object {
                     </svg>
                     <fieldset
                       aria-hidden="true"
-                      class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
+                      class="MuiOutlinedInput-notchedOutline css-r01yff-MuiNotchedOutlined-root-MuiOutlinedInput-notchedOutline"
                     >
                       <legend
-                        class="css-ihdtdm"
+                        class="css-1whs34k-MuiNotchedOutlined-root"
                       >
                         <span
                           class="notranslate"
@@ -162,7 +166,7 @@ Object {
               >
                 <textarea
                   class="css-evzoup"
-                  data-testid="preview-area-text"
+                  data-testid="preview-area"
                   readonly=""
                 >
                   {
@@ -174,7 +178,7 @@ Object {
 }
                 </textarea>
                 <button
-                  class="css-1kbfai8"
+                  class="css-kp5gpq"
                   data-testid="copy-to-clipboard"
                   title="Copy to clipboard"
                 >
@@ -200,7 +204,7 @@ Object {
           >
             <button
               class="MuiButtonBase-root css-fevlc0-MuiButtonBase-root"
-              role="button"
+              data-testid="cancel-button"
               tabindex="0"
               title="Cancel"
               type="button"
@@ -212,7 +216,7 @@ Object {
             </button>
             <button
               class="MuiButtonBase-root css-1gvl3mi-MuiButtonBase-root"
-              role="button"
+              data-testid="save-button"
               tabindex="0"
               title="Save"
               type="button"

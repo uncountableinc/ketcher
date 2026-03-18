@@ -3,6 +3,7 @@ import { BaseMode } from 'application/editor/modes/internal';
 import { CoreEditor } from '../Editor';
 import { Coordinates } from '../internal';
 import { Command } from 'domain/entities/Command';
+import { DrawingEntitiesManager } from 'domain/entities/DrawingEntitiesManager';
 
 export class FlexMode extends BaseMode {
   constructor(previousMode?: LayoutMode) {
@@ -20,10 +21,6 @@ export class FlexMode extends BaseMode {
 
     editor.renderersContainer.update(modelChanges);
 
-    if (this.previousMode === 'sequence-layout-mode') {
-      editor.scrollToTopLeftCorner();
-    }
-
     return command;
   }
 
@@ -33,23 +30,25 @@ export class FlexMode extends BaseMode {
     return Coordinates.canvasToModel(editor.lastCursorPositionOfCanvas);
   }
 
-  applyAdditionalPasteOperations() {
+  applyAdditionalPasteOperations(
+    mergedDrawingEntities: DrawingEntitiesManager,
+  ) {
     const command = new Command();
     const editor = CoreEditor.provideEditorInstance();
 
     editor.drawingEntitiesManager.recalculateAntisenseChains();
+    command.merge(
+      editor.drawingEntitiesManager.selectDrawingEntities(
+        mergedDrawingEntities.allEntitiesArray,
+      ),
+    );
 
     if (!editor.drawingEntitiesManager.hasAntisenseChains) {
       return command;
     }
 
     command.merge(
-      editor.drawingEntitiesManager.applySnakeLayout(
-        editor.canvas.width.baseVal.value,
-        true,
-        true,
-        true,
-      ),
+      editor.drawingEntitiesManager.applySnakeLayout(true, true, true),
     );
 
     command.setUndoOperationsByPriority();

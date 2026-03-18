@@ -16,7 +16,7 @@
 
 import styled from '@emotion/styled';
 
-import { useResizeObserver } from 'src/hooks';
+import { useAppContext, useResizeObserver } from 'src/hooks';
 import { FileControls } from './FileControls';
 import { ClipboardControls } from './ClipboardControls';
 import { UndoRedo } from './UndoRedo';
@@ -158,7 +158,11 @@ export const TopToolbar = ({
   customButtons,
 }: PanelProps) => {
   const { ref: resizeRef, width = 50 } = useResizeObserver<HTMLDivElement>();
-  const ketcher = ketcherProvider.getKetcher();
+  const { ketcherId } = useAppContext();
+  const ketcher = useMemo(
+    () => ketcherProvider.getKetcher(ketcherId),
+    [ketcherId],
+  );
 
   const onCustomAction = useCallback(
     (name: string) => ketcher.sendCustomAction(name),
@@ -240,9 +244,6 @@ export const TopToolbar = ({
         {togglerComponent && <Divider />}
 
         <SystemControls
-          onHistoryClick={() => {
-            console.log('History button clicked'); // @TODO Implement handler when History log is ready
-          }}
           onSettingsOpen={onSettingsOpen}
           onFullscreen={onFullscreen}
           onHelp={onHelp}
@@ -253,7 +254,7 @@ export const TopToolbar = ({
         <Divider />
         {!hiddenButtons.includes('zoom-list') && (
           <ZoomControls
-            currentZoom={currentZoom || 1}
+            currentZoom={currentZoom ?? 1}
             onZoomIn={onZoomIn}
             onZoomOut={onZoomOut}
             onZoom={onZoom}

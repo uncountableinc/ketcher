@@ -22,21 +22,27 @@ import {
   UnresolvedMonomerSequenceItemRenderer,
   UnsplitNucleotideSequenceItemRenderer,
 } from 'application/render';
-import { SubChainNode } from 'domain/entities/monomer-chains/types';
-import { BaseSubChain } from 'domain/entities/monomer-chains/BaseSubChain';
+import { SequenceNode } from 'domain/entities/monomer-chains/types';
 import { AmbiguousMonomerSequenceNode } from 'domain/entities/AmbiguousMonomerSequenceNode';
 import { AmbiguousSequenceItemRenderer } from 'application/render/renderers/sequence/AmbiguousSequenceItemRenderer';
+import { Chain } from 'domain/entities/monomer-chains/Chain';
+import { BackBoneSequenceItemRenderer } from 'application/render/renderers/sequence/BackBoneSequenceItemRenderer';
+import { BackBoneSequenceNode } from 'domain/entities/BackBoneSequenceNode';
+import { ITwoStrandedChainItem } from 'domain/entities/monomer-chains/ChainsCollection';
 
 export class SequenceNodeRendererFactory {
   static fromNode(
-    node: SubChainNode,
+    node: SequenceNode,
     firstMonomerInChainPosition: Vec2,
     monomerIndexInChain: number,
     isLastMonomerInChain: boolean,
-    subChain: BaseSubChain,
-    isEditingSymbol: boolean,
+    chain: Chain,
+    nodeIndexOverall: number,
+    editingNodeIndexOverall: number,
+    twoStrandedNode: ITwoStrandedChainItem,
     renderer?: BaseMonomerRenderer | BaseSequenceItemRenderer,
-  ) {
+    previousRowsWithAntisense = 0,
+  ): BaseSequenceItemRenderer {
     let RendererClass;
 
     switch (node.constructor) {
@@ -48,6 +54,9 @@ export class SequenceNodeRendererFactory {
         break;
       case EmptySequenceNode:
         RendererClass = EmptySequenceItemRenderer;
+        break;
+      case BackBoneSequenceNode:
+        RendererClass = BackBoneSequenceItemRenderer;
         break;
       case LinkerSequenceNode:
         RendererClass = ChemSequenceItemRenderer;
@@ -83,10 +92,13 @@ export class SequenceNodeRendererFactory {
       firstMonomerInChainPosition,
       monomerIndexInChain,
       isLastMonomerInChain,
-      subChain,
-      isEditingSymbol,
+      chain,
+      nodeIndexOverall,
+      editingNodeIndexOverall,
       renderer?.monomerSize,
       renderer?.scaledMonomerPosition,
+      twoStrandedNode,
+      previousRowsWithAntisense,
     );
   }
 }

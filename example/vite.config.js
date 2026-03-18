@@ -12,6 +12,7 @@ import { valuesToReplace as ketcherReactValues } from '../packages/ketcher-react
 import ketcherReactTSConfig from '../packages/ketcher-react/tsconfig.json';
 import ketcherStandaloneTSConfig from '../packages/ketcher-standalone/tsconfig.json';
 import { envVariables as exampleEnv } from './config/webpack.config';
+import { INDIGO_WORKER_IMPORTS } from '../packages/ketcher-standalone/rollup.config';
 import commonjs from 'vite-plugin-commonjs';
 
 const dotEnv = loadEnv('development', '.', '');
@@ -26,11 +27,9 @@ function resolver(source, importer, options) {
   const packageName = importer.match(/packages[\\/](.*?)[\\/]/)[1];
   const updatedId = source.replace('%packageName%', packageName);
 
-  return this.resolve(
-    updatedId,
-    importer,
-    Object.assign({ skipSelf: true }, options),
-  ).then((resolved) => resolved || { id: updatedId });
+  return this.resolve(updatedId, importer, { skipSelf: true, ...options }).then(
+    (resolved) => resolved || { id: updatedId },
+  );
 }
 
 const getTSConfigByPackage = (packageName) => {
@@ -204,14 +203,19 @@ export default defineConfig({
 
       /** Web worker in ketcher-standalone */
       {
-        find: 'web-worker:./indigoWorker',
-        replacement: './indigoWorker?worker',
+        find: 'web-worker:./../indigoWorker',
+        replacement: './../indigoWorker?worker',
       },
       {
         find: '_indigo-ketcher-import-alias_',
         replacement: 'indigo-ketcher',
       },
+      {
+        find: '_indigo-worker-import-alias_',
+        replacement: INDIGO_WORKER_IMPORTS.WASM_LOADER,
+      },
     ],
   },
   customLogger: logger,
+  tsconfig: './tsconfig.json',
 });

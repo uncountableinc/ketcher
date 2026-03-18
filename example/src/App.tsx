@@ -1,12 +1,11 @@
+import { StrictMode, useEffect, useState } from 'react';
+import { ButtonsConfig, Editor, InfoModal } from 'ketcher-react';
+import { Ketcher, StructServiceProvider } from 'ketcher-core';
+
 import 'ketcher-react/dist/index.css';
 
-import { useState } from 'react';
-import { ButtonsConfig, Editor, InfoModal } from 'ketcher-react';
-import {
-  Ketcher,
-  RemoteStructServiceProvider,
-  StructServiceProvider,
-} from 'ketcher-core';
+import { getStructServiceProvider } from './utils';
+import { safePostMessage } from './utils/safePostMessage';
 
 const getHiddenButtonsConfig = (): ButtonsConfig => {
   const searchParams = new URLSearchParams(window.location.search);
@@ -18,35 +17,8 @@ const getHiddenButtonsConfig = (): ButtonsConfig => {
     if (button) acc[button] = { hidden: true };
 
     return acc;
-  }, {});
+  }, {} as { [val: string]: { hidden: boolean } });
 };
-
-let structServiceProvider: StructServiceProvider =
-  new RemoteStructServiceProvider(
-    process.env.API_PATH || process.env.REACT_APP_API_PATH,
-  );
-if (process.env.MODE === 'standalone') {
-  if (process.env.USE_SEPARATE_INDIGO_WASM === 'true') {
-    // It is possible to use just 'ketcher-standalone' instead of ketcher-standalone/dist/binaryWasm
-    // however, it will increase the size of the bundle more than two times because wasm will be
-    // included in ketcher bundle as base64 string.
-    // In case of usage ketcher-standalone/dist/binaryWasm additional build configuration required
-    // to copy .wasm files in build folder. Please check /example/config/webpack.config.js.
-    const {
-      StandaloneStructServiceProvider,
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-    } = require('ketcher-standalone/dist/binaryWasm');
-    structServiceProvider =
-      new StandaloneStructServiceProvider() as StructServiceProvider;
-  } else {
-    const {
-      StandaloneStructServiceProvider,
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-    } = require('ketcher-standalone');
-    structServiceProvider =
-      new StandaloneStructServiceProvider() as StructServiceProvider;
-  }
-}
 
 const EXTERNAL_ZOOM_SCALE = 1.0;
 
@@ -55,8 +27,18 @@ const App = () => {
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
+  const [structServiceProvider, setStructServiceProvider] =
+    useState<StructServiceProvider | null>(null);
+  useEffect(() => {
+    getStructServiceProvider().then(setStructServiceProvider);
+  }, []);
+
+  if (!structServiceProvider) {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <>
+    <StrictMode>
       <div
         style={{ transform: `scale(${EXTERNAL_ZOOM_SCALE})`, height: '100%' }}
       >
@@ -69,37 +51,33 @@ const App = () => {
           staticResourcesUrl={process.env.PUBLIC_URL}
           structServiceProvider={structServiceProvider}
           onInit={(ketcher: Ketcher) => {
+            window.ketcher = ketcher;
             ketcher.editor.setOptions(
               JSON.stringify({
                 externalZoomScale: EXTERNAL_ZOOM_SCALE,
               }),
             );
-            window.ketcher = ketcher;
-
-            window.parent.postMessage(
-              {
-                eventType: 'init',
-              },
-              '*',
-            );
+            safePostMessage({
+              eventType: 'init',
+            });
             window.scrollTo(0, 0);
           }}
         />
-      </div>
-      {hasError && (
-        <InfoModal
-          message={errorMessage}
-          close={() => {
-            setHasError(false);
+        {hasError && (
+          <InfoModal
+            message={errorMessage}
+            close={() => {
+              setHasError(false);
 
-            // Focus on editor after modal is closed
-            const cliparea: HTMLElement | null =
-              document.querySelector('.cliparea');
-            cliparea?.focus();
-          }}
-        />
-      )}
-    </>
+              // Focus on editor after modal is closed
+              const cliparea: HTMLElement | null =
+                document.querySelector('.cliparea');
+              cliparea?.focus();
+            }}
+          />
+        )}
+      </div>
+    </StrictMode>
   );
 };
 
