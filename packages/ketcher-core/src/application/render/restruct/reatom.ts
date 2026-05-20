@@ -398,6 +398,20 @@ class ReAtom extends ReObject {
       return;
     }
 
+    if (atom.label === '*') {
+      const isSruNeiAtom = atom.neighbors.some((hbid) => {
+        const hb = struct.halfBonds.get(hbid);
+        if (!hb) return false;
+        const neighborAtom = struct.atoms.get(hb.end);
+        if (!neighborAtom) return false;
+        return [...neighborAtom.sgs].some((sgid) => {
+          if (atom.sgs.has(sgid)) return false;
+          return struct.sgroups.get(sgid)?.type === 'SRU';
+        });
+      });
+      if (isSruNeiAtom) return;
+    }
+
     this.hydrogenOnTheLeft = shouldHydrogenBeOnLeft(restruct.molecule, this);
     this.showLabel = isLabelVisible(restruct, render.options, this);
     this.color = 'black'; // reset color
