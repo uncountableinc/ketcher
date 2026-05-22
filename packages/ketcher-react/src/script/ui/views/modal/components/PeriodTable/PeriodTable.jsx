@@ -24,7 +24,7 @@ import { addAtoms } from '../../../../state/toolbar';
 import classes from './PeriodTable.module.less';
 import { connect } from 'react-redux';
 import { onAction } from '../../../../state';
-import { xor } from 'lodash/fp';
+import xor from 'lodash/fp/xor';
 import { Icon } from 'components';
 
 class Table extends Component {

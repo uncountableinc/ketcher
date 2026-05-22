@@ -32,7 +32,8 @@ import {
   initHotKeys,
   getStructStringFromClipboardData,
 } from 'ketcher-core';
-import { debounce, isEqual } from 'lodash/fp';
+import debounce from 'lodash/fp/debounce';
+import isEqual from 'lodash/fp/isEqual';
 import { load, onAction, removeStructAction } from './shared';
 
 import actions from '../action';

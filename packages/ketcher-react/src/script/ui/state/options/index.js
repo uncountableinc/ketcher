@@ -21,7 +21,7 @@ import {
 } from '../../data/schema/options-schema';
 import { KETCHER_SAVED_OPTIONS_KEY } from 'ketcher-core';
 
-import { pick } from 'lodash/fp';
+import pick from 'lodash/fp/pick';
 import { storage } from '../../storage-ext';
 import { reinitializeTemplateLibrary } from '../templates/init-lib';
 

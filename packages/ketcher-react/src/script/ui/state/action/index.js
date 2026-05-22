@@ -14,7 +14,9 @@
  * limitations under the License.
  ***************************************************************************/
 
-import { isEmpty, isEqual, pickBy } from 'lodash/fp';
+import isEmpty from 'lodash/fp/isEmpty';
+import isEqual from 'lodash/fp/isEqual';
+import pickBy from 'lodash/fp/pickBy';
 import { SettingsManager } from 'ketcher-core';
 import actions from '../../action';
 

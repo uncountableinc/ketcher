@@ -15,8 +15,7 @@
  ***************************************************************************/
 
 import { Elements } from 'ketcher-core';
-import { capitalize } from 'lodash/fp';
-
+import capitalize from 'lodash/fp/capitalize';
 interface ElementNumberProps {
   label: string;
 }

@@ -19,8 +19,7 @@ import { useClickOutside } from '../../../../../../../hooks/useClickOutside';
 
 import classes from './FontControl.module.less';
 
-import { range } from 'lodash/fp';
-
+import range from 'lodash/fp/range';
 export const FontControl = ({ editorState, setEditorState, styles }) => {
   const defaultFontSize = '13px';
   const [isShowingFontSizeMenu, setIsShowingFontSizeMenu] = useState(false);

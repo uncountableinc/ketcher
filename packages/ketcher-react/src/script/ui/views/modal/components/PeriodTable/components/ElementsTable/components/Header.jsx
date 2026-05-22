@@ -14,8 +14,7 @@
  * limitations under the License.
  ***************************************************************************/
 
-import { range } from 'lodash/fp';
-
+import range from 'lodash/fp/range';
 const PERIODIC_TABLE_COLUMNS = 19;
 
 function Header() {

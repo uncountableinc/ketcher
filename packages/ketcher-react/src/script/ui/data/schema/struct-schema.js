@@ -15,7 +15,7 @@
  ***************************************************************************/
 
 import { mapOf } from './schema-helper';
-import { range } from 'lodash/fp';
+import range from 'lodash/fp/range';
 import { sdataCustomSchema } from './sdata-schema';
 
 export const atom = {

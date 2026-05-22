@@ -36,7 +36,7 @@ import { SdfSerializer } from 'ketcher-core';
 import classes from './template-lib.module.less';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
-import { omit } from 'lodash/fp';
+import omit from 'lodash/fp/omit';
 import { onAction } from '../../state';
 import { functionalGroupsSelector } from '../../state/functionalGroups/selectors';
 import { saltsAndSolventsSelector } from '../../state/saltsAndSolvents/selectors';

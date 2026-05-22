@@ -14,8 +14,9 @@
  * limitations under the License.
  ***************************************************************************/
 
-import { capitalize, isEqual, throttle } from 'lodash/fp';
-
+import capitalize from 'lodash/fp/capitalize';
+import isEqual from 'lodash/fp/isEqual';
+import throttle from 'lodash/fp/throttle';
 import { basicAtoms } from '../../action/atoms';
 import tools from '../../action/tools';
 
