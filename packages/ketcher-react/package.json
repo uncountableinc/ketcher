@@ -62,7 +62,7 @@
     "jsonschema": "^1.4.1",
     "ketcher-core": "*",
     "lodash": "^4.17.21",
-    "miew-react": "^1.0.0",
+    "miew-react": "^0.11.0",
     "native-url": "^0.3.4",
     "react-colorful": "^5.4.0",
     "react-contexify": "^6.0.0",
