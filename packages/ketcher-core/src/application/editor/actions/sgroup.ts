@@ -31,7 +31,7 @@ import { atomGetAttr, atomGetDegree, atomGetSGroups } from './utils';
 
 import { Action } from './action';
 import { SgContexts } from '..';
-import { uniq } from 'lodash/fp';
+import uniq from 'lodash/fp/uniq';
 import { fromAtomsAttrs } from './atom';
 import {
   SGroupAttachmentPointAdd,

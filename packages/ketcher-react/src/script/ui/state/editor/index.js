@@ -28,7 +28,7 @@ import {
 
 import { Elements, KetcherLogger } from 'ketcher-core';
 import acts from '../../action';
-import { debounce } from 'lodash/fp';
+import debounce from 'lodash/fp/debounce';
 import { openDialog } from '../modal';
 import { highlightFG } from '../functionalGroups';
 import { serverCall } from '../server';

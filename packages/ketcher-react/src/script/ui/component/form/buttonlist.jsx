@@ -14,8 +14,7 @@
  * limitations under the License.
  ***************************************************************************/
 
-import { xor } from 'lodash/fp';
-
+import xor from 'lodash/fp/xor';
 function oneOrMore(multipl, values, item) {
   if (multipl) return xor(values, [item]);
   return xor(values, values.concat([item]));

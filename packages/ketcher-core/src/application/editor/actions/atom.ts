@@ -41,7 +41,7 @@ import { removeAtomFromSgroupIfNeeded, removeSgroupIfNeeded } from './sgroup';
 
 import { Action } from './action';
 import { fromBondStereoUpdate } from './bond';
-import { without } from 'lodash/fp';
+import without from 'lodash/fp/without';
 import ReStruct from 'application/render/restruct/restruct';
 import assert from 'assert';
 import { SGroupAttachmentPointRemove } from '../operations/sgroup/sgroupAttachmentPoints';

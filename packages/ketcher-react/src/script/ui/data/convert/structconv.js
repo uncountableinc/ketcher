@@ -21,7 +21,7 @@ import {
   StereoLabel,
   getAtomType,
 } from 'ketcher-core';
-import { capitalize } from 'lodash/fp';
+import capitalize from 'lodash/fp/capitalize';
 import {
   sdataSchema,
   getSdataDefault,

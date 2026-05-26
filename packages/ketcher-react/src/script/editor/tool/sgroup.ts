@@ -29,7 +29,7 @@ import {
 } from 'ketcher-core';
 
 import LassoHelper from './helper/lasso';
-import { isEqual } from 'lodash/fp';
+import isEqual from 'lodash/fp/isEqual';
 import { selMerge } from './select';
 import Editor, { Selection } from '../Editor';
 import { Tool } from './Tool';

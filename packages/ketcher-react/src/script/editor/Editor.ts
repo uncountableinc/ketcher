@@ -45,7 +45,7 @@ import {
 
 import closest from './shared/closest';
 import { customOnChangeHandler } from './utils';
-import { isEqual } from 'lodash/fp';
+import isEqual from 'lodash/fp/isEqual';
 import { toolsMap } from './tool';
 import { Highlighter } from './highlighter';
 import { setFunctionalGroupsTooltip } from './utils/functionalGroupsTooltip';

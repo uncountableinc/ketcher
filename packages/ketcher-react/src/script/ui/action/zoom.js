@@ -14,7 +14,8 @@
  * limitations under the License.
  ***************************************************************************/
 
-import { findIndex, findLastIndex } from 'lodash/fp';
+import findIndex from 'lodash/fp/findIndex';
+import findLastIndex from 'lodash/fp/findLastIndex';
 import isHidden from './isHidden';
 
 export const zoomList = [

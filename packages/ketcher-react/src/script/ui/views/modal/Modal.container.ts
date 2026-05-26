@@ -19,8 +19,7 @@ import { Modal, ModalProps } from './Modal';
 import { BaseCallProps, ModalContainerProps } from './modal.types';
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
-import { omit } from 'lodash/fp';
-
+import omit from 'lodash/fp/omit';
 type StateProps = Pick<ModalProps, 'modal'>;
 
 const mapStateToProps = (state): StateProps => ({

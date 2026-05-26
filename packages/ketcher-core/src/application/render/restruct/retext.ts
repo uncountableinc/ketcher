@@ -21,8 +21,8 @@ import {
   RawDraftInlineStyleRange,
 } from 'draft-js';
 import { Box2Abs, Text, TextCommand, Vec2 } from 'domain/entities';
-import { flatten, isEqual } from 'lodash/fp';
-
+import flatten from 'lodash/fp/flatten';
+import isEqual from 'lodash/fp/isEqual';
 import { LayerMap } from './generalEnumTypes';
 import ReObject from './reobject';
 import ReStruct from './restruct';

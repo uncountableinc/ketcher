@@ -28,7 +28,7 @@ import { LoadingCircles } from 'src/script/ui/views/components/Spinner';
 import classes from './Recognize.module.less';
 import { connect } from 'react-redux';
 import { load } from '../../../../../state';
-import { range } from 'lodash/fp';
+import range from 'lodash/fp/range';
 import { recognize } from '../../../../../state/server';
 import { DialogActionButton } from 'src/script/ui/views/modal/components/document/Open/components/DialogActionButton';
 import { Icon, StructRender } from 'components';

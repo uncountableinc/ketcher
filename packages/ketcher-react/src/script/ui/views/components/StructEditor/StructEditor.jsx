@@ -20,7 +20,7 @@ import Editor from '../../../../editor';
 import { LoadingCircles } from '../Spinner/LoadingCircles';
 import classes from './StructEditor.module.less';
 import clsx from 'clsx';
-import { upperFirst } from 'lodash/fp';
+import upperFirst from 'lodash/fp/upperFirst';
 import { FloatingToolContainer } from '../../toolbars';
 import { ContextMenu, ContextMenuTrigger } from '../ContextMenu';
 import InfoPanel from './InfoPanel';

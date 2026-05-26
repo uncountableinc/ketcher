@@ -23,7 +23,7 @@ import { analyse } from '../../../../../state/server';
 import { changeRound } from '../../../../../state/options';
 import classes from './Analyse.module.less';
 import { connect } from 'react-redux';
-import { range } from 'lodash/fp';
+import range from 'lodash/fp/range';
 import Select from '../../../../../component/form/Select';
 import { getSelectOptionsFromSchema } from '../../../../../utils';
 
