@@ -398,19 +398,7 @@ class ReAtom extends ReObject {
       return;
     }
 
-    if (atom.label === '*') {
-      const isSruNeiAtom = atom.neighbors.some((hbid) => {
-        const hb = struct.halfBonds.get(hbid);
-        if (!hb) return false;
-        const neighborAtom = struct.atoms.get(hb.end);
-        if (!neighborAtom) return false;
-        return [...neighborAtom.sgs].some((sgid) => {
-          if (atom.sgs.has(sgid)) return false;
-          return struct.sgroups.get(sgid)?.type === 'SRU';
-        });
-      });
-      if (isSruNeiAtom) return;
-    }
+    const renderStarCapAsCarbon = isPolymerStarCapAtom(struct, atom);
 
     this.hydrogenOnTheLeft = shouldHydrogenBeOnLeft(restruct.molecule, this);
     this.showLabel = isLabelVisible(restruct, render.options, this);
@@ -425,12 +413,22 @@ class ReAtom extends ReObject {
     let index: any = null;
 
     if (this.showLabel) {
-      const data = buildLabel(this, render.paper, ps, options, aid, sgroup);
+      const data = buildLabel(
+        this,
+        render.paper,
+        ps,
+        options,
+        aid,
+        sgroup,
+        renderStarCapAsCarbon,
+      );
       delta = 0.5 * options.lineWidth;
       label = data.label;
       rightMargin = data.rightMargin;
       leftMargin = data.leftMargin;
-      implh = Math.floor(this.a.implicitH);
+      implh = renderStarCapAsCarbon
+        ? calcPolymerCapImplicitHydrogen(struct, atom)
+        : Math.floor(this.a.implicitH);
       isHydrogen = label.text === 'H';
 
       if (label.background) {
@@ -899,6 +897,36 @@ function shouldDisplayStereoLabel(
   }
 }
 
+function isPolymerStarCapAtom(struct: Struct, atom: Atom): boolean {
+  if (atom.label !== '*') {
+    return false;
+  }
+  return atom.neighbors.some((hbid) => {
+    const hb = struct.halfBonds.get(hbid);
+    if (!hb) return false;
+    const neighborAtom = struct.atoms.get(hb.end);
+    if (!neighborAtom) return false;
+    return [...neighborAtom.sgs].some((sgid) => {
+      if (atom.sgs.has(sgid)) return false;
+      return struct.sgroups.get(sgid)?.type === 'SRU';
+    });
+  });
+}
+
+function calcPolymerCapImplicitHydrogen(struct: Struct, atom: Atom): number {
+  const [connectivity, isAromatic] = struct.calcConn(atom);
+  if (isAromatic || connectivity < 0) {
+    return 0;
+  }
+  const carbonCap = new Atom({
+    label: 'C',
+    charge: atom.charge,
+    radical: atom.radical,
+  });
+  carbonCap.calcValence(connectivity);
+  return Math.max(0, Math.floor(carbonCap.implicitH));
+}
+
 function isLabelVisible(restruct, options, atom: ReAtom) {
   const isAttachmentPointAtom = Boolean(atom.a.attachmentPoints);
   const isCarbon = atom.a.label.toLowerCase() === 'c';
@@ -1008,6 +1036,7 @@ function buildLabel(
   options: any,
   atomId: number,
   sgroup?: SGroup,
+  renderAsCarbon = false,
 ): {
   rightMargin: number;
   leftMargin: number;
@@ -1023,7 +1052,7 @@ function buildLabel(
   } = options;
   // eslint-disable-line max-statements
   const label: any = {
-    text: getLabelText(atom.a, atomId, sgroup),
+    text: getLabelText(atom.a, atomId, sgroup, renderAsCarbon),
   };
   let tooltip: string | null = null;
   if (!label.text) {
@@ -1065,7 +1094,7 @@ function buildLabel(
     font,
     'font-size': fontszInPx,
     fill: atom.color,
-    'font-style': atom.a.pseudo ? 'italic' : '',
+    'font-style': atom.a.pseudo && !renderAsCarbon ? 'italic' : '',
     'fill-opacity': atom.a.isPreview ? previewOpacity : 1,
   });
 
@@ -1114,7 +1143,16 @@ function buildLabel(
   return { label, rightMargin, leftMargin };
 }
 
-function getLabelText(atom, atomId: number, sgroup?: SGroup) {
+function getLabelText(
+  atom,
+  atomId: number,
+  sgroup?: SGroup,
+  renderAsCarbon = false,
+) {
+  if (renderAsCarbon) {
+    return 'C';
+  }
+
   if (sgroup?.isSuperatomWithoutLabel) {
     const attachmentPoint = sgroup
       .getAttachmentPoints()
