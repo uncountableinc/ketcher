@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 /* eslint-disable no-magic-numbers */
-import { Page, test } from '@playwright/test';
+import { Page, test, expect } from '@playwright/test';
 import {
   clickInTheMiddleOfTheScreen,
   takeEditorScreenshot,
@@ -87,6 +87,56 @@ test.describe('Data S-Group tool', () => {
     await fillFieldByPlaceholder(page, 'Enter value', '33');
     await pressButton(page, 'Apply');
     await takeEditorScreenshot(page);
+  });
+
+  test('Re-render after a Data S-group does not rely on the window.ketcher global', async ({
+    page,
+  }) => {
+    /*
+      Test case: MAT-73031 (Sentry UNC-F-8CY / 7479336331)
+      Description: drawGroupDat called SGroup.bracketPos without a render, so it
+      fell back to the undefined window.ketcher global and threw
+      "Cannot read properties of undefined (reading 'editor')" on any re-render
+      after a Data S-group was on canvas. This only surfaces when Ketcher is
+      embedded under a non-default instance id (as the platform does), so the
+      window.ketcher global is absent. The standalone example app sets that
+      global, so we delete it to reproduce the embedded condition, then force a
+      re-render and assert the crash does not occur.
+    */
+    const consoleErrors: string[] = [];
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') {
+        consoleErrors.push(msg.text());
+      }
+    });
+
+    const pageErrors: string[] = [];
+    page.on('pageerror', (error) => {
+      pageErrors.push(error.message);
+    });
+
+    await openFileAndAddToCanvas(page, 'KET/simple-chain.ket');
+    await selectAllStructuresOnCanvas(page);
+    await LeftToolbar(page).sGroup();
+    await fillFieldByPlaceholder(page, 'Enter name', 'atropisomer');
+    await fillFieldByPlaceholder(page, 'Enter value', 'P');
+    await pressButton(page, 'Apply');
+
+    await page.evaluate(() => {
+      delete (window as unknown as { ketcher?: unknown }).ketcher;
+    });
+
+    await resetCurrentTool(page);
+    await moveMouseToTheMiddleOfTheScreen(page);
+
+    const editorUndefinedErrors = [...consoleErrors, ...pageErrors].filter(
+      (error) =>
+        error.includes(
+          "Cannot read properties of undefined (reading 'editor')",
+        ),
+    );
+
+    expect(editorUndefinedErrors.length).toBe(0);
   });
 
   test('S-Group properties dialog for atom of Benzene ring', async ({
