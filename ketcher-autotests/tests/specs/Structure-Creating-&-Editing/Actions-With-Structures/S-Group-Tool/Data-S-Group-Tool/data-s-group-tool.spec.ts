@@ -93,15 +93,10 @@ test.describe('Data S-Group tool', () => {
     page,
   }) => {
     /*
-      Test case: MAT-73031 (Sentry UNC-F-8CY / 7479336331)
-      Description: drawGroupDat called SGroup.bracketPos without a render, so it
-      fell back to the undefined window.ketcher global and threw
-      "Cannot read properties of undefined (reading 'editor')" on any re-render
-      after a Data S-group was on canvas. This only surfaces when Ketcher is
-      embedded under a non-default instance id (as the platform does), so the
-      window.ketcher global is absent. The standalone example app sets that
-      global, so we delete it to reproduce the embedded condition, then force a
-      re-render and assert the crash does not occur.
+      Test case: MAT-73031 (Sentry UNC-F-8CY)
+      Description: A Data S-group on canvas crashed on re-render because the draw
+      path read the undefined window.ketcher global. The standalone app sets that
+      global, so delete it to mirror the platform's embedded instance.
     */
     const consoleErrors: string[] = [];
     page.on('console', (msg) => {
