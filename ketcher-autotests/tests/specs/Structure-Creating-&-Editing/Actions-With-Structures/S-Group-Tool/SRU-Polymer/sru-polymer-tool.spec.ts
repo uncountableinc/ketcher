@@ -1,5 +1,5 @@
 /* eslint-disable no-magic-numbers */
-import { Page, test } from '@playwright/test';
+import { Page, test, expect } from '@playwright/test';
 import {
   BondType,
   clickInTheMiddleOfTheScreen,
@@ -181,6 +181,57 @@ test.describe('SRU Polymer tool', () => {
     await takeEditorScreenshot(page);
     await selectUndoByKeyboard(page);
     await takeEditorScreenshot(page);
+  });
+
+  test('Undo of SRU polymer S-group does not throw on stale atoms', async ({
+    page,
+  }) => {
+    /*
+      Test case: MAT-68021 / MAT-75711 (Sentry UNC-F-8GE)
+      Description: Creating an SRU polymer S-group used to clone the whole
+      structure to recompute implicit hydrogens, which renumbered atom and
+      fragment ids and stranded the ids recorded on the undo stack. Undoing the
+      S-group creation then threw
+      "Cannot set properties of undefined (setting 'implicitHCount')".
+      Erasing an atom first introduces an id gap so the clone renumbering is
+      observable; undo must remove the S-group without throwing.
+    */
+    const consoleErrors: string[] = [];
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') {
+        consoleErrors.push(msg.text());
+      }
+    });
+
+    const pageErrors: string[] = [];
+    page.on('pageerror', (error) => {
+      pageErrors.push(error.message);
+    });
+
+    await openFileAndAddToCanvas(page, 'KET/simple-chain.ket');
+    await CommonLeftToolbar(page).selectEraseTool();
+    await clickOnAtom(page, 'C', 3);
+
+    await selectAllStructuresOnCanvas(page);
+    await LeftToolbar(page).sGroup();
+    await selectSruPolymer(
+      page,
+      'Data',
+      'SRU Polymer',
+      'A',
+      SGroupRepeatPattern.HeadToTail,
+    );
+
+    await selectUndoByKeyboard(page);
+
+    const implicitHydrogenErrors = [...consoleErrors, ...pageErrors].filter(
+      (error) =>
+        error.includes(
+          "Cannot set properties of undefined (setting 'implicitHCount')",
+        ),
+    );
+
+    expect(implicitHydrogenErrors.length).toBe(0);
   });
 
   test('Add atom on Chain with SRU polymer S-Group', async ({ page }) => {
