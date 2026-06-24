@@ -286,7 +286,7 @@
         },
         "cip": {
           "type": "string",
-          "enum": ["Z", "E"]
+          "enum": ["Z", "E", "M", "P"]
         }
       },
       "oneOf": [
