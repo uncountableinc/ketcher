@@ -195,7 +195,7 @@
         },
         "cip": {
           "type": "string",
-          "enum": ["R", "S", "r", "s", "RS"]
+          "enum": ["R", "S", "r", "s", "RS", "M", "P"]
         },
         "queryProperties": {
           "type": "object",
