@@ -16,6 +16,8 @@ export enum AtomCIP {
   s = 's',
   r = 'r',
   RS = 'RS',
+  M = 'M',
+  P = 'P',
 }
 
 export enum BondCIP {
