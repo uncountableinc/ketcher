@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 /* eslint-disable no-magic-numbers */
-import { Page, test } from '@playwright/test';
+import { Page, test, expect } from '@playwright/test';
 import {
   clickInTheMiddleOfTheScreen,
   takeEditorScreenshot,
@@ -87,6 +87,51 @@ test.describe('Data S-Group tool', () => {
     await fillFieldByPlaceholder(page, 'Enter value', '33');
     await pressButton(page, 'Apply');
     await takeEditorScreenshot(page);
+  });
+
+  test('Re-render after a Data S-group does not rely on the window.ketcher global', async ({
+    page,
+  }) => {
+    /*
+      Test case: MAT-73031 (Sentry UNC-F-8CY)
+      Description: A Data S-group on canvas crashed on re-render because the draw
+      path read the undefined window.ketcher global. The standalone app sets that
+      global, so delete it to mirror the platform's embedded instance.
+    */
+    const consoleErrors: string[] = [];
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') {
+        consoleErrors.push(msg.text());
+      }
+    });
+
+    const pageErrors: string[] = [];
+    page.on('pageerror', (error) => {
+      pageErrors.push(error.message);
+    });
+
+    await openFileAndAddToCanvas(page, 'KET/simple-chain.ket');
+    await selectAllStructuresOnCanvas(page);
+    await LeftToolbar(page).sGroup();
+    await fillFieldByPlaceholder(page, 'Enter name', 'atropisomer');
+    await fillFieldByPlaceholder(page, 'Enter value', 'P');
+    await pressButton(page, 'Apply');
+
+    await page.evaluate(() => {
+      delete (window as unknown as { ketcher?: unknown }).ketcher;
+    });
+
+    await resetCurrentTool(page);
+    await moveMouseToTheMiddleOfTheScreen(page);
+
+    const editorUndefinedErrors = [...consoleErrors, ...pageErrors].filter(
+      (error) =>
+        error.includes(
+          "Cannot read properties of undefined (reading 'editor')",
+        ),
+    );
+
+    expect(editorUndefinedErrors.length).toBe(0);
   });
 
   test('S-Group properties dialog for atom of Benzene ring', async ({
