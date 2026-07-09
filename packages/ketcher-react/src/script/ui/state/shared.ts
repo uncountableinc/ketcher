@@ -23,6 +23,7 @@ import {
   notifyRequestCompleted,
   Editor,
   KetcherLogger,
+  ketcherProvider,
   SettingsManager,
   MULTITAIL_ARROW_KEY,
   IMAGE_KEY,
@@ -206,6 +207,10 @@ export function load(struct: Struct, options?) {
         editor.selection(getSelectionFromStruct(editor.struct()));
       }
       editor.struct().disableInitiallySelected();
+      if (isIndigoFunctionCalled && !fragment) {
+        editor.event.change.dispatch();
+        ketcherProvider.getKetcher(editor.ketcherId).changeEvent.dispatch();
+      }
       dispatch(setAnalyzingFile(false));
       dispatch({ type: 'MODAL_CLOSE' });
     } catch (e: any) {
