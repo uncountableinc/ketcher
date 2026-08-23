@@ -361,6 +361,30 @@ export class SGroup {
         ? externalConnectionAtom
         : this.atoms[0];
       representAtom = struct.atoms.get(atomId);
+      // With no attachment point and nothing bonded to the outside, atoms[0] is
+      // an arbitrary member of the hidden structure, so the label is drawn up to
+      // one molecule-radius away from the group it stands for. Use the group's
+      // centre instead, which is where the collapsed abbreviation belongs
+      // (MAT-77406).
+      if (!isNumber(externalConnectionAtom) && this.atoms.length > 0) {
+        const centre = new Vec2(0, 0);
+        let counted = 0;
+        for (const memberId of this.atoms) {
+          const member = struct.atoms.get(memberId);
+          if (member == null) {
+            continue;
+          }
+          centre.x += member.pp.x;
+          centre.y += member.pp.y;
+          counted += 1;
+        }
+        if (counted > 0) {
+          return {
+            atomId,
+            position: new Vec2(centre.x / counted, centre.y / counted),
+          };
+        }
+      }
     }
     assert(representAtom != null);
     return { atomId, position: representAtom.pp };
