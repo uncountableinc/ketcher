@@ -362,13 +362,13 @@ class ReAtom extends ReObject {
         false,
       )
     ) {
-      const isPositionAtom =
-        sgroup?.getContractedPosition(restruct.molecule).atomId === aid;
-      if (isPositionAtom) {
+      if (sgroup == null) {
+        return;
+      }
+      const contracted = sgroup.getContractedPosition(restruct.molecule);
+      if (contracted.atomId === aid) {
         const position = Scale.modelToCanvas(
-          sgroup instanceof MonomerMicromolecule
-            ? (sgroup.pp as Vec2)
-            : this.a.pp,
+          contracted.position,
           render.options,
         );
         const fontFamily = options.font.substr(
