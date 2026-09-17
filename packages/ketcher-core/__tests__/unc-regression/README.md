@@ -144,19 +144,16 @@ Every commit in the KEEP set, and where it is covered.
 | `bf79b6f0c`, `259898396`, `b70744dde` | Playwright `context-menu` |
 | `f22519419` | Playwright `indigo-transform-change-event` |
 | `37c0a4b53` | Playwright `sru-user-values` |
+| `4e21564a4`, `8b92271fc` | Playwright `settings-state` |
 | `da4fa3016` | pre-existing `__tests__/application/render/restruct/reatom.test.ts` |
 | `cb5b18637`, `9f256ceb8` | pre-existing `ketcher-autotests/.../SRU-Polymer/sru-polymer-tool.spec.ts` |
 
 ## Still uncovered
 
-- `4e21564a4` (`initOptionsState`). Opening the Settings dialog in the standalone demo
-  build crashes the editor with `TypeError: Failed to construct 'URL': Invalid URL`,
-  raised from the JSON-schema validator, so the dialog cannot be driven.
-  The patch cannot be tested until that crash is fixed.
 - The other half of the context-menu behaviour: that the editor does **not** suppress
   right-click outside its own bounds.
   The demo page is entirely the editor, so there is no outside to click.
   That half belongs in the host application’s end-to-end tests.
-- The dependency and build-compat patches (`8b92271fc`, `c62eccb62`, `2e0098185`,
+- The dependency and build-compat patches (`67f7921aa`, `c62eccb62`, `2e0098185`,
   `8799f4afc`, the raphael typing cluster, `6a59f2ba2`, `c32453d96` / `36c00e15a`). A
   missing build-compat patch breaks the build, which is its own signal.
