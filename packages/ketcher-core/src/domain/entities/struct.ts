@@ -473,7 +473,11 @@ export class Struct {
   }
 
   halfBondUpdate(halfBondId: number) {
-    const halfBond = this.halfBonds.get(halfBondId)!;
+    const halfBond = this.halfBonds.get(halfBondId);
+    if (!halfBond) {
+      return;
+    }
+
     const sgroup1 = this.getGroupFromAtomId(halfBond.begin);
     const sgroup2 = this.getGroupFromAtomId(halfBond.end);
 
@@ -577,8 +581,13 @@ export class Struct {
 
   atomUpdateHalfBonds(atomId: number) {
     this.atoms.get(atomId)!.neighbors.forEach((hbid) => {
+      const halfBond = this.halfBonds.get(hbid);
+      if (!halfBond) {
+        return;
+      }
+
       this.halfBondUpdate(hbid);
-      this.halfBondUpdate(this.halfBonds.get(hbid)!.contra);
+      this.halfBondUpdate(halfBond.contra);
     });
   }
 

@@ -38,7 +38,11 @@ export class AtomAttr extends BaseOperation {
     if (this.data) {
       const { aid, attribute, value } = this.data;
 
-      const atom = restruct.molecule.atoms.get(aid)!;
+      const atom = restruct.molecule.atoms.get(aid);
+      if (!atom) {
+        return;
+      }
+
       if (!this.data2) {
         this.data2 = {
           aid,
@@ -60,9 +64,11 @@ export class AtomAttr extends BaseOperation {
   }
 
   isDummy(restruct: ReStruct) {
-    return (
-      restruct.molecule.atoms.get(this.data?.aid)![this.data?.attribute] ===
-      this.data?.value
-    );
+    const atom = restruct.molecule.atoms.get(this.data?.aid);
+    if (!atom) {
+      return true;
+    }
+
+    return atom[this.data?.attribute] === this.data?.value;
   }
 }
