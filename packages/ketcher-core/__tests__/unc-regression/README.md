@@ -79,7 +79,7 @@ drop the commit.
 
 ## Browser-only, in `ketcher-autotests/tests/specs/unc-regression/`
 
-Sixteen Playwright tests, all run against the standalone demo build and passing.
+Eighteen Playwright tests, all run against the standalone demo build and passing.
 Start the demo first, then run them:
 
 ```bash
@@ -95,7 +95,8 @@ npx playwright test tests/specs/unc-regression/ --project=chromium
 | `context-menu.spec.ts` | `bf79b6f0c` / `259898396` / `b70744dde` |
 | `indigo-transform-change-event.spec.ts` | `f22519419` (MAT-76710) — the change-event assertion is the guard; reading the saved KET would pass either way, so no such test is kept |
 | `sru-user-values.spec.ts` | `37c0a4b53` |
-| `settings-state.spec.ts` | `4e21564a4`, `8b92271fc` |
+| `settings-state.spec.ts` | `4e21564a4`, `8b92271fc`, `8799f4afc` |
+| `editor-instance.spec.ts` | `c32453d96` / `36c00e15a`, `6a59f2ba2` |
 
 `fixtures.ts` holds the shared KET fixtures.
 The specs build their structures through `ketcher.setMolecule` rather than reading
@@ -145,7 +146,9 @@ Every commit in the KEEP set, and where it is covered.
 | `bf79b6f0c`, `259898396`, `b70744dde` | Playwright `context-menu` |
 | `f22519419` | Playwright `indigo-transform-change-event` |
 | `37c0a4b53` | Playwright `sru-user-values` |
-| `4e21564a4`, `8b92271fc` | Playwright `settings-state` |
+| `4e21564a4`, `8b92271fc`, `8799f4afc` | Playwright `settings-state` |
+| `c32453d96`, `36c00e15a`, `6a59f2ba2` | Playwright `editor-instance` |
+| `2e0098185` | jest `css-export` |
 | `da4fa3016` | pre-existing `__tests__/application/render/restruct/reatom.test.ts` |
 | `cb5b18637`, `9f256ceb8` | pre-existing `ketcher-autotests/.../SRU-Polymer/sru-polymer-tool.spec.ts` |
 
@@ -155,6 +158,12 @@ Every commit in the KEEP set, and where it is covered.
   right-click outside its own bounds.
   The demo page is entirely the editor, so there is no outside to click.
   That half belongs in the host application’s end-to-end tests.
-- The dependency and build-compat patches (`67f7921aa`, `c62eccb62`, `2e0098185`,
-  `8799f4afc`, the raphael typing cluster, `6a59f2ba2`, `c32453d96` / `36c00e15a`). A
-  missing build-compat patch breaks the build, which is its own signal.
+- The raphael typing cluster (`e03418d54`, `5bb80c666`, `7d1c6b9b6`, `1256b6f2f`,
+  `641fe3664`, `54064df25`). These add `@ts-ignore: raphael typing issues` comments and
+  move the `@types/raphael` dependency.
+  TypeScript erases both at compile time, so the emitted JavaScript is identical with or
+  without them and there is no behaviour to assert.
+  `tsc --noEmit` is the check, and it already runs in the pre-push hook and in CI. A
+  runtime test here would assert nothing.
+- `67f7921aa` (removes a dead ajv reference) and `c62eccb62` (per-function lodash/fp
+  entrypoints). Neither has a runtime surface; the second only changes bundle shape.
