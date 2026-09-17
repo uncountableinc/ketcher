@@ -1,0 +1,448 @@
+{
+  "mergeBase": "f098bdc23071a0be0f3a4757d907b60f1fc27e75",
+  "forkRef": "master",
+  "upstreamTag": "v3.18.0",
+  "behaviours": [
+    {
+      "key": "cip-descriptors",
+      "summary": "Accept the RS, M and P CIP descriptors Indigo emits.",
+      "verdict": "reapply",
+      "covered": "jest __tests__/unc-regression/cip-descriptors.test.ts",
+      "commits": ["cda0f264a", "b674564bc", "1d6c9ac5b"],
+      "files": [
+        "packages/ketcher-core/src/domain/entities/types.ts",
+        "packages/ketcher-core/src/domain/serializers/ket/schema.json"
+      ]
+    },
+    {
+      "key": "contracted-abbreviation-anchor",
+      "summary": "Draw a contracted abbreviation at its group centre (MAT-77406).",
+      "verdict": "reapply",
+      "covered": "jest __tests__/unc-regression/contracted-abbreviation-anchor.test.ts",
+      "commits": ["9f488c2d0", "7ac136ed9", "1edf96074", "1fa3d4cb4"],
+      "files": [
+        "packages/ketcher-core/src/application/render/restruct/reatom.ts"
+      ]
+    },
+    {
+      "key": "sgroup-atom-membership",
+      "summary": "Report S-group atom membership through the struct.",
+      "verdict": "reapply",
+      "covered": "jest __tests__/unc-regression/sgroup-atom-membership.test.ts",
+      "commits": ["43ebbcc69", "d168b873d"],
+      "files": [
+        "packages/ketcher-core/src/domain/entities/struct.ts",
+        "packages/ketcher-core/src/application/editor/MacromoleculesConverter.ts"
+      ]
+    },
+    {
+      "key": "sgroup-com-mix-mon",
+      "summary": "Read and write the COM, MIX and MON formulation S-groups.",
+      "verdict": "reapply",
+      "covered": "jest __tests__/unc-regression/sgroup-com-mix-mon.test.ts",
+      "commits": [
+        "843206bc0",
+        "6ce75702d",
+        "e15122ad1",
+        "1180787be",
+        "558252129",
+        "8490e3ac8",
+        "69fb1caf7"
+      ],
+      "files": [
+        "packages/ketcher-core/src/domain/entities/sgroup.ts",
+        "packages/ketcher-core/src/domain/serializers/mol/common.js",
+        "packages/ketcher-core/src/domain/serializers/mol/v2000.js",
+        "packages/ketcher-core/src/domain/serializers/ket/fromKet/moleculeToStruct.ts",
+        "packages/ketcher-core/src/domain/serializers/ket/toKet/moleculeToKet.ts",
+        "packages/ketcher-core/src/domain/serializers/mol/molfile.ts",
+        "packages/ketcher-react/src/script/ui/data/schema/struct-schema.js",
+        "packages/ketcher-react/src/script/ui/state/constants.ts"
+      ]
+    },
+    {
+      "key": "ket-rgroup-refs",
+      "summary": "Keep R-group references through a KET round trip.",
+      "verdict": "reapply",
+      "covered": "jest __tests__/unc-regression/ket-rgroup-refs.test.ts",
+      "commits": ["270480fe0"],
+      "files": [
+        "packages/ketcher-core/src/domain/serializers/ket/fromKet/moleculeToStruct.ts"
+      ]
+    },
+    {
+      "key": "indigo-hydrogen-label-default",
+      "summary": "Default Indigo to terminal-hetero hydrogen labels, not none.",
+      "verdict": "reapply",
+      "covered": "jest __tests__/unc-regression/indigo-hydrogen-label-default.test.ts",
+      "commits": ["446e1cf11", "b9a5d436d"],
+      "files": ["packages/ketcher-core/src/infrastructure/services/helpers.ts"]
+    },
+    {
+      "key": "data-sgroup-bracket-pos",
+      "summary": "Thread the render through Data S-group draw (MAT-73031).",
+      "verdict": "drop",
+      "covered": "jest __tests__/unc-regression/data-sgroup-bracket-pos.test.ts",
+      "commits": ["a4394409c"],
+      "files": [
+        "packages/ketcher-core/src/application/render/restruct/resgroup.ts"
+      ]
+    },
+    {
+      "key": "server-format-routing",
+      "summary": "Convert every format except KET on the Indigo server.",
+      "verdict": "reapply",
+      "covered": "jest __tests__/unc-regression/server-format-routing.test.ts",
+      "commits": ["6576cd745", "52fc7376a", "b53ffb290"],
+      "files": [
+        "packages/ketcher-core/src/application/formatters/formatterFactory.ts"
+      ]
+    },
+    {
+      "key": "external-zoom-scale",
+      "summary": "Account for the embedding container CSS scale in pointer maths.",
+      "verdict": "reapply",
+      "covered": "jest __tests__/unc-regression/external-zoom-scale.test.ts",
+      "commits": ["1ea33be22", "33a078c8b"],
+      "files": [
+        "packages/ketcher-core/src/application/render/coordinateTransformation.ts",
+        "packages/ketcher-core/src/application/render/render.types.ts"
+      ]
+    },
+    {
+      "key": "canvas-load-not-undoable",
+      "summary": "Keep a canvas load off the undo stack.",
+      "verdict": "reapply",
+      "covered": "jest __tests__/unc-regression/canvas-load-not-undoable.test.ts",
+      "commits": ["c0fde0b1e"],
+      "files": [
+        "packages/ketcher-core/src/application/editor/actions/action.ts",
+        "packages/ketcher-core/src/application/editor/operations/CanvasLoad.ts",
+        "packages/ketcher-core/src/application/editor/operations/base.ts"
+      ]
+    },
+    {
+      "key": "sgroup-connectivity-case",
+      "summary": "Lowercase S-group connectivity codes on MOL parse.",
+      "verdict": "reapply",
+      "covered": "jest __tests__/unc-regression/sgroup-connectivity-case.test.ts",
+      "commits": ["783bc6497", "493fcc1bd", "3aecd5500"],
+      "files": [
+        "packages/ketcher-core/src/domain/serializers/mol/parseSGroup.js",
+        "packages/ketcher-core/src/domain/serializers/mol/__tests__/v2000.test.ts",
+        "packages/ketcher-core/src/domain/serializers/mol/molfile.ts",
+        "packages/ketcher-core/src/domain/serializers/ket/toKet/moleculeToKet.ts"
+      ]
+    },
+    {
+      "key": "logger-without-ketcher",
+      "summary": "Let the logger read settings before the ketcher global exists.",
+      "verdict": "reapply",
+      "covered": "jest __tests__/unc-regression/logger-without-ketcher.test.ts",
+      "commits": ["81d4c7d75"],
+      "files": ["packages/ketcher-core/src/utilities/KetcherLogger.ts"]
+    },
+    {
+      "key": "keynorm-unmapped-key",
+      "summary": "Survive a keycode the key-name table does not cover.",
+      "verdict": "reapply",
+      "covered": "jest __tests__/unc-regression/keynorm-unmapped-key.test.ts",
+      "commits": ["905baf429"],
+      "files": ["packages/ketcher-core/src/utilities/keynorm.ts"]
+    },
+    {
+      "key": "indigo-stereo-style",
+      "summary": "Send render-stereo-style to Indigo image rendering.",
+      "verdict": "reapply",
+      "covered": "jest __tests__/unc-regression/indigo-stereo-style.test.ts",
+      "commits": ["f2e76d0ce"],
+      "files": [
+        "packages/ketcher-core/src/domain/services/struct/structService.types.ts",
+        "packages/ketcher-core/src/infrastructure/services/struct/remoteStructService.ts",
+        "packages/ketcher-core/src/utilities/SettingsManager.ts"
+      ]
+    },
+    {
+      "key": "sgroup-bracket-and-labels",
+      "summary": "S-group select retarget, bracket bounding box and connectivity label case.",
+      "verdict": "reapply",
+      "covered": "playwright tests/specs/unc-regression/sgroup-behaviour.spec.ts",
+      "commits": [
+        "d0ec26103",
+        "e97756d50",
+        "327586a7e",
+        "163120938",
+        "5e1077347"
+      ],
+      "files": [
+        "packages/ketcher-core/src/application/render/restruct/resgroup.ts",
+        "packages/ketcher-react/src/script/editor/tool/select/select.ts",
+        "packages/ketcher-react/src/script/editor/tool/sgroup.ts"
+      ]
+    },
+    {
+      "key": "clipboard-and-undo",
+      "summary": "Copy, paste and undo of brackets and s-groups.",
+      "verdict": "reapply",
+      "covered": "playwright tests/specs/unc-regression/clipboard-and-undo.spec.ts",
+      "commits": [
+        "96513d3d6",
+        "f6362eda8",
+        "243b653df",
+        "916907e37",
+        "4b5bc5f38"
+      ],
+      "files": [
+        "packages/ketcher-react/src/script/ui/component/cliparea/cliparea.jsx",
+        "packages/ketcher-react/src/script/ui/state/shared.ts"
+      ]
+    },
+    {
+      "key": "context-menu-capture",
+      "summary": "Right-click capture and context-menu placement inside the editor.",
+      "verdict": "reapply",
+      "covered": "playwright tests/specs/unc-regression/context-menu.spec.ts",
+      "commits": [
+        "bf79b6f0c",
+        "259898396",
+        "b70744dde",
+        "dc943ca1c",
+        "7c90d994f",
+        "05da448e9"
+      ],
+      "files": [
+        "packages/ketcher-react/src/contexify.css",
+        "packages/ketcher-react/src/index.tsx",
+        "packages/ketcher-react/src/script/ui/views/components/ContextMenu/ContextMenu.tsx",
+        "packages/ketcher-react/src/script/ui/views/components/ContextMenu/ContextMenuTrigger.tsx"
+      ]
+    },
+    {
+      "key": "indigo-transform-persist",
+      "summary": "Persist Indigo transform results on save (MAT-76710).",
+      "verdict": "reapply",
+      "covered": "playwright tests/specs/unc-regression/indigo-transform-change-event.spec.ts",
+      "commits": ["f22519419"],
+      "files": ["packages/ketcher-react/src/script/ui/state/shared.ts"]
+    },
+    {
+      "key": "sru-user-values",
+      "summary": "Do not override user-set SRU values.",
+      "verdict": "reapply",
+      "covered": "playwright tests/specs/unc-regression/sru-user-values.spec.ts",
+      "commits": ["37c0a4b53", "8c5ee82f0", "241b1d08f", "1a41ba32e"],
+      "files": [
+        "packages/ketcher-react/src/script/ui/data/convert/structconv.js"
+      ]
+    },
+    {
+      "key": "settings-state",
+      "summary": "Options state initialisation and the settings dialog.",
+      "verdict": "reapply",
+      "covered": "playwright tests/specs/unc-regression/settings-state.spec.ts",
+      "commits": ["4e21564a4", "8799f4afc", "6304e0cc4", "5b2e28010"],
+      "files": [
+        "packages/ketcher-react/src/script/ui/state/options/index.js",
+        "packages/ketcher-react/src/script/ui/state/index.js",
+        "packages/ketcher-react/src/script/ui/data/schema/options-schema.ts"
+      ]
+    },
+    {
+      "key": "jsonschema-validator",
+      "summary": "Replace ajv with jsonschema in ketcher-react, and give the validator a base URL.",
+      "verdict": "reapply",
+      "covered": "playwright tests/specs/unc-regression/settings-state.spec.ts",
+      "commits": [
+        "8b92271fc",
+        "67f7921aa",
+        "17cc3e6e8",
+        "70289d55f",
+        "7f965ea0f"
+      ],
+      "files": [
+        "packages/ketcher-react/src/script/ui/component/form/form/form.jsx",
+        "packages/ketcher-react/src/script/ui/data/schema/options-schema.ts",
+        "packages/ketcher-react/src/script/ui/dialog/toolbox/sgroup.test.tsx"
+      ]
+    },
+    {
+      "key": "fullscreen-and-ketcher-id",
+      "summary": "Tag the editor root with its instance id and fix fullscreen.",
+      "verdict": "reapply",
+      "covered": "playwright tests/specs/unc-regression/editor-instance.spec.ts",
+      "commits": [
+        "c32453d96",
+        "36c00e15a",
+        "6a59f2ba2",
+        "be8bb2b7c",
+        "2d5b1444d",
+        "0cccb12d8",
+        "b269e867d",
+        "71e9eff5c"
+      ],
+      "files": [
+        "packages/ketcher-react/src/MicromoleculesEditor.tsx",
+        "packages/ketcher-react/src/constants.ts",
+        "packages/ketcher-react/src/script/ui/action/action.types.ts",
+        "packages/ketcher-react/src/script/ui/action/fullscreen.ts",
+        "packages/ketcher-react/src/script/ui/views/toolbars/TopToolbar/SystemControls.tsx",
+        "packages/ketcher-react/src/script/ui/views/toolbars/TopToolbar/TopToolbar.container.ts",
+        "packages/ketcher-react/src/script/ui/views/toolbars/TopToolbar/TopToolbar.tsx"
+      ]
+    },
+    {
+      "key": "fullscreen-dropdown-container",
+      "summary": "Portal dropdowns into the element the user can see.",
+      "verdict": "reapply",
+      "covered": "playwright tests/specs/unc-regression/fullscreen-dropdown-container.spec.ts",
+      "commits": ["3d3b76a6c", "83730d640"],
+      "files": [
+        "packages/ketcher-react/src/script/ui/component/form/Select/Select.tsx",
+        "packages/ketcher-react/src/script/ui/views/toolbars/TopToolbar/ZoomControls.tsx"
+      ]
+    },
+    {
+      "key": "render-offset-restore",
+      "summary": "Coerce a stored render offset back to a Vec2.",
+      "verdict": "reapply",
+      "covered": "playwright tests/specs/unc-regression/render-offset-restore.spec.ts",
+      "commits": ["aefcd0a14"],
+      "files": ["packages/ketcher-core/src/application/render/raphaelRender.ts"]
+    },
+    {
+      "key": "polymer-end-group-cap",
+      "summary": "Render a polymer * end-group cap as a carbon (MAT-75501).",
+      "verdict": "reapply",
+      "covered": "pre-existing __tests__/application/render/restruct/reatom.test.ts",
+      "commits": [
+        "da4fa3016",
+        "2646f9fb4",
+        "bddbcfd8f",
+        "940ac119d",
+        "ed7316095"
+      ],
+      "files": [
+        "packages/ketcher-core/src/application/render/restruct/reatom.ts",
+        "packages/ketcher-core/src/application/render/restruct/rebond.ts"
+      ]
+    },
+    {
+      "key": "sru-undo-crash",
+      "summary": "Fix the undo crash after creating an SRU polymer S-group.",
+      "verdict": "reapply",
+      "covered": "pre-existing ketcher-autotests/.../SRU-Polymer/sru-polymer-tool.spec.ts",
+      "commits": ["cb5b18637", "9f256ceb8"],
+      "files": ["packages/ketcher-react/src/script/editor/tool/sgroup.ts"]
+    },
+    {
+      "key": "context-menu-native",
+      "summary": "Stop suppressing the browser context menu in the core editor.",
+      "verdict": "reapply",
+      "covered": "none: the demo page is entirely the editor, so the suppressed and unsuppressed cases cannot be told apart there; belongs in the host application end-to-end tests",
+      "commits": ["e9873f88a"],
+      "files": ["packages/ketcher-core/src/application/editor/Editor.ts"]
+    },
+    {
+      "key": "raphael-ts-types",
+      "summary": "Silence raphael typing errors and move the @types/raphael dependency.",
+      "verdict": "reapply",
+      "covered": "none: @ts-ignore comments erase at compile time, so the emitted JavaScript is identical; tsc --noEmit is the check",
+      "commits": [
+        "e03418d54",
+        "5bb80c666",
+        "7d1c6b9b6",
+        "1256b6f2f",
+        "641fe3664",
+        "54064df25"
+      ],
+      "files": [
+        "packages/ketcher-core/src/application/render/draw.ts",
+        "packages/ketcher-core/src/application/render/util.ts",
+        "packages/ketcher-core/src/application/render/restruct/reImage.ts",
+        "packages/ketcher-core/src/application/render/restruct/rebond.ts",
+        "packages/ketcher-core/src/application/render/restruct/resimpleObject.ts",
+        "packages/ketcher-core/src/application/render/restruct/restruct.ts",
+        "packages/ketcher-core/src/application/render/restruct/retext.ts",
+        "packages/ketcher-core/src/application/render/restruct/reatom.ts",
+        "packages/ketcher-core/src/application/render/restruct/resgroup.ts",
+        "packages/ketcher-react/src/script/editor/tool/arrow/commonArrow.ts",
+        "packages/ketcher-react/src/script/editor/tool/image.ts",
+        "packages/ketcher-react/src/script/editor/tool/reactionplus.ts",
+        "packages/ketcher-react/src/script/editor/tool/select/select.ts"
+      ]
+    },
+    {
+      "key": "lodash-fp-entrypoints",
+      "summary": "Import lodash/fp per function rather than as a whole.",
+      "verdict": "reapply",
+      "covered": "none: a bundle-shape change with no runtime surface",
+      "commits": ["c62eccb62"],
+      "files": [
+        "packages/ketcher-core/src/application/editor/actions/atom.ts",
+        "packages/ketcher-core/src/application/editor/actions/sgroup.ts",
+        "packages/ketcher-react/src/script/editor/Editor.ts",
+        "packages/ketcher-react/src/script/editor/tool/select/select.helpers.ts",
+        "packages/ketcher-react/src/script/editor/tool/sgroup.ts",
+        "packages/ketcher-react/src/script/ui/action/zoom.js",
+        "packages/ketcher-react/src/script/ui/component/form/buttonlist.jsx",
+        "packages/ketcher-react/src/script/ui/data/convert/structconv.js",
+        "packages/ketcher-react/src/script/ui/data/schema/struct-schema.js",
+        "packages/ketcher-react/src/script/ui/dialog/template/TemplateDialog.tsx",
+        "packages/ketcher-react/src/script/ui/dialog/toolbox/labeledit.jsx",
+        "packages/ketcher-react/src/script/ui/state/action/index.js",
+        "packages/ketcher-react/src/script/ui/state/editor/index.js",
+        "packages/ketcher-react/src/script/ui/state/hotkeys.ts",
+        "packages/ketcher-react/src/script/ui/state/index.js",
+        "packages/ketcher-react/src/script/ui/state/options/index.js",
+        "packages/ketcher-react/src/script/ui/state/server/index.js",
+        "packages/ketcher-react/src/script/ui/state/templates/index.ts",
+        "packages/ketcher-react/src/script/ui/state/toolbar/index.js",
+        "packages/ketcher-react/src/script/ui/utils/index.ts",
+        "packages/ketcher-react/src/script/ui/views/components/StructEditor/StructEditor.jsx",
+        "packages/ketcher-react/src/script/ui/views/modal/Modal.container.ts",
+        "packages/ketcher-react/src/script/ui/views/modal/components/PeriodTable/PeriodTable.jsx",
+        "packages/ketcher-react/src/script/ui/views/modal/components/PeriodTable/components/ElementsTable/components/Header.jsx",
+        "packages/ketcher-react/src/script/ui/views/modal/components/Text/FontControl/FontControl.tsx",
+        "packages/ketcher-react/src/script/ui/views/modal/components/process/Analyse/Analyse.jsx",
+        "packages/ketcher-react/src/script/ui/views/modal/components/process/Miew/Miew.tsx",
+        "packages/ketcher-react/src/script/ui/views/modal/components/process/Recognize/Recognize.jsx",
+        "packages/ketcher-react/src/script/ui/views/modal/components/toolbox/Atom/ElementNumber/ElementNumber.tsx"
+      ]
+    },
+    {
+      "key": "upstream-macro-drag-ghost",
+      "summary": "Position the drag ghost at the preset top-left corner (upstream #7371).",
+      "verdict": "drop",
+      "covered": "none: upstream carries this fix in v3.18.0, so the merge brings it",
+      "commits": ["718685197"],
+      "files": [
+        "packages/ketcher-macromolecules/src/components/DragGhost/DragGhost.tsx",
+        "packages/ketcher-macromolecules/src/components/DragGhost/svg/GhostRnaPreset.tsx",
+        "packages/ketcher-macromolecules/src/components/monomerLibrary/monomerLibraryItem/hooks/useLibraryItemDrag.tsx"
+      ]
+    },
+    {
+      "key": "macro-editor-visibility",
+      "summary": "Hide, then unhide, the macromolecule editor; plus cherry-picked upstream editor fixes.",
+      "verdict": "drop",
+      "covered": "none: the hide and its revert cancel out, and the rest are upstream cherry-picks v3.18.0 already carries",
+      "commits": [
+        "a0a062544",
+        "155ec1af1",
+        "930c26d72",
+        "2be7705f4",
+        "2a668fbce",
+        "67339e83e",
+        "5f61c7812",
+        "39e1edc26",
+        "db9c43fdc",
+        "336054dcd"
+      ],
+      "files": [
+        "packages/ketcher-react/src/Editor.tsx",
+        "packages/ketcher-react/src/script/ui/state/editor/index.js",
+        "packages/ketcher-react/src/script/ui/views/components/StructEditor/StructEditor.jsx"
+      ]
+    }
+  ]
+}
