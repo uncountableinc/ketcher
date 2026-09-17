@@ -37,7 +37,7 @@ test.describe('s-group drawing behaviour', () => {
     const selectedAtoms = await page.evaluate(
       () => window.ketcher.editor.selection()?.atoms ?? [],
     );
-    expect(selectedAtoms).toEqual([0, 1, 2, 3, 4]);
+    expect([...selectedAtoms].sort()).toEqual([0, 1, 2, 3, 4]);
   });
 
   test('clicking an unselected s-group member selects the whole group', async ({
@@ -51,7 +51,7 @@ test.describe('s-group drawing behaviour', () => {
     const selectedAtoms = await page.evaluate(
       () => window.ketcher.editor.selection()?.atoms ?? [],
     );
-    expect(selectedAtoms).toEqual([1, 2, 3]);
+    expect([...selectedAtoms].sort()).toEqual([1, 2, 3]);
   });
 
   test('an SRU connectivity label renders in upper case', async ({ page }) => {

@@ -1,6 +1,8 @@
 import { KetSerializer } from 'domain/serializers';
 import { AtomCIP, BondCIP } from 'domain/entities/types';
 
+import { micromoleculeKet } from './fixtures';
+
 /*
  * Fork commits under test:
  *   cda0f264a  CIP: accept RS atom descriptor (MAT-75502)
@@ -16,13 +18,6 @@ import { AtomCIP, BondCIP } from 'domain/entities/types';
  * These assert behaviour, not the schema file, so they hold across the
  * upstream ajv -> jsonschema validator swap.
  */
-
-function micromoleculeKet(molecule: Record<string, unknown>): string {
-  return JSON.stringify({
-    root: { nodes: [{ $ref: 'mol0' }], connections: [], templates: [] },
-    mol0: { type: 'molecule', ...molecule },
-  });
-}
 
 function structWithAtomCip(cip: string) {
   return new KetSerializer().deserializeMicromolecules(

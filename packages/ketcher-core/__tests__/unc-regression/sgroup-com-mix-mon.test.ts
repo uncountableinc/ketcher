@@ -1,6 +1,8 @@
 import { KetSerializer } from 'domain/serializers';
 import { SGroup } from 'domain/entities';
 
+import { twoCarbonKet } from './fixtures';
+
 /*
  * Fork commit under test:
  *   843206bc0  support com, mix, and mon sgroups
@@ -14,24 +16,15 @@ import { SGroup } from 'domain/entities';
  * carries neither.
  */
 
-function micromoleculeKet(sgroup: Record<string, unknown>): string {
-  return JSON.stringify({
-    root: { nodes: [{ $ref: 'mol0' }], connections: [], templates: [] },
-    mol0: {
-      type: 'molecule',
-      atoms: [
-        { label: 'C', location: [0, 0, 0] },
-        { label: 'C', location: [1, 0, 0] },
-      ],
-      bonds: [{ type: 1, atoms: [0, 1] }],
-      sgroups: [{ atoms: [0, 1], ...sgroup }],
-    },
+function ketWithSGroup(sgroup: Record<string, unknown>): string {
+  return twoCarbonKet({
+    molecule: { sgroups: [{ atoms: [0, 1], ...sgroup }] },
   });
 }
 
 function deserializeSGroup(sgroup: Record<string, unknown>): SGroup {
   const struct = new KetSerializer().deserializeMicromolecules(
-    micromoleculeKet(sgroup),
+    ketWithSGroup(sgroup),
   );
   const first = Array.from(struct.sgroups.values())[0];
   expect(first).toBeDefined();
@@ -86,7 +79,7 @@ describe('formulation S-groups survive a KET round trip', () => {
   it('writes a COM group back with its subscript and component number', () => {
     const serializer = new KetSerializer();
     const struct = serializer.deserializeMicromolecules(
-      micromoleculeKet({ type: 'COM', subscript: 'comp', compno: '2' }),
+      ketWithSGroup({ type: 'COM', subscript: 'comp', compno: '2' }),
     );
 
     const written = JSON.parse(serializer.serialize(struct));

@@ -15,6 +15,7 @@
  ***************************************************************************/
 import clsx from 'clsx';
 import { Validator } from 'jsonschema';
+import { JSON_SCHEMA_VALIDATOR_OPTIONS } from '../../../data/schema/options-schema';
 
 import { cloneDeep } from 'lodash';
 import { Component, useCallback, useState } from 'react';
@@ -29,12 +30,6 @@ import { ErrorPopover } from './errorPopover';
 import classes from './form.module.less';
 import { Icon, IconButton } from 'components';
 import { Tooltip } from '@mui/material';
-
-// jsonschema resolves every schema against a base URL. Without one it calls
-// `new URL('')`, which throws "Failed to construct 'URL': Invalid URL" and takes
-// the whole editor down when a dialog opens. options-schema.ts already passes
-// this; the form machinery has to as well.
-const VALIDATOR_OPTIONS = { base: 'https://example.com' };
 
 class Form extends Component {
   constructor(props) {
@@ -435,7 +430,11 @@ function propSchema(schema, { customValid, serialize = {}, deserialize = {} }) {
   return {
     key: schema.key || '',
     serialize: (inst) => {
-      const result = validator.validate(inst, schemaCopy, VALIDATOR_OPTIONS);
+      const result = validator.validate(
+        inst,
+        schemaCopy,
+        JSON_SCHEMA_VALIDATOR_OPTIONS,
+      );
 
       return {
         instance: serializeRewrite(serialize, inst, schemaCopy),
@@ -444,7 +443,7 @@ function propSchema(schema, { customValid, serialize = {}, deserialize = {} }) {
       };
     },
     deserialize: (inst) => {
-      validator.validate(inst, schemaCopy, VALIDATOR_OPTIONS);
+      validator.validate(inst, schemaCopy, JSON_SCHEMA_VALIDATOR_OPTIONS);
       return deserializeRewrite(deserialize, inst);
     },
   };

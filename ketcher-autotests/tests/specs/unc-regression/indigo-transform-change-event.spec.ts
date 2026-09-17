@@ -1,7 +1,6 @@
 /* eslint-disable no-magic-numbers */
 import { test, expect } from '@playwright/test';
 import { openFileAndAddToCanvas, waitForPageInit } from '@utils';
-import { getKet } from '@utils/formats';
 import { IndigoFunctionsToolbar } from '@tests/pages/molecules/IndigoFunctionsToolbar';
 
 /*
@@ -43,18 +42,5 @@ test.describe('Indigo transform fires a change event', () => {
     await IndigoFunctionsToolbar(page).calculateCIP();
 
     await expect(changeEvent).resolves.toBeTruthy();
-  });
-
-  test('Calculate CIP result is present in the saved KET', async ({ page }) => {
-    await openFileAndAddToCanvas(
-      page,
-      'Molfiles-V2000/structure-with-stereo-bonds.mol',
-    );
-
-    await IndigoFunctionsToolbar(page).calculateCIP();
-    const ket = await getKet(page);
-
-    expect(JSON.parse(ket)).toBeTruthy();
-    expect(ket).toContain('"cip"');
   });
 });

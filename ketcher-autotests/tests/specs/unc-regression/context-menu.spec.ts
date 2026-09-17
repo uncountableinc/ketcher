@@ -33,7 +33,7 @@ test.describe('right-click inside the editor', () => {
     await expect(ContextMenu(page, atom).contextMenuBody).toBeVisible();
   });
 
-  test('suppresses the browser menu only for the editor canvas', async ({
+  test('suppresses the browser menu for the editor canvas', async ({
     page,
   }) => {
     const atom = await getAtomByIndex(page, { label: 'C' }, 0);

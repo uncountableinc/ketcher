@@ -79,7 +79,7 @@ drop the commit.
 
 ## Browser-only, in `ketcher-autotests/tests/specs/unc-regression/`
 
-Fifteen Playwright tests, all run against the standalone demo build and passing.
+Sixteen Playwright tests, all run against the standalone demo build and passing.
 Start the demo first, then run them:
 
 ```bash
@@ -93,8 +93,9 @@ npx playwright test tests/specs/unc-regression/ --project=chromium
 | `sgroup-behaviour.spec.ts` | `d0ec26103`, `e97756d50` / `327586a7e`, `163120938`, `5e1077347` |
 | `clipboard-and-undo.spec.ts` | `96513d3d6`, `f6362eda8`, `243b653df` |
 | `context-menu.spec.ts` | `bf79b6f0c` / `259898396` / `b70744dde` |
-| `indigo-transform-change-event.spec.ts` | `f22519419` (MAT-76710) |
+| `indigo-transform-change-event.spec.ts` | `f22519419` (MAT-76710) — the change-event assertion is the guard; reading the saved KET would pass either way, so no such test is kept |
 | `sru-user-values.spec.ts` | `37c0a4b53` |
+| `settings-state.spec.ts` | `4e21564a4`, `8b92271fc` |
 
 `fixtures.ts` holds the shared KET fixtures.
 The specs build their structures through `ketcher.setMolecule` rather than reading
