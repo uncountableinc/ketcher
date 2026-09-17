@@ -43,8 +43,9 @@ directory copied in.
 | `ket-rgroup-refs.test.ts` | `270480fe0` | none | 3/3 | 1/3 | **reapply** |
 | `indigo-hydrogen-label-default.test.ts` | `446e1cf11` | none | 3/3 | 0/3 | **reapply** |
 | `data-sgroup-bracket-pos.test.ts` | `a4394409c` | MAT-73031 | 2/2 | 2/2 | **drop** |
+| `css-export.test.ts` | `2e0098185` | none | 2/2 | 2/2 | **drop** |
 
-Totals: fork 38/38, vanilla `v3.18.0` 15/38.
+Totals: fork 40/40, vanilla `v3.18.0` 17/40.
 
 ### Reading the partial failures
 
@@ -109,7 +110,7 @@ It imports only from `ketcher-core`, so the directory can be copied onto a vanil
 checkout and run as-is.
 That is how the verdict table above was produced.
 
-The Playwright suite **is not**, and cannot be made so cheaply.
+Most of the Playwright suite **is not**, and cannot be made so cheaply.
 Upstream restructured the shared test helpers between 3.6 and 3.18: `clickOnAtom`,
 `getAtomByIndex` and `selectUndoByKeyboard` no longer exist in `v3.18.0`, so the specs
 fail to resolve their imports on a vanilla checkout.
@@ -122,11 +123,14 @@ So treat the two halves differently:
 
 - **jest** — run it against each upstream tag; the pass/fail is the reapply/drop
   verdict.
-- **Playwright** — a regression guard on the fork.
-  It proves the nine interaction patches still work *here*, and it will catch a future
-  fork change that breaks them.
-  It cannot tell you whether upstream has fixed them; that call needs code inspection or
-  a manual check at upgrade time.
+- **Playwright** — a regression guard on the fork for most specs.
+  They prove the interaction patches still work *here* and will catch a future fork
+  change that breaks them, but cannot say whether upstream has fixed them.
+- **`editor-instance.spec.ts` is the exception.** It imports only `waitForPageInit`,
+  which upstream kept, so it does run on a vanilla checkout.
+  Against `v3.18.0` it reports the ketcher-id class **absent**, so `c32453d96` /
+  `36c00e15a` must be reapplied, and fullscreen **working**, so that half needs no
+  patch.
 
 ## Commit map
 
