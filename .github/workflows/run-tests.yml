@@ -23,7 +23,9 @@ env:
 jobs:
   build_ketcher:
     runs-on: ubuntu-latest
-    container: node:18.14-bullseye-slim
+    # Bookworm, not bullseye: the bullseye security pool no longer serves the
+    # package versions its own index advertises, so apt-get install fails there.
+    container: node:18.20-bookworm-slim
     steps:
       - name: Install dependencies
         run: apt-get update -y && apt-get install -y git

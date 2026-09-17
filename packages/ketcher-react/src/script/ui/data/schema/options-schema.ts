@@ -465,13 +465,22 @@ export function getDefaultOptions(): Record<string, any> {
   }, {});
 }
 
+/**
+ * jsonschema resolves every schema against a base URL. Without one it reaches
+ * `new URL('')`, which throws and unmounts the editor. Both validate call sites
+ * in this package must pass the same base, so it lives here.
+ */
+export const JSON_SCHEMA_VALIDATOR_OPTIONS = { base: 'https://example.com' };
+
 export function validation(settings): Record<string, string> | null {
   if (typeof settings !== 'object' || settings === null) return null;
 
   const validator = new Validator();
-  const result = validator.validate(settings, optionsSchema, {
-    base: 'https://example.com',
-  });
+  const result = validator.validate(
+    settings,
+    optionsSchema,
+    JSON_SCHEMA_VALIDATOR_OPTIONS,
+  );
   const errorsProps = result.errors.map((el) => el.path[el.path.length - 1]);
 
   return Object.keys(settings).reduce((res, prop) => {

@@ -15,6 +15,8 @@
  ***************************************************************************/
 import clsx from 'clsx';
 import { Validator } from 'jsonschema';
+import { JSON_SCHEMA_VALIDATOR_OPTIONS } from '../../../data/schema/options-schema';
+
 import { cloneDeep } from 'lodash';
 import { Component, useCallback, useState } from 'react';
 import { connect } from 'react-redux';
@@ -428,7 +430,11 @@ function propSchema(schema, { customValid, serialize = {}, deserialize = {} }) {
   return {
     key: schema.key || '',
     serialize: (inst) => {
-      const result = validator.validate(inst, schemaCopy);
+      const result = validator.validate(
+        inst,
+        schemaCopy,
+        JSON_SCHEMA_VALIDATOR_OPTIONS,
+      );
 
       return {
         instance: serializeRewrite(serialize, inst, schemaCopy),
@@ -437,7 +443,7 @@ function propSchema(schema, { customValid, serialize = {}, deserialize = {} }) {
       };
     },
     deserialize: (inst) => {
-      validator.validate(inst, schemaCopy);
+      validator.validate(inst, schemaCopy, JSON_SCHEMA_VALIDATOR_OPTIONS);
       return deserializeRewrite(deserialize, inst);
     },
   };
