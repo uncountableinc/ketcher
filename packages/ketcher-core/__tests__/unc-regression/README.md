@@ -100,6 +100,53 @@ npx playwright test tests/specs/unc-regression/ --project=chromium
 The specs build their structures through `ketcher.setMolecule` rather than reading
 committed test data, so they do not break when the shared test-data set is reorganised.
 
+## The two halves are not equally portable
+
+The jest suite **is** the upgrade oracle.
+It imports only from `ketcher-core`, so the directory can be copied onto a vanilla
+checkout and run as-is.
+That is how the verdict table above was produced.
+
+The Playwright suite **is not**, and cannot be made so cheaply.
+Upstream restructured the shared test helpers between 3.6 and 3.18: `clickOnAtom`,
+`getAtomByIndex` and `selectUndoByKeyboard` no longer exist in `v3.18.0`, so the specs
+fail to resolve their imports on a vanilla checkout.
+Rewriting them to drive the editor through `window.ketcher` alone was tried and
+abandoned — the interaction plumbing those helpers provide (canvas focus, tool
+selection, paste placement) is what makes them reliable, and a hand-rolled replacement
+was markedly less so.
+
+So treat the two halves differently:
+
+- **jest** — run it against each upstream tag; the pass/fail is the reapply/drop
+  verdict.
+- **Playwright** — a regression guard on the fork.
+  It proves the nine interaction patches still work *here*, and it will catch a future
+  fork change that breaks them.
+  It cannot tell you whether upstream has fixed them; that call needs code inspection or
+  a manual check at upgrade time.
+
+## Commit map
+
+Every commit in the KEEP set, and where it is covered.
+
+| Commit | Covered by |
+| --- | --- |
+| `cda0f264a`, `b674564bc`, `1d6c9ac5b` | jest `cip-descriptors` |
+| `9f488c2d0` | jest `contracted-abbreviation-anchor` |
+| `43ebbcc69` | jest `sgroup-atom-membership` |
+| `843206bc0` | jest `sgroup-com-mix-mon` |
+| `270480fe0` | jest `ket-rgroup-refs` |
+| `446e1cf11` | jest `indigo-hydrogen-label-default` |
+| `a4394409c` | jest `data-sgroup-bracket-pos` — verdict **drop** |
+| `d0ec26103`, `e97756d50`, `327586a7e`, `163120938`, `5e1077347` | Playwright `sgroup-behaviour` |
+| `96513d3d6`, `f6362eda8`, `243b653df` | Playwright `clipboard-and-undo` |
+| `bf79b6f0c`, `259898396`, `b70744dde` | Playwright `context-menu` |
+| `f22519419` | Playwright `indigo-transform-change-event` |
+| `37c0a4b53` | Playwright `sru-user-values` |
+| `da4fa3016` | pre-existing `__tests__/application/render/restruct/reatom.test.ts` |
+| `cb5b18637`, `9f256ceb8` | pre-existing `ketcher-autotests/.../SRU-Polymer/sru-polymer-tool.spec.ts` |
+
 ## Still uncovered
 
 - `4e21564a4` (`initOptionsState`). Opening the Settings dialog in the standalone demo

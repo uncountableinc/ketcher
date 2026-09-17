@@ -68,19 +68,42 @@ test.describe('s-group drawing behaviour', () => {
     expect(drawnText).not.toContain('hh');
   });
 
-  test('an s-group draws exactly two brackets', async ({ page }) => {
-    // Bracket geometry is taken from the group bounding box, so a group draws
-    // one bracket per side however many bonds cross it.
+  test('the bracket box encloses the whole s-group, not just its crossing bonds', async ({
+    page,
+  }) => {
+    // Bracket geometry comes from the group's bounding box rather than from its
+    // crossing bonds, so the box must span every member atom.
     await setMolecule(page, SRU_CHAIN_KET);
-
     expect(await sgroupCount(page)).toBe(1);
-    const brackets = await page.evaluate(
-      () =>
-        window.ketcher.editor.render.ctab.sgroups.get(0)?.item?.bracketBox !=
-        null,
-    );
 
-    expect(brackets).toBe(true);
+    const measured = await page.evaluate(() => {
+      const struct = window.ketcher.editor.struct();
+      const sgroup = Array.from(struct.sgroups.values())[0];
+      const box = sgroup?.bracketBox;
+      if (box == null) {
+        return null;
+      }
+      const memberXs: number[] = [];
+      for (const id of sgroup.atoms) {
+        const atom = struct.atoms.get(id);
+        if (atom != null) {
+          memberXs.push(atom.pp.x);
+        }
+      }
+      return {
+        boxMinX: box.p0.x,
+        boxMaxX: box.p1.x,
+        memberMinX: Math.min(...memberXs),
+        memberMaxX: Math.max(...memberXs),
+        memberCount: sgroup.atoms.length,
+      };
+    });
+
+    expect(measured).not.toBeNull();
+    const box = measured as NonNullable<typeof measured>;
+    expect(box.memberCount).toBe(3);
+    expect(box.boxMinX).toBeLessThanOrEqual(box.memberMinX);
+    expect(box.boxMaxX).toBeGreaterThanOrEqual(box.memberMaxX);
   });
 
   test('implicit hydrogen counts survive loading a structure with an s-group', async ({
