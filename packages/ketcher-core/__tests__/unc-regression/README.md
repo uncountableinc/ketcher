@@ -56,7 +56,7 @@ Totals for the tests above: fork 40/40, vanilla `v3.18.0` 17/40.
 The suite was first built from a hand-written list of interesting commits. That list
 missed eleven fork behaviours, found by comparing the fork's net source diff against the
 files the listed commits touch. `scripts/check-unc-fork-coverage.mjs` now enforces the
-comparison. See `UNCOUNTABLE_FORK_PATCHSET.md`.
+comparison, and `scripts/unc-fork-coverage.json` carries the per-behaviour verdicts.
 
 | Test file | Fork commits | fork | vanilla 3.18 | verdict |
 | --- | --- | --- | --- | --- |
