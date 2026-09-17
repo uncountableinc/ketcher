@@ -64,11 +64,11 @@ comparison, and `scripts/unc-fork-coverage.json` carries the per-behaviour verdi
 | `external-zoom-scale.test.ts` | `1ea33be22`, `33a078c8b` | 3/3 | 2/3 | **reapply** |
 | `canvas-load-not-undoable.test.ts` | `c0fde0b1e` | 4/4 | did not load | **reapply** |
 | `indigo-stereo-style.test.ts` | `f2e76d0ce` | 4/4 | 0/4 | **reapply** |
-| `sgroup-connectivity-case.test.ts` | `783bc6497`, `493fcc1bd`, `3aecd5500` | 3/3 | 3/3 | **drop** |
+| `sgroup-connectivity-case.test.ts` | `783bc6497`, `493fcc1bd`, `3aecd5500` | 9/9 | 9/9 | **drop** |
 | `logger-without-ketcher.test.ts` | `81d4c7d75` | 3/3 | 3/3 | **drop** |
 | `keynorm-unmapped-key.test.ts` | `905baf429` | 4/4 | 3/4 | **drop** |
 
-Suite totals: fork 70/70, vanilla `v3.18.0` 45/70.
+Suite totals: fork 76/76, vanilla `v3.18.0` 51/76.
 
 Reading these:
 
@@ -82,9 +82,14 @@ Reading these:
   Its verdict comes from source inspection instead — `isInvertible` appears nowhere in
   `v3.18.0`, so the fork's predicate has to be reapplied.
   Expect the file move as a merge conflict.
-- `sgroup-connectivity-case` **drops**. Upstream's `parseSGroup.ts` lowercases
-  `connectivity` and `subtype` itself, by a different route: it normalises on the s-group
-  after parsing rather than inside `applySGroupProp`.
+- `sgroup-connectivity-case` **drops**, and the s-group type is what makes the test say
+  anything. Upstream lowercases connectivity in per-type post-load hooks, so the type
+  decides whether it happens; at the fork's base only SRU had one. An SRU-only fixture
+  therefore passes at the base, on the fork and upstream alike, and proves nothing — the
+  first version of this test made exactly that mistake.
+  Varying the type fixes it: upstream's own `v2000.test.ts` expected `'EU'` for a GEN
+  group at the fork's base and expects `'eu'` in `v3.18.0`, so upstream reached the
+  fork's behaviour independently.
 - `logger-without-ketcher` **drops**. Upstream replaced the throw with a `console.warn`
   and the same `?? {}` fallback.
 - `keynorm-unmapped-key` **drops**, with a caveat. The three guard tests pass on vanilla

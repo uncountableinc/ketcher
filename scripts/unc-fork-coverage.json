@@ -136,7 +136,7 @@
         "packages/ketcher-core/src/domain/serializers/mol/molfile.ts",
         "packages/ketcher-core/src/domain/serializers/ket/toKet/moleculeToKet.ts"
       ],
-      "verdictNote": "drop: measured 3/3 on vanilla v3.18.0. Upstream parseSGroup.ts lowercases connectivity and subtype itself."
+      "verdictNote": "drop: measured 9/9 on vanilla v3.18.0, over SRU, GEN and COP s-groups. Upstream lowercases connectivity in per-type post-load hooks; its own v2000.test.ts expected 'EU' for a GEN group at the fork's merge base and expects 'eu' in v3.18.0. The test must vary the s-group type: an SRU-only fixture passes everywhere and proves nothing."
     },
     {
       "key": "logger-without-ketcher",
