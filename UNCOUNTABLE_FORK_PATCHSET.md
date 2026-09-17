@@ -9,6 +9,10 @@ the widest-reaching one, which sends every export format to the Indigo server. A
 list cannot be checked for completeness, because nothing tells you when an entry is
 missing. The set of changed files can be, so that is what this document is built from.
 
+Running the new tests against vanilla `v3.18.0` then showed three of those eleven are
+already fixed upstream. They move to DROP below. Finding the gap made the patch set
+smaller, not larger.
+
 ## How the buckets were measured
 
 The fork branched from upstream at `f098bdc23` (2025-07-01, upstream's Indigo v1.34.0
@@ -60,16 +64,15 @@ oracle protocol and the per-test pass counts.
 | Keep R-group references through a KET round trip | jest `ket-rgroup-refs` | reapply, measured |
 | Report S-group atom membership through the struct | jest `sgroup-atom-membership` | reapply, measured |
 | Draw a contracted abbreviation at its group centre (MAT-77406) | jest `contracted-abbreviation-anchor` | reapply, measured |
-| Lowercase S-group connectivity codes on MOL parse | jest `sgroup-connectivity-case` | reapply |
 | Render a polymer `*` end-group cap as a carbon (MAT-75501) | pre-existing `reatom.test.ts` | reapply |
 
 ### Indigo server
 
 | Behaviour | Test | Verdict |
 | --- | --- | --- |
-| Convert every format except KET on the server | jest `server-format-routing` | reapply |
+| Convert every format except KET on the server | jest `server-format-routing` | reapply, measured |
 | Default Indigo to terminal-hetero hydrogen labels, not none | jest `indigo-hydrogen-label-default` | reapply, measured |
-| Send `render-stereo-style` to Indigo image rendering | jest `indigo-stereo-style` | reapply |
+| Send `render-stereo-style` to Indigo image rendering | jest `indigo-stereo-style` | reapply, measured |
 | Persist Indigo transform results on save (MAT-76710) | playwright `indigo-transform-change-event` | reapply |
 
 `server-format-routing` is the one to be most careful with. Vanilla converts to MOL V2000
@@ -82,16 +85,19 @@ would be silent.
 
 | Behaviour | Test | Verdict |
 | --- | --- | --- |
-| Account for the embedding container's CSS scale in pointer maths | jest `external-zoom-scale` | reapply |
-| Keep a canvas load off the undo stack | jest `canvas-load-not-undoable` | reapply |
-| Let the logger read settings before the ketcher global exists | jest `logger-without-ketcher` | reapply |
-| Survive a keycode the key-name table does not cover | jest `keynorm-unmapped-key` | reapply |
+| Account for the embedding container's CSS scale in pointer maths | jest `external-zoom-scale` | reapply, measured |
+| Keep a canvas load off the undo stack | jest `canvas-load-not-undoable` | reapply, by inspection |
 | Coerce a stored render offset back to a `Vec2` | playwright `render-offset-restore` | reapply |
 | S-group select retarget, bracket bounding box, connectivity label case | playwright `sgroup-behaviour` | reapply |
 | Copy, paste and undo of brackets and s-groups | playwright `clipboard-and-undo` | reapply |
 | Right-click capture and context-menu placement | playwright `context-menu` | reapply |
 | Do not override user-set SRU values | playwright `sru-user-values` | reapply |
 | Fix the undo crash after creating an SRU polymer S-group | pre-existing `sru-polymer-tool.spec.ts` | reapply |
+
+`canvas-load-not-undoable` is the one verdict that is not measured. Upstream moved
+`application/editor/operations/base.ts`, so the test cannot load on a vanilla checkout.
+Its verdict comes from source inspection instead: `isInvertible` appears nowhere in
+`v3.18.0`.
 
 ### Embedding and chrome
 
@@ -108,6 +114,9 @@ would be silent.
 | --- | --- |
 | Thread the render through Data S-group draw (MAT-73031) | Passes on vanilla. Upstream reached the same outcome another way: `drawGroupDat` no longer calls `SGroup.bracketPos`, so the fallback the patch avoided is unreachable. **Measured.** |
 | Export the stylesheet under the `default` condition | Passes on vanilla. `v3.18.0` already declares it. **Measured.** |
+| Lowercase S-group connectivity codes on MOL parse | Passes on vanilla. Upstream's `parseSGroup.ts` lowercases `connectivity` and `subtype` itself, normalising on the s-group after parsing rather than inside `applySGroupProp`. **Measured.** |
+| Let the logger read settings before the ketcher global exists | Passes on vanilla. Upstream replaced the throw with a `console.warn` and the same `?? {}` fallback. **Measured.** |
+| Survive a keycode the key-name table does not cover | Passes on vanilla. Upstream rewrote `keynorm` around `event.key` with string defaults, so it can no longer throw. **Measured.** |
 | Position the macro drag ghost at the preset corner | An upstream cherry-pick (#7371). `v3.18.0` carries it. |
 | Hide the macromolecule editor | The change and its revert cancel out. |
 | `miew-react` 0.11.0, Node 24, GitHub runners, release plumbing | Stale or CI-only. |

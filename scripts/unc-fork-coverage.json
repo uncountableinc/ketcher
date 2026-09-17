@@ -96,7 +96,8 @@
       "commits": ["6576cd745", "52fc7376a", "b53ffb290"],
       "files": [
         "packages/ketcher-core/src/application/formatters/formatterFactory.ts"
-      ]
+      ],
+      "verdictNote": "reapply: measured 0/9 on vanilla v3.18.0. Vanilla converts MOL in the browser."
     },
     {
       "key": "external-zoom-scale",
@@ -107,7 +108,8 @@
       "files": [
         "packages/ketcher-core/src/application/render/coordinateTransformation.ts",
         "packages/ketcher-core/src/application/render/render.types.ts"
-      ]
+      ],
+      "verdictNote": "reapply: measured 2/3 on vanilla v3.18.0. The neutral-option test passes by design."
     },
     {
       "key": "canvas-load-not-undoable",
@@ -119,12 +121,13 @@
         "packages/ketcher-core/src/application/editor/actions/action.ts",
         "packages/ketcher-core/src/application/editor/operations/CanvasLoad.ts",
         "packages/ketcher-core/src/application/editor/operations/base.ts"
-      ]
+      ],
+      "verdictNote": "reapply: the suite cannot load on vanilla because upstream moved operations/base.ts, so this verdict is from source inspection - isInvertible appears nowhere in v3.18.0."
     },
     {
       "key": "sgroup-connectivity-case",
       "summary": "Lowercase S-group connectivity codes on MOL parse.",
-      "verdict": "reapply",
+      "verdict": "drop",
       "covered": "jest __tests__/unc-regression/sgroup-connectivity-case.test.ts",
       "commits": ["783bc6497", "493fcc1bd", "3aecd5500"],
       "files": [
@@ -132,23 +135,26 @@
         "packages/ketcher-core/src/domain/serializers/mol/__tests__/v2000.test.ts",
         "packages/ketcher-core/src/domain/serializers/mol/molfile.ts",
         "packages/ketcher-core/src/domain/serializers/ket/toKet/moleculeToKet.ts"
-      ]
+      ],
+      "verdictNote": "drop: measured 3/3 on vanilla v3.18.0. Upstream parseSGroup.ts lowercases connectivity and subtype itself."
     },
     {
       "key": "logger-without-ketcher",
       "summary": "Let the logger read settings before the ketcher global exists.",
-      "verdict": "reapply",
+      "verdict": "drop",
       "covered": "jest __tests__/unc-regression/logger-without-ketcher.test.ts",
       "commits": ["81d4c7d75"],
-      "files": ["packages/ketcher-core/src/utilities/KetcherLogger.ts"]
+      "files": ["packages/ketcher-core/src/utilities/KetcherLogger.ts"],
+      "verdictNote": "drop: measured 3/3 on vanilla v3.18.0. Upstream replaced the throw with a console.warn."
     },
     {
       "key": "keynorm-unmapped-key",
       "summary": "Survive a keycode the key-name table does not cover.",
-      "verdict": "reapply",
+      "verdict": "drop",
       "covered": "jest __tests__/unc-regression/keynorm-unmapped-key.test.ts",
       "commits": ["905baf429"],
-      "files": ["packages/ketcher-core/src/utilities/keynorm.ts"]
+      "files": ["packages/ketcher-core/src/utilities/keynorm.ts"],
+      "verdictNote": "drop: measured 3/4 on vanilla v3.18.0. Upstream rewrote keynorm around event.key with string defaults, so it cannot throw. The fourth test measures that rewritten API, not the guard."
     },
     {
       "key": "indigo-stereo-style",
@@ -160,7 +166,8 @@
         "packages/ketcher-core/src/domain/services/struct/structService.types.ts",
         "packages/ketcher-core/src/infrastructure/services/struct/remoteStructService.ts",
         "packages/ketcher-core/src/utilities/SettingsManager.ts"
-      ]
+      ],
+      "verdictNote": "reapply: measured 0/4 on vanilla v3.18.0."
     },
     {
       "key": "sgroup-bracket-and-labels",

@@ -58,17 +58,40 @@ missed eleven fork behaviours, found by comparing the fork's net source diff aga
 files the listed commits touch. `scripts/check-unc-fork-coverage.mjs` now enforces the
 comparison. See `UNCOUNTABLE_FORK_PATCHSET.md`.
 
-| Test file | Fork commits | fork | verdict |
-| --- | --- | --- | --- |
-| `server-format-routing.test.ts` | `6576cd745`, `52fc7376a`, `b53ffb290` | 9/9 | **reapply** |
-| `external-zoom-scale.test.ts` | `1ea33be22`, `33a078c8b` | 3/3 | **reapply** |
-| `canvas-load-not-undoable.test.ts` | `c0fde0b1e` | 4/4 | **reapply** |
-| `sgroup-connectivity-case.test.ts` | `783bc6497`, `493fcc1bd`, `3aecd5500` | 3/3 | **reapply** |
-| `logger-without-ketcher.test.ts` | `81d4c7d75` | 3/3 | **reapply** |
-| `keynorm-unmapped-key.test.ts` | `905baf429` | 4/4 | **reapply** |
-| `indigo-stereo-style.test.ts` | `f2e76d0ce` | 4/4 | **reapply** |
+| Test file | Fork commits | fork | vanilla 3.18 | verdict |
+| --- | --- | --- | --- | --- |
+| `server-format-routing.test.ts` | `6576cd745`, `52fc7376a`, `b53ffb290` | 9/9 | 0/9 | **reapply** |
+| `external-zoom-scale.test.ts` | `1ea33be22`, `33a078c8b` | 3/3 | 2/3 | **reapply** |
+| `canvas-load-not-undoable.test.ts` | `c0fde0b1e` | 4/4 | did not load | **reapply** |
+| `indigo-stereo-style.test.ts` | `f2e76d0ce` | 4/4 | 0/4 | **reapply** |
+| `sgroup-connectivity-case.test.ts` | `783bc6497`, `493fcc1bd`, `3aecd5500` | 3/3 | 3/3 | **drop** |
+| `logger-without-ketcher.test.ts` | `81d4c7d75` | 3/3 | 3/3 | **drop** |
+| `keynorm-unmapped-key.test.ts` | `905baf429` | 4/4 | 3/4 | **drop** |
 
-Suite totals: fork 70/70.
+Suite totals: fork 70/70, vanilla `v3.18.0` 45/70.
+
+Reading these:
+
+- `server-format-routing` fails every test on vanilla, which is the point: vanilla
+  converts MOL in the browser and the fork sends it to Indigo.
+  This is the one fork change that alters chemistry output rather than crashing.
+- `external-zoom-scale` passes the neutral-option test on vanilla by design — an
+  embedder that sets no external scale must see no change either way.
+- `canvas-load-not-undoable` cannot run on vanilla at all: upstream moved
+  `application/editor/operations/base.ts`, so the imports do not resolve.
+  Its verdict comes from source inspection instead — `isInvertible` appears nowhere in
+  `v3.18.0`, so the fork's predicate has to be reapplied.
+  Expect the file move as a merge conflict.
+- `sgroup-connectivity-case` **drops**. Upstream's `parseSGroup.ts` lowercases
+  `connectivity` and `subtype` itself, by a different route: it normalises on the s-group
+  after parsing rather than inside `applySGroupProp`.
+- `logger-without-ketcher` **drops**. Upstream replaced the throw with a `console.warn`
+  and the same `?? {}` fallback.
+- `keynorm-unmapped-key` **drops**, with a caveat. The three guard tests pass on vanilla
+  because upstream rewrote `keynorm` around `event.key` with string defaults, so it can
+  no longer throw on an unmapped keycode.
+  The fourth test fails there only because that rewrite dropped the `keyCode` lookup the
+  test drives; that is a difference in upstream's API, not a missing guard.
 
 ### Reading the partial failures
 
