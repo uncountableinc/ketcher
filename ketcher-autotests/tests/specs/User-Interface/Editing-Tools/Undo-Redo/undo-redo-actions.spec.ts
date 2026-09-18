@@ -71,12 +71,11 @@ async function selectBondProperties(
 
 async function selectSruPolymer(
   page: Page,
-  text: string,
   dataName: string,
   polymerLabel: string,
   repeatPattern: string,
 ) {
-  await page.locator('span').filter({ hasText: text }).click();
+  await page.getByTestId('s-group-type-input-span').click();
   await page.getByRole('option', { name: dataName }).click();
   await page.getByLabel('Polymer label').fill(polymerLabel);
   await page
@@ -91,11 +90,10 @@ async function selectSruPolymer(
 
 async function selectMultipleGroup(
   page: Page,
-  text: string,
   dataName: string,
   valueRepeatCount: string,
 ) {
-  await page.locator('span').filter({ hasText: text }).click();
+  await page.getByTestId('s-group-type-input-span').click();
   await page.getByRole('option', { name: dataName }).click();
   await page.getByLabel('Repeat count').fill(valueRepeatCount);
   await pressButton(page, 'Apply');
@@ -106,7 +104,7 @@ async function addNameToSuperatom(
   fieldLabel: string,
   superatomName: string,
 ) {
-  await page.locator('span').filter({ hasText: 'Data' }).click();
+  await page.getByTestId('s-group-type-input-span').click();
   await page.getByRole('option', { name: 'Superatom' }).click();
   await page.getByLabel(fieldLabel).fill(superatomName);
   await pressButton(page, 'Apply');
@@ -475,7 +473,7 @@ test.describe('Undo/Redo Actions', () => {
     await openFileAndAddToCanvas(page, 'KET/simple-chain.ket');
     await selectAllStructuresOnCanvas(page);
     await LeftToolbar(page).sGroup();
-    await selectMultipleGroup(page, 'Data', 'Multiple group', '88');
+    await selectMultipleGroup(page, 'Multiple group', '88');
     await screenshotBetweenUndoRedo(page);
     await takeEditorScreenshot(page);
   });
@@ -490,7 +488,7 @@ test.describe('Undo/Redo Actions', () => {
     await openFileAndAddToCanvas(page, 'KET/simple-chain.ket');
     await selectAllStructuresOnCanvas(page);
     await LeftToolbar(page).sGroup();
-    await selectSruPolymer(page, 'Data', 'SRU Polymer', 'A', 'Head-to-tail');
+    await selectSruPolymer(page, 'SRU Polymer', 'A', 'Head-to-tail');
     await screenshotBetweenUndoRedo(page);
     await takeEditorScreenshot(page);
   });
