@@ -2,6 +2,7 @@
 // when a serializer entry point is loaded first.
 import { KetSerializer } from 'domain/serializers';
 import { Struct } from 'domain/entities';
+import { Action } from 'application/editor/actions/action';
 import { AtomAttr } from 'application/editor/operations/atom/AtomAttr';
 import { AlignDescriptors } from 'application/editor/operations/descriptors';
 
@@ -21,6 +22,14 @@ import { twoCarbonKet } from './fixtures';
  *
  * BaseMode.onKeyDown carries the third patch. It needs a mounted macromolecule
  * editor to reach, so it has no test here.
+ *
+ * isDummy needs the most care on the upgrade. Upstream v3.18.0 added the same
+ * guard and answered the opposite way: it returns false, so the operation is
+ * kept and then throws in execute, which v3.18.0 leaves unguarded. We return
+ * true, so the action drops the operation instead. A merge can take either
+ * side silently, and the return value alone does not show which, so the tests
+ * below assert what the action does with the operation rather than what the
+ * predicate says.
  */
 
 const MISSING_ATOM_ID = 999;
@@ -30,8 +39,12 @@ function restructFor(struct: Struct) {
   return { molecule: struct, atoms: new Map() } as never;
 }
 
+function twoCarbonStruct() {
+  return new KetSerializer().deserializeMicromolecules(twoCarbonKet());
+}
+
 describe('an atom attribute operation naming an atom that is gone', () => {
-  const struct = new KetSerializer().deserializeMicromolecules(twoCarbonKet());
+  const struct = twoCarbonStruct();
 
   it('does not throw when executed', () => {
     const operation = new AtomAttr(MISSING_ATOM_ID, 'label', 'N');
@@ -46,11 +59,41 @@ describe('an atom attribute operation naming an atom that is gone', () => {
   });
 
   it('still applies to an atom that is present', () => {
+    const target = twoCarbonStruct();
     const operation = new AtomAttr(0, 'label', 'N');
 
-    operation.execute(restructFor(struct));
+    operation.execute(restructFor(target));
 
-    expect(struct.atoms.get(0)?.label).toBe('N');
+    expect(target.atoms.get(0)?.label).toBe('N');
+  });
+});
+
+describe('the action an atom attribute operation is added to', () => {
+  it('leaves the operation out when the atom is gone', () => {
+    const action = new Action([]);
+
+    action.addOp(
+      new AtomAttr(MISSING_ATOM_ID, 'label', 'N'),
+      restructFor(twoCarbonStruct()),
+    );
+
+    expect(action.operations).toHaveLength(0);
+  });
+
+  it('keeps an operation that changes an atom that is present', () => {
+    const action = new Action([]);
+
+    action.addOp(new AtomAttr(0, 'label', 'O'), restructFor(twoCarbonStruct()));
+
+    expect(action.operations).toHaveLength(1);
+  });
+
+  it('leaves out an operation that sets the value the atom already has', () => {
+    const action = new Action([]);
+
+    action.addOp(new AtomAttr(0, 'label', 'C'), restructFor(twoCarbonStruct()));
+
+    expect(action.operations).toHaveLength(0);
   });
 });
 
