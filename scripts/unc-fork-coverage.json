@@ -450,6 +450,41 @@
         "packages/ketcher-react/src/script/ui/state/editor/index.js",
         "packages/ketcher-react/src/script/ui/views/components/StructEditor/StructEditor.jsx"
       ]
+    },
+    {
+      "key": "operation-null-guards",
+      "summary": "Guard the lookups vanilla dereferences unchecked when an operation is replayed against a structure that no longer holds the atom, half bond or editor it names.",
+      "verdict": "reapply",
+      "verdictNote": "reapply: v3.18.0 leaves AtomAttr.execute, Struct.halfBondUpdate, Struct.atomUpdateHalfBonds and BaseMode.onKeyDown unguarded. Carried as patch-package patches against the built bundle in main until this change; building ketcher-core from this source reports every hunk of all three patch files already applied.",
+      "covered": "jest __tests__/unc-regression/operation-null-guards.test.ts",
+      "commits": ["1a41ba32e"],
+      "files": [
+        "packages/ketcher-core/src/application/editor/operations/atom/AtomAttr.ts",
+        "packages/ketcher-core/src/domain/entities/struct.ts",
+        "packages/ketcher-core/src/application/editor/modes/BaseMode.ts"
+      ]
+    },
+    {
+      "key": "align-descriptors-guard",
+      "summary": "Return early from AlignDescriptors when the structure has no coordinates, instead of reading max.x off a null bounding box.",
+      "verdict": "drop",
+      "verdictNote": "drop at the v3.16.2 merge: upstream added the identical if (!structBox) return; there, and moved the class to operations/AlignDescriptors.ts, so expect a rename conflict as well.",
+      "covered": "jest __tests__/unc-regression/operation-null-guards.test.ts",
+      "commits": ["1a41ba32e"],
+      "files": [
+        "packages/ketcher-core/src/application/editor/operations/descriptors.ts"
+      ]
+    },
+    {
+      "key": "atom-attr-is-dummy",
+      "summary": "Report an atom attribute operation naming a missing atom as a no-op, so the action drops it.",
+      "verdict": "reapply",
+      "verdictNote": "decision at the v3.18.0 merge, not a drop: upstream adds the same guard there and answers the opposite way, returning false so the operation is kept and then throws in execute, which v3.18.0 leaves unguarded. A merge can take either side silently, so the tests assert what the action does with the operation rather than what the predicate returns.",
+      "covered": "jest __tests__/unc-regression/operation-null-guards.test.ts",
+      "commits": ["1a41ba32e"],
+      "files": [
+        "packages/ketcher-core/src/application/editor/operations/atom/AtomAttr.ts"
+      ]
     }
   ]
 }
