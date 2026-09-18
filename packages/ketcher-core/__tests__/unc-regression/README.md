@@ -28,6 +28,10 @@ npx jest __tests__/unc-regression
 `compiledSchema.js` is generated from `schema.json` and is gitignored, so a fresh
 checkout has no schema until it runs.
 
+Run it after switching branches too. A `compiledSchema.js` left behind by a vanilla
+checkout makes the KET tests fail exactly as if the fork patches were missing, which
+reads as a regression rather than a stale build artifact.
+
 ## Coverage and measured verdicts
 
 Both columns below were run, not predicted.
@@ -45,7 +49,54 @@ directory copied in.
 | `data-sgroup-bracket-pos.test.ts` | `a4394409c` | MAT-73031 | 2/2 | 2/2 | **drop** |
 | `css-export.test.ts` | `2e0098185` | none | 2/2 | 2/2 | **drop** |
 
-Totals: fork 40/40, vanilla `v3.18.0` 17/40.
+Totals for the tests above: fork 40/40, vanilla `v3.18.0` 17/40.
+
+### Added after the completeness audit
+
+The suite was first built from a hand-written list of interesting commits. That list
+missed eleven fork behaviours, found by comparing the fork's net source diff against the
+files the listed commits touch. `scripts/check-unc-fork-coverage.mjs` now enforces the
+comparison, and `scripts/unc-fork-coverage.json` carries the per-behaviour verdicts.
+
+| Test file | Fork commits | fork | vanilla 3.18 | verdict |
+| --- | --- | --- | --- | --- |
+| `server-format-routing.test.ts` | `6576cd745`, `52fc7376a`, `b53ffb290` | 9/9 | 0/9 | **reapply** |
+| `external-zoom-scale.test.ts` | `1ea33be22`, `33a078c8b` | 3/3 | 2/3 | **reapply** |
+| `canvas-load-not-undoable.test.ts` | `c0fde0b1e` | 4/4 | did not load | **reapply** |
+| `indigo-stereo-style.test.ts` | `f2e76d0ce` | 4/4 | 0/4 | **reapply** |
+| `sgroup-connectivity-case.test.ts` | `783bc6497`, `493fcc1bd`, `3aecd5500` | 9/9 | 9/9 | **drop** |
+| `logger-without-ketcher.test.ts` | `81d4c7d75` | 3/3 | 3/3 | **drop** |
+| `keynorm-unmapped-key.test.ts` | `905baf429` | 4/4 | 3/4 | **drop** |
+
+Suite totals: fork 76/76, vanilla `v3.18.0` 51/76.
+
+Reading these:
+
+- `server-format-routing` fails every test on vanilla, which is the point: vanilla
+  converts MOL in the browser and the fork sends it to Indigo.
+  This is the one fork change that alters chemistry output rather than crashing.
+- `external-zoom-scale` passes the neutral-option test on vanilla by design — an
+  embedder that sets no external scale must see no change either way.
+- `canvas-load-not-undoable` cannot run on vanilla at all: upstream moved
+  `application/editor/operations/base.ts`, so the imports do not resolve.
+  Its verdict comes from source inspection instead — `isInvertible` appears nowhere in
+  `v3.18.0`, so the fork's predicate has to be reapplied.
+  Expect the file move as a merge conflict.
+- `sgroup-connectivity-case` **drops**, and the s-group type is what makes the test say
+  anything. Upstream lowercases connectivity in per-type post-load hooks, so the type
+  decides whether it happens; at the fork's base only SRU had one. An SRU-only fixture
+  therefore passes at the base, on the fork and upstream alike, and proves nothing — the
+  first version of this test made exactly that mistake.
+  Varying the type fixes it: upstream's own `v2000.test.ts` expected `'EU'` for a GEN
+  group at the fork's base and expects `'eu'` in `v3.18.0`, so upstream reached the
+  fork's behaviour independently.
+- `logger-without-ketcher` **drops**. Upstream replaced the throw with a `console.warn`
+  and the same `?? {}` fallback.
+- `keynorm-unmapped-key` **drops**, with a caveat. The three guard tests pass on vanilla
+  because upstream rewrote `keynorm` around `event.key` with string defaults, so it can
+  no longer throw on an unmapped keycode.
+  The fourth test fails there only because that rewrite dropped the `keyCode` lookup the
+  test drives; that is a difference in upstream's API, not a missing guard.
 
 ### Reading the partial failures
 
@@ -80,7 +131,7 @@ drop the commit.
 
 ## Browser-only, in `ketcher-autotests/tests/specs/unc-regression/`
 
-Eighteen Playwright tests, all run against the standalone demo build and passing.
+Twenty-two Playwright tests, all run against the standalone demo build and passing.
 Start the demo first, then run them:
 
 ```bash
@@ -98,6 +149,8 @@ npx playwright test tests/specs/unc-regression/ --project=chromium
 | `sru-user-values.spec.ts` | `37c0a4b53` |
 | `settings-state.spec.ts` | `4e21564a4`, `8b92271fc`, `8799f4afc` |
 | `editor-instance.spec.ts` | `c32453d96` / `36c00e15a`, `6a59f2ba2` |
+| `fullscreen-dropdown-container.spec.ts` | `3d3b76a6c`, `83730d640` |
+| `render-offset-restore.spec.ts` | `aefcd0a14` |
 
 `fixtures.ts` holds the shared KET fixtures.
 The specs build their structures through `ketcher.setMolecule` rather than reading
@@ -153,11 +206,27 @@ Every commit in the KEEP set, and where it is covered.
 | `4e21564a4`, `8b92271fc`, `8799f4afc` | Playwright `settings-state` |
 | `c32453d96`, `36c00e15a`, `6a59f2ba2` | Playwright `editor-instance` |
 | `2e0098185` | jest `css-export` |
+| `6576cd745`, `52fc7376a`, `b53ffb290` | jest `server-format-routing` |
+| `1ea33be22`, `33a078c8b` | jest `external-zoom-scale` |
+| `c0fde0b1e` | jest `canvas-load-not-undoable` |
+| `783bc6497`, `493fcc1bd`, `3aecd5500` | jest `sgroup-connectivity-case` |
+| `81d4c7d75` | jest `logger-without-ketcher` |
+| `905baf429` | jest `keynorm-unmapped-key` |
+| `f2e76d0ce` | jest `indigo-stereo-style` |
+| `3d3b76a6c`, `83730d640` | Playwright `fullscreen-dropdown-container` |
+| `aefcd0a14` | Playwright `render-offset-restore` |
 | `da4fa3016` | pre-existing `__tests__/application/render/restruct/reatom.test.ts` |
 | `cb5b18637`, `9f256ceb8` | pre-existing `ketcher-autotests/.../SRU-Polymer/sru-polymer-tool.spec.ts` |
 
 ## Still uncovered
 
+Each of these is recorded in `scripts/unc-fork-coverage.json` with the reason, so the
+completeness check passes while they stay untested.
+
+- `e9873f88a` stops the core editor suppressing the browser context menu.
+  The demo page is entirely the editor, so the suppressed and unsuppressed cases cannot
+  be told apart there.
+  This belongs in the host application's end-to-end tests.
 - The other half of the context-menu behaviour: that the editor does **not** suppress
   right-click outside its own bounds.
   The demo page is entirely the editor, so there is no outside to click.
