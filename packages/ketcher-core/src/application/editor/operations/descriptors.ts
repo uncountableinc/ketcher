@@ -34,6 +34,10 @@ class AlignDescriptors extends BaseOperation {
     const sgroups: any[] = Array.from(struct.sgroups.values()).reverse();
 
     const structBox: any = struct.getCoordBoundingBoxObj();
+    if (!structBox) {
+      return;
+    }
+
     let alignPoint = new Vec2(structBox.max.x, structBox.min.y).add(
       new Vec2(2.0, -1.0),
     );

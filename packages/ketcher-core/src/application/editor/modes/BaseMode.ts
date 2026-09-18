@@ -66,6 +66,11 @@ export abstract class BaseMode {
     await new Promise<void>((resolve) => {
       setTimeout(() => {
         const editor = CoreEditor.provideEditorInstance();
+        if (!editor) {
+          resolve();
+          return;
+        }
+
         if (!this.checkIfTargetIsInput(event)) {
           const hotKeys = initHotKeys(this.keyboardEventHandlers);
           const shortcutKey = keyNorm.lookup(hotKeys, event);
