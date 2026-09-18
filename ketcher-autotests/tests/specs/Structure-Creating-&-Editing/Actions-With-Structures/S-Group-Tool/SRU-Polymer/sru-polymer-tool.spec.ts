@@ -41,12 +41,11 @@ const CANVAS_CLICK_Y = 500;
 
 async function selectSruPolymer(
   page: Page,
-  text: string,
   dataName: string,
   polymerLabel: string,
   repeatPattern: SGroupRepeatPattern,
 ) {
-  await page.locator('span').filter({ hasText: text }).click();
+  await page.getByTestId('s-group-type-input-span').click();
   await page.getByRole('option', { name: dataName }).click();
   await page.getByLabel('Polymer label').fill(polymerLabel);
   await page
@@ -83,7 +82,6 @@ test.describe('SRU Polymer tool', () => {
     await clickOnAtom(page, 'C', 3);
     await selectSruPolymer(
       page,
-      'Data',
       'SRU Polymer',
       'A',
       SGroupRepeatPattern.HeadToTail,
@@ -101,7 +99,6 @@ test.describe('SRU Polymer tool', () => {
     await clickOnBond(page, BondType.SINGLE, 3);
     await selectSruPolymer(
       page,
-      'Data',
       'SRU Polymer',
       'A',
       SGroupRepeatPattern.HeadToTail,
@@ -119,7 +116,6 @@ test.describe('SRU Polymer tool', () => {
     await LeftToolbar(page).sGroup();
     await selectSruPolymer(
       page,
-      'Data',
       'SRU Polymer',
       'A',
       SGroupRepeatPattern.HeadToTail,
@@ -216,7 +212,6 @@ test.describe('SRU Polymer tool', () => {
     await LeftToolbar(page).sGroup();
     await selectSruPolymer(
       page,
-      'Data',
       'SRU Polymer',
       'A',
       SGroupRepeatPattern.HeadToTail,
@@ -364,7 +359,6 @@ test.describe('SRU Polymer tool', () => {
     await LeftToolbar(page).sGroup();
     await selectSruPolymer(
       page,
-      'Data',
       'SRU Polymer',
       'A',
       SGroupRepeatPattern.HeadToTail,

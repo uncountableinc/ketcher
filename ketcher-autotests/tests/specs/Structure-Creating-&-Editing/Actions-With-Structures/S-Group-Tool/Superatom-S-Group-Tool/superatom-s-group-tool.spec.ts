@@ -39,14 +39,14 @@ async function addNameToSuperatom(
   fieldLabel: string,
   superatomName: string,
 ) {
-  await page.locator('span').filter({ hasText: 'Data' }).click();
+  await page.getByTestId('s-group-type-input-span').click();
   await page.getByRole('option', { name: 'Superatom' }).click();
   await page.getByLabel(fieldLabel).fill(superatomName);
   await pressButton(page, 'Apply');
 }
 
 async function addQueryComponent(page: Page) {
-  await page.locator('span').filter({ hasText: 'Data' }).click();
+  await page.getByTestId('s-group-type-input-span').click();
   await page.getByRole('option', { name: 'Query component' }).click();
   await pressButton(page, 'Apply');
 }
