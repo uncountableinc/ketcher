@@ -192,13 +192,11 @@ test.describe('SRU Polymer tool', () => {
 
     await selectAllStructuresOnCanvas(page);
     await LeftToolbar(page).sGroup();
-    await selectSruPolymer(
-      page,
-      'Data',
-      'SRU Polymer',
-      'A',
-      SGroupRepeatPattern.HeadToTail,
-    );
+    await SGroupPropertiesDialog(page).setOptions({
+      Type: TypeOption.SRUPolymer,
+      PolymerLabel: 'A',
+      RepeatPattern: RepeatPatternOption.HeadToTail,
+    });
 
     await selectUndoByKeyboard(page);
 
