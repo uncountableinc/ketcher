@@ -175,7 +175,7 @@ export class Struct {
       bidMap,
     );
     cloneStruct.findConnectedComponents();
-    cloneStruct.setImplicitHydrogen();
+    cloneStruct.setImplicitHydrogen(undefined, true);
     cloneStruct.setStereoLabelsToAtoms();
     cloneStruct.markFragments();
     return cloneStruct;
@@ -405,13 +405,19 @@ export class Struct {
     this.atoms.get(aid)!.sgs.add(sgid);
   }
 
-  calcConn(atom) {
+  calcConn(atom, includeAtomsInCollapsedSgroups = false) {
     let conn = 0;
     for (let i = 0; i < atom.neighbors.length; ++i) {
       const hb = this.halfBonds.get(atom.neighbors[i])!;
       const bond = this.bonds.get(hb.bid)!;
 
-      if (Bond.isBondToHiddenLeavingGroup(this, bond)) {
+      if (
+        Bond.isBondToHiddenLeavingGroup(
+          this,
+          bond,
+          includeAtomsInCollapsedSgroups,
+        )
+      ) {
         continue;
       }
 
@@ -1049,14 +1055,17 @@ export class Struct {
     };
   }
 
-  calcImplicitHydrogen(aid: number) {
+  calcImplicitHydrogen(aid: number, includeAtomsInCollapsedSgroups = false) {
     if (Atom.isHiddenLeavingGroupAtom(this, aid)) {
       return;
     }
 
     const atom = this.atoms.get(aid)!;
     const charge = atom.charge || 0;
-    const [conn, isAromatic] = this.calcConn(atom);
+    const [conn, isAromatic] = this.calcConn(
+      atom,
+      includeAtomsInCollapsedSgroups,
+    );
     let correctConn = conn;
     atom.badConn = false;
 
@@ -1103,7 +1112,10 @@ export class Struct {
     }
   }
 
-  setImplicitHydrogen(list?: Array<number>) {
+  setImplicitHydrogen(
+    list?: Array<number>,
+    includeAtomsInCollapsedSgroups = false,
+  ) {
     this.sgroups.forEach((item) => {
       if (item.data.fieldName === 'MRV_IMPLICIT_H') {
         this.atoms.get(item.atoms[0])!.hasImplicitH = true;
@@ -1112,12 +1124,12 @@ export class Struct {
 
     if (!list) {
       this.atoms.forEach((_atom, aid) => {
-        this.calcImplicitHydrogen(aid);
+        this.calcImplicitHydrogen(aid, includeAtomsInCollapsedSgroups);
       });
     } else {
       list.forEach((aid) => {
         if (this.atoms.get(aid)) {
-          this.calcImplicitHydrogen(aid);
+          this.calcImplicitHydrogen(aid, includeAtomsInCollapsedSgroups);
         }
       });
     }
@@ -1233,11 +1245,22 @@ export class Struct {
     });
   }
 
-  getGroupIdFromAtomId(atomId: number): number | null {
-    for (const [groupId, sgroup] of Array.from(this.sgroups)) {
-      if (sgroup.atoms.includes(atomId)) return groupId;
+  getGroupIdFromAtomId(atomId: number, searchBySgroups = false): number | null {
+    if (searchBySgroups) {
+      // Search by sgroups is more expensive, but allows to find
+      // functional groups for atoms which are not exist in struct already.
+      // F.e. if atom already deleted and it needs to find its functional group
+      for (const [groupId, sgroup] of Array.from(this.sgroups)) {
+        if (sgroup.atoms.includes(atomId)) return groupId;
+      }
+      return null;
+    } else {
+      const firstSgroupId = [
+        ...(this.atoms.get(atomId)?.sgs.values() || []),
+      ][0];
+
+      return isNumber(firstSgroupId) ? firstSgroupId : null;
     }
-    return null;
   }
 
   getGroupIdsFromAtomId(atomId: number | undefined): number[] {
@@ -1248,8 +1271,14 @@ export class Struct {
     return sgroupIds;
   }
 
-  getGroupFromAtomId(atomId: number | undefined): SGroup | undefined {
-    const sgroupId = this.getGroupIdFromAtomId(atomId as number);
+  getGroupFromAtomId(
+    atomId: number | undefined,
+    searchBySgroups = false,
+  ): SGroup | undefined {
+    const sgroupId = this.getGroupIdFromAtomId(
+      atomId as number,
+      searchBySgroups,
+    );
     return this.sgroups?.get(sgroupId as number);
   }
 
@@ -1328,7 +1357,6 @@ export class Struct {
             atom,
             this.sgroups,
             this.functionalGroups,
-            false,
           );
         if (isAtomNotInContractedGroup) {
           return true;

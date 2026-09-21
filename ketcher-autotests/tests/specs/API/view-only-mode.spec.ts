@@ -15,6 +15,8 @@ import {
   dragMouseTo,
   pasteFromClipboardByKeyboard,
   clickOnCanvas,
+  deleteByKeyboard,
+  keyboardPressOnCanvas,
 } from '@utils';
 import { getAtomByIndex } from '@utils/canvas/atoms';
 import { selectAllStructuresOnCanvas } from '@utils/canvas';
@@ -36,13 +38,13 @@ import { CommonLeftToolbar } from '@tests/pages/common/CommonLeftToolbar';
 import { SelectionToolType } from '@tests/pages/constants/areaSelectionTool/Constants';
 import { PasteFromClipboardDialog } from '@tests/pages/common/PasteFromClipboardDialog';
 import { SaveStructureDialog } from '@tests/pages/common/SaveStructureDialog';
-import { TopRightToolbar } from '@tests/pages/molecules/TopRightToolbar';
 import { CommonTopRightToolbar } from '@tests/pages/common/CommonTopRightToolbar';
 import { IndigoFunctionsToolbar } from '@tests/pages/molecules/IndigoFunctionsToolbar';
 import { selectRingButton } from '@tests/pages/molecules/BottomToolbar';
-import { TopToolbar } from '@tests/pages/molecules/TopToolbar';
+import { MoleculesTopToolbar } from '@tests/pages/molecules/MoleculesTopToolbar';
 import { RingButton } from '@tests/pages/constants/ringButton/Constants';
 import { ContextMenu } from '@tests/pages/common/ContextMenu';
+import { StructureCheckDialog } from '@tests/pages/molecules/canvas/StructureCheckDialog';
 
 test.describe('Tests for API setMolecule/getMolecule', () => {
   test.beforeEach(async ({ page }) => {
@@ -168,7 +170,7 @@ test.describe('Tests for API setMolecule/getMolecule', () => {
     await selectAllStructuresOnCanvas(page);
     await expect(CommonTopLeftToolbar(page).openButton).toBeEnabled();
     await expect(CommonTopLeftToolbar(page).saveButton).toBeEnabled();
-    await expect(TopToolbar(page).copyButton).toBeEnabled();
+    await expect(MoleculesTopToolbar(page).copyButton).toBeEnabled();
     await takeTopToolbarScreenshot(page);
   });
 
@@ -199,7 +201,7 @@ test.describe('Tests for API setMolecule/getMolecule', () => {
     await enableViewOnlyModeBySetOptions(page);
     await selectAllStructuresOnCanvas(page);
 
-    await TopToolbar(page).copyAsMOL();
+    await MoleculesTopToolbar(page).copyAsMOL();
     await disableViewOnlyModeBySetOptions(page);
     await pasteFromClipboardByKeyboard(page);
     await clickOnCanvas(page, 200, 200);
@@ -217,7 +219,7 @@ test.describe('Tests for API setMolecule/getMolecule', () => {
     await clickInTheMiddleOfTheScreen(page);
     await enableViewOnlyModeBySetOptions(page);
     await selectAllStructuresOnCanvas(page);
-    await TopToolbar(page).copyAsKET();
+    await MoleculesTopToolbar(page).copyAsKET();
     await disableViewOnlyModeBySetOptions(page);
     await pasteFromClipboardByKeyboard(page);
     await clickOnCanvas(page, 200, 200);
@@ -232,8 +234,8 @@ test.describe('Tests for API setMolecule/getMolecule', () => {
     Description: The help, about and fullscreen mode are enabled in view-only mode 
     */
     const fullScreenButton = CommonTopRightToolbar(page).fullScreenButton;
-    const aboutButton = TopRightToolbar(page).aboutButton;
-    const helpButton = TopRightToolbar(page).helpButton;
+    const aboutButton = CommonTopRightToolbar(page).aboutButton;
+    const helpButton = CommonTopRightToolbar(page).helpButton;
 
     await enableViewOnlyModeBySetOptions(page);
     await expect(helpButton).toBeEnabled();
@@ -268,7 +270,7 @@ test.describe('Tests for API setMolecule/getMolecule', () => {
     await enableViewOnlyModeBySetOptions(page);
     await IndigoFunctionsToolbar(page).checkStructure();
     await takeEditorScreenshot(page, {
-      mask: [page.locator('[class*="Check-module_checkInfo"] > span')],
+      mask: [StructureCheckDialog(page).lastCheckInfo],
     });
     await closeErrorAndInfoModals(page);
     await IndigoFunctionsToolbar(page).calculatedValues();
@@ -335,7 +337,7 @@ test.describe('Tests for API setMolecule/getMolecule', () => {
         );
         await takePageScreenshot(page, {
           mask: [
-            page.locator('[class*="Check-module_checkInfo"] > span'),
+            StructureCheckDialog(page).lastCheckInfo,
             saveStructureTextarea,
           ],
         });
@@ -356,9 +358,9 @@ test.describe('Tests for API setMolecule/getMolecule', () => {
     await enableViewOnlyModeBySetOptions(page);
     await disableViewOnlyModeBySetOptions(page);
     await moveOnAtom(page, 'C', 1);
-    await page.keyboard.press('Delete');
+    await deleteByKeyboard(page);
     await moveOnAtom(page, 'C', 4);
-    await page.keyboard.press('n');
+    await keyboardPressOnCanvas(page, 'n');
     await takeEditorScreenshot(page);
   });
 
@@ -373,9 +375,9 @@ test.describe('Tests for API setMolecule/getMolecule', () => {
     await clickInTheMiddleOfTheScreen(page);
     await enableViewOnlyModeBySetOptions(page);
     await moveOnAtom(page, 'C', 1);
-    await page.keyboard.press('Delete');
+    await deleteByKeyboard(page);
     await moveOnAtom(page, 'C', 4);
-    await page.keyboard.press('n');
+    await keyboardPressOnCanvas(page, 'n');
     await takeEditorScreenshot(page);
   });
 

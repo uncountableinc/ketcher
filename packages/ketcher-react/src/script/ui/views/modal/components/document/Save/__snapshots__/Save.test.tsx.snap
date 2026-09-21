@@ -93,7 +93,7 @@ Object {
                       value="mol"
                     />
                     <icon-chevron.svg
-                      classname="MuiSelect-icon MuiSelect-iconOutlined MuiSelect-iconOpen css-10q54uo-MuiSelect-icon chevronIcon"
+                      classname="MuiSelect-icon MuiSelect-iconOutlined MuiSelect-iconOpen css-10q54uo-MuiSelect-icon"
                     />
                     <fieldset
                       aria-hidden="true"
@@ -123,7 +123,7 @@ Object {
                 >
                   <a
                     class="active"
-                    data-testid="preview-tab"
+                    data-testid="Preview-tab"
                   >
                     Preview
                   </a>
@@ -500,7 +500,7 @@ Object {
                     value="mol"
                   />
                   <icon-chevron.svg
-                    classname="MuiSelect-icon MuiSelect-iconOutlined MuiSelect-iconOpen css-10q54uo-MuiSelect-icon chevronIcon"
+                    classname="MuiSelect-icon MuiSelect-iconOutlined MuiSelect-iconOpen css-10q54uo-MuiSelect-icon"
                   />
                   <fieldset
                     aria-hidden="true"
@@ -530,7 +530,7 @@ Object {
               >
                 <a
                   class="active"
-                  data-testid="preview-tab"
+                  data-testid="Preview-tab"
                 >
                   Preview
                 </a>

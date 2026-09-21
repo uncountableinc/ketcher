@@ -64,7 +64,6 @@ import { SequenceRenderer } from 'application/render/renderers/sequence/Sequence
 import { Nucleoside } from './Nucleoside';
 import { Nucleotide } from './Nucleotide';
 import {
-  FlexMode,
   MACROMOLECULES_BOND_TYPES,
   SequenceMode,
   SnakeMode,
@@ -135,7 +134,6 @@ import { initiallySelectedType } from 'domain/entities/BaseMicromoleculeEntity';
 
 const VERTICAL_DISTANCE_FROM_ROW_WITHOUT_RNA = SnakeLayoutCellWidth;
 const VERTICAL_OFFSET_FROM_ROW_WITH_RNA = 142;
-const DISTANCE_FROM_RIGHT = 55;
 export const SNAKE_LAYOUT_Y_OFFSET_BETWEEN_CHAINS =
   SnakeLayoutCellWidth * 2 + 30;
 export const MONOMER_START_X_POSITION = 20 + SnakeLayoutCellWidth / 2;
@@ -182,6 +180,12 @@ export class DrawingEntitiesManager {
     return position || new Vec2(0, 0, 0);
   }
 
+  public get bottomLeftMonomerPosition(): Vec2 {
+    const bbox = DrawingEntitiesManager.getStructureBbox(this.monomersArray);
+
+    return new Vec2(bbox.left, bbox.bottom);
+  }
+
   get selectedEntitiesArr() {
     const selectedEntities: DrawingEntity[] = [];
     this.allEntities.forEach(([, drawingEntity]) => {
@@ -198,6 +202,10 @@ export class DrawingEntitiesManager {
     );
   }
 
+  public get selectedMonomers() {
+    return this.monomersArray.filter((monomer) => monomer.selected);
+  }
+
   public get allEntities() {
     return [
       ...(this.monomers as Map<number, DrawingEntity>),
@@ -209,6 +217,10 @@ export class DrawingEntitiesManager {
       ...(this.multitailArrows as Map<number, DrawingEntity>),
       ...(this.rxnPluses as Map<number, DrawingEntity>),
     ];
+  }
+
+  public get allEntitiesArray() {
+    return this.allEntities.map(([, drawingEntity]) => drawingEntity);
   }
 
   public get hasDrawingEntities() {
@@ -358,11 +370,18 @@ export class DrawingEntitiesManager {
     return command;
   }
 
+  private selectDrawingEntitiesModelChange(drawingEntity: DrawingEntity) {
+    drawingEntity.turnOnSelection();
+  }
+
   public selectDrawingEntities(drawingEntities: DrawingEntity[]) {
     const command = this.unselectAllDrawingEntities();
     drawingEntities.forEach((drawingEntity: DrawingEntity) => {
       drawingEntity.turnOnSelection();
-      const operation = new DrawingEntitySelectOperation(drawingEntity);
+      const operation = new DrawingEntitySelectOperation(
+        drawingEntity,
+        this.selectDrawingEntitiesModelChange.bind(this, drawingEntity),
+      );
       command.addOperation(operation);
     });
     return command;
@@ -1768,37 +1787,6 @@ export class DrawingEntitiesManager {
     });
 
     return command;
-  }
-
-  public getNextPositionAndDistance(
-    lastPosition: Vec2,
-    height: number,
-    canvasWidth: number,
-    width = SnakeLayoutCellWidth,
-    restOfRowsWithAntisense: number,
-  ) {
-    const monomerOccupiedWidth =
-      lastPosition.x + width + DISTANCE_FROM_RIGHT + SnakeLayoutCellWidth / 2;
-    const isMonomerFitCanvas = monomerOccupiedWidth < canvasWidth;
-
-    if (!isMonomerFitCanvas) {
-      return {
-        maxVerticalDistance: 0,
-        lastPosition: getFirstPosition(
-          height,
-          lastPosition,
-          restOfRowsWithAntisense,
-        ),
-      };
-    }
-
-    return {
-      maxVerticalDistance: height,
-      lastPosition: new Vec2({
-        x: lastPosition.x + width,
-        y: lastPosition.y,
-      }),
-    };
   }
 
   public isNucleosideAndPhosphateConnectedAsNucleotide(
@@ -3508,19 +3496,4 @@ export class DrawingEntitiesManager {
 
     return command;
   }
-}
-
-function getFirstPosition(
-  height: number,
-  lastPosition: Vec2,
-  restOfRowsWithAntisense = 0,
-) {
-  const editor = CoreEditor.provideEditorInstance();
-
-  return new Vec2(
-    editor.mode instanceof FlexMode ? lastPosition.x : MONOMER_START_X_POSITION,
-    lastPosition.y +
-      height +
-      (restOfRowsWithAntisense > 0 ? SNAKE_LAYOUT_Y_OFFSET_BETWEEN_CHAINS : 0),
-  );
 }

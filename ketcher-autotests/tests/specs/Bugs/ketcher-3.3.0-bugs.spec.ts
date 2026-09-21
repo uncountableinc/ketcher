@@ -15,16 +15,9 @@ import {
   takePageScreenshot,
   openFileAndAddToCanvasAsNewProjectMacro,
   clickOnCanvas,
-  selectSaltsAndSolvents,
-  SaltsAndSolvents,
   openFileAndAddToCanvasAsNewProject,
 } from '@utils';
 import { selectAllStructuresOnCanvas } from '@utils/canvas/selectSelection';
-import {
-  selectSequenceLayoutModeTool,
-  selectFlexLayoutModeTool,
-  selectSnakeLayoutModeTool,
-} from '@utils/canvas/tools/helpers';
 import { waitForMonomerPreview } from '@utils/macromolecules';
 import { waitForPageInit } from '@utils/common';
 import {
@@ -32,7 +25,6 @@ import {
   getMonomerLocator,
   getSymbolLocator,
   modifyInRnaBuilder,
-  turnSyncEditModeOff,
 } from '@utils/macromolecules/monomer';
 import { processResetToDefaultState } from '@utils/testAnnotations/resetToDefaultState';
 import { keyboardPressOnCanvas } from '@utils/keyboard/index';
@@ -40,7 +32,10 @@ import { Phosphates } from '@constants/monomers/Phosphates';
 import { CommonTopLeftToolbar } from '@tests/pages/common/CommonTopLeftToolbar';
 import { CommonTopRightToolbar } from '@tests/pages/common/CommonTopRightToolbar';
 import { verifyHELMExport } from '@utils/files/receiveFileComparisonData';
-import { selectRingButton } from '@tests/pages/molecules/BottomToolbar';
+import {
+  BottomToolbar,
+  selectRingButton,
+} from '@tests/pages/molecules/BottomToolbar';
 import { RingButton } from '@tests/pages/constants/ringButton/Constants';
 import { Library } from '@tests/pages/macromolecules/Library';
 import { RNASection } from '@tests/pages/constants/library/Constants';
@@ -48,6 +43,10 @@ import { ContextMenu } from '@tests/pages/common/ContextMenu';
 import { SequenceSymbolOption } from '@tests/pages/constants/contextMenu/Constants';
 import { expandMonomer } from '@utils/canvas/monomer/helpers';
 import { KETCHER_CANVAS } from '@tests/pages/constants/canvas/Constants';
+import { LayoutMode } from '@tests/pages/constants/macromoleculesTopToolbar/Constants';
+import { MacromoleculesTopToolbar } from '@tests/pages/macromolecules/MacromoleculesTopToolbar';
+import { StructureLibraryDialog } from '@tests/pages/molecules/canvas/StructureLibraryDialog';
+import { SaltsAndSolventsTabItems } from '@tests/pages/constants/structureLibraryDialog/Constants';
 
 let page: Page;
 
@@ -106,9 +105,12 @@ test.describe('Ketcher bugs in 3.3.0', () => {
      * 2. Add sugar from library
      * 3. Check name for sugar in the library for fR
      */
-    await selectFlexLayoutModeTool(page);
-    await Library(page).selectMonomer(Sugars.fR);
-    await clickInTheMiddleOfTheScreen(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Flex);
+    await Library(page).dragMonomerOnCanvas(Sugars.fR, {
+      x: 0,
+      y: 0,
+      fromCenter: true,
+    });
     await keyboardPressOnCanvas(page, 'Escape');
     await getMonomerLocator(page, Sugars.fR).first().hover();
     await waitForMonomerPreview(page);
@@ -147,8 +149,12 @@ test.describe('Ketcher bugs in 3.3.0', () => {
      * 4. Drag monomer across canvas and stop moving it while still holding mouse button
      * 5. Observe that a tooltip appears after monomer stops moving, even though mouse button remains pressed
      */
-    await selectFlexLayoutModeTool(page);
-    await Library(page).selectMonomer(Peptides._2Nal);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Flex);
+    await Library(page).dragMonomerOnCanvas(Peptides._2Nal, {
+      x: 0,
+      y: 0,
+      fromCenter: true,
+    });
     await clickInTheMiddleOfTheScreen(page);
     await keyboardPressOnCanvas(page, 'Escape');
     await takeEditorScreenshot(page, {
@@ -171,8 +177,12 @@ test.describe('Ketcher bugs in 3.3.0', () => {
      * 1. Go to Macro - Flex mode
      * 2. Put any monomer on the canvas click on it and move mouse away
      */
-    await selectFlexLayoutModeTool(page);
-    await Library(page).selectMonomer(Peptides.meC);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Flex);
+    await Library(page).dragMonomerOnCanvas(Peptides.meC, {
+      x: 0,
+      y: 0,
+      fromCenter: true,
+    });
     await clickInTheMiddleOfTheScreen(page);
     await keyboardPressOnCanvas(page, 'Escape');
     await getMonomerLocator(page, Peptides.meC).click();
@@ -196,7 +206,7 @@ test.describe('Ketcher bugs in 3.3.0', () => {
      * 1. Go to Macro - Snake mode
      * 2. Load from HELM
      */
-    await selectSnakeLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Snake);
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
@@ -239,7 +249,7 @@ test.describe('Ketcher bugs in 3.3.0', () => {
      * 2. Load from HELM
      * 3. Try to find horizontal snap-to-distance area
      */
-    await selectFlexLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Flex);
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
@@ -301,7 +311,9 @@ test.describe('Ketcher bugs in 3.3.0', () => {
        * 3. Open the Sugars, Bases, or Phosphates section.
        * 4. Scroll to the bottom of the list
        */
-      await selectFlexLayoutModeTool(page);
+      await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+        LayoutMode.Flex,
+      );
       await Library(page).selectMonomer(Sugars.UNA);
       await takePageScreenshot(page, {
         hideMonomerPreview: true,
@@ -334,7 +346,7 @@ test.describe('Ketcher bugs in 3.3.0', () => {
      * 3. Click on any monomer in the RNA Builder section
      * 4. Observe that the corresponding monomer in the library is highlighted
      */
-    await selectFlexLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Flex);
     await Library(page).rnaBuilder.expand();
     await Library(page).selectMonomers([
       Sugars.UNA,
@@ -362,7 +374,9 @@ test.describe('Ketcher bugs in 3.3.0', () => {
      * 4. Right-click on the selected sequences and choose "Delete" from the context menu.
      * 5. Observe that all selected sequences are deleted.
      */
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
@@ -514,7 +528,7 @@ test.describe('Ketcher bugs in 3.3.0', () => {
       hideMonomerPreview: true,
       hideMacromoleculeEditorScrollBars: true,
     });
-    await turnSyncEditModeOff(page);
+    await MacromoleculesTopToolbar(page).turnSyncEditModeOff();
     await getSymbolLocator(page, {
       symbolAlias: 'U',
       nodeIndexOverall: 1,
@@ -588,7 +602,7 @@ test.describe('Ketcher bugs in 3.3.0', () => {
       hideMonomerPreview: true,
       hideMacromoleculeEditorScrollBars: true,
     });
-    await turnSyncEditModeOff(page);
+    await MacromoleculesTopToolbar(page).turnSyncEditModeOff();
     await getSymbolLocator(page, {
       symbolAlias: 'U',
       nodeIndexOverall: 0,
@@ -641,7 +655,7 @@ test.describe('Ketcher bugs in 3.3.0', () => {
       hideMonomerPreview: true,
       hideMacromoleculeEditorScrollBars: true,
     });
-    await selectFlexLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Flex);
     await takeEditorScreenshot(page, {
       hideMonomerPreview: true,
       hideMacromoleculeEditorScrollBars: true,
@@ -659,7 +673,9 @@ test.describe('Ketcher bugs in 3.3.0', () => {
      * 3. Add nucleotide (RNA or DNA - C in my case) to the very first position
      * 4. Observe the canvas
      */
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
@@ -681,7 +697,7 @@ test.describe('Ketcher bugs in 3.3.0', () => {
       hideMonomerPreview: true,
       hideMacromoleculeEditorScrollBars: true,
     });
-    await selectFlexLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Flex);
     await takeEditorScreenshot(page, {
       hideMonomerPreview: true,
       hideMacromoleculeEditorScrollBars: true,
@@ -699,7 +715,7 @@ test.describe('Ketcher bugs in 3.3.0', () => {
      * 3. Generate the antisense sequence.
      * 4. Observe the canvas
      */
-    await selectFlexLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Flex);
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
@@ -729,7 +745,9 @@ test.describe('Ketcher bugs in 3.3.0', () => {
      * 3. Remove dash (line)
      * 4. Observe the canvas
      */
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
@@ -739,7 +757,7 @@ test.describe('Ketcher bugs in 3.3.0', () => {
       hideMonomerPreview: true,
       hideMacromoleculeEditorScrollBars: true,
     });
-    await turnSyncEditModeOff(page);
+    await MacromoleculesTopToolbar(page).turnSyncEditModeOff();
     await getSymbolLocator(page, {
       symbolAlias: 'U',
       nodeIndexOverall: 0,
@@ -764,7 +782,7 @@ test.describe('Ketcher bugs in 3.3.0', () => {
      * 3. Press Clear canvas button
      * 4. Press Undo button
      */
-    await selectFlexLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Flex);
     await openFileAndAddToCanvasAsNewProjectMacro(
       page,
       'Molfiles-V2000/Bugs/benzene-ring-with-n-atoms.mol',
@@ -794,7 +812,9 @@ test.describe('Ketcher bugs in 3.3.0', () => {
      * 4. Select DNA N base from the library and press Update button
      * 5. Press Save button and select HELM file format
      */
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
@@ -814,7 +834,7 @@ test.describe('Ketcher bugs in 3.3.0', () => {
     await Library(page).rnaBuilder.selectBaseSlot();
     await Library(page).selectMonomer(Bases.DNA_N);
     await Library(page).rnaBuilder.save();
-    await verifyHELMExport(page, 'RNA1{R(A)P.R(A,C,G,T)P.R(A)}$$$$V2.0');
+    await verifyHELMExport(page, 'RNA1{r(A)p.r(A,C,G,T)p.r(A)}$$$$V2.0');
   });
 
   test('Case 25: Correct bond length and angle for non-natural monomers in the library', async () => {
@@ -829,8 +849,12 @@ test.describe('Ketcher bugs in 3.3.0', () => {
      * 4. Expand the monomer
      * 5. Draw cyclohexane and compare the bond length and angle
      */
-    await selectFlexLayoutModeTool(page);
-    await Library(page).selectMonomer(Peptides._1Nal);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Flex);
+    await Library(page).dragMonomerOnCanvas(Peptides._1Nal, {
+      x: 0,
+      y: 0,
+      fromCenter: true,
+    });
     await clickInTheMiddleOfTheScreen(page);
     await keyboardPressOnCanvas(page, 'Escape');
     await takeEditorScreenshot(page, {
@@ -859,7 +883,10 @@ test.describe('Ketcher bugs in 3.3.0', () => {
      * 3. Select DBU
      */
     await CommonTopRightToolbar(page).turnOnMicromoleculesEditor();
-    await selectSaltsAndSolvents(SaltsAndSolvents.DBU, page);
+    await BottomToolbar(page).StructureLibrary();
+    await StructureLibraryDialog(page).addSaltsAndSolvents(
+      SaltsAndSolventsTabItems.DBU,
+    );
     await clickInTheMiddleOfTheScreen(page);
     await takeEditorScreenshot(page);
   });

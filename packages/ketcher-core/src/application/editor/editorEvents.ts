@@ -24,6 +24,7 @@ export interface IEditorEvents {
   mouseOnMoveMonomer: Subscription;
   mouseLeaveMonomer: Subscription;
   mouseOverAttachmentPoint: Subscription;
+  mouseMoveAttachmentPoint: Subscription;
   mouseLeaveAttachmentPoint: Subscription;
   mouseUpAttachmentPoint: Subscription;
   mouseDownAttachmentPoint: Subscription;
@@ -68,6 +69,11 @@ export interface IEditorEvents {
   toggleLineLengthHighlighting: Subscription;
   setLibraryItemDragState: Subscription;
   placeLibraryItemOnCanvas: Subscription;
+  autochain: Subscription;
+  previewAutochain: Subscription;
+  removeAutochainPreview: Subscription;
+  switchToMacromoleculesMode: Subscription;
+  switchToMoleculesMode: Subscription;
 }
 
 export let editorEvents: IEditorEvents;
@@ -92,6 +98,7 @@ export function resetEditorEvents() {
     mouseOnMoveMonomer: new Subscription(),
     mouseLeaveMonomer: new Subscription(),
     mouseOverAttachmentPoint: new Subscription(),
+    mouseMoveAttachmentPoint: new Subscription(),
     mouseLeaveAttachmentPoint: new Subscription(),
     mouseUpAttachmentPoint: new Subscription(),
     mouseDownAttachmentPoint: new Subscription(),
@@ -136,6 +143,11 @@ export function resetEditorEvents() {
     toggleLineLengthHighlighting: new Subscription(),
     setLibraryItemDragState: new Subscription(),
     placeLibraryItemOnCanvas: new Subscription(),
+    autochain: new Subscription(),
+    previewAutochain: new Subscription(),
+    removeAutochainPreview: new Subscription(),
+    switchToMacromoleculesMode: new Subscription(),
+    switchToMoleculesMode: new Subscription(),
   };
 }
 resetEditorEvents();

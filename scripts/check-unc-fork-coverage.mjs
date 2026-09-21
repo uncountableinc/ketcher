@@ -18,6 +18,8 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+const MAX_DIFF_BYTES = 256 * 1024 * 1024;
+
 const manifestPath = join(dirname(fileURLToPath(import.meta.url)), 'unc-fork-coverage.json');
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
 
@@ -26,7 +28,7 @@ const forkRef = process.argv[2] ?? manifest.forkRef;
 const changedFiles = execFileSync(
   'git',
   ['diff', '--name-only', manifest.mergeBase, forkRef],
-  { encoding: 'utf8' },
+  { encoding: 'utf8', maxBuffer: MAX_DIFF_BYTES },
 )
   .split('\n')
   .filter((path) => /^packages\/[^/]+\/src\//.test(path));

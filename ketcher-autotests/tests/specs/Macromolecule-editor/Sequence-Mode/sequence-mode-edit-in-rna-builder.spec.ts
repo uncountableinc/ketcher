@@ -10,11 +10,7 @@ import {
   takePageScreenshot,
   takePresetsScreenshot,
 } from '@utils';
-import {
-  selectSequenceLayoutModeTool,
-  selectSnakeLayoutModeTool,
-  selectRectangleArea,
-} from '@utils/canvas/tools/helpers';
+import { selectRectangleArea } from '@utils/canvas/tools/helpers';
 import { waitForMonomerPreview } from '@utils/macromolecules';
 import {
   modifyInRnaBuilder,
@@ -31,6 +27,8 @@ import { CommonTopRightToolbar } from '@tests/pages/common/CommonTopRightToolbar
 import { Library } from '@tests/pages/macromolecules/Library';
 import { RNASection } from '@tests/pages/constants/library/Constants';
 import { ContextMenu } from '@tests/pages/common/ContextMenu';
+import { MacromoleculesTopToolbar } from '@tests/pages/macromolecules/MacromoleculesTopToolbar';
+import { LayoutMode } from '@tests/pages/constants/macromoleculesTopToolbar/Constants';
 
 test.describe('Sequence mode edit in RNA Builder', () => {
   test.beforeEach(async ({ page }) => {
@@ -38,7 +36,9 @@ test.describe('Sequence mode edit in RNA Builder', () => {
     await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
 
     await openFileAndAddToCanvasMacro(page, 'KET/nine-connected-rnas.ket');
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
   });
 
   test('Select one nucleotide and modify sugar', async ({ page }) => {
@@ -80,6 +80,7 @@ test.describe('Sequence mode edit in RNA Builder', () => {
     const endY = 200;
     await selectRectangleArea(page, startX, startY, endX, endY);
     const symbolT = getSymbolLocator(page, { symbolAlias: 'T' }).nth(2);
+    await symbolT.click();
     await modifyInRnaBuilder(page, symbolT);
 
     // should see uploaded nucleotide (nucleoside + phosphate) data to RNA Builder and disabled "Update" button
@@ -97,12 +98,13 @@ test.describe('Sequence mode edit in RNA Builder', () => {
     page,
   }) => {
     // Coordinates for rectangle selection
-    const startX = 280;
-    const startY = 100;
-    const endX = 320;
-    const endY = 200;
+    const startX = 230;
+    const startY = 80;
+    const endX = 260;
+    const endY = 100;
     await selectRectangleArea(page, startX, startY, endX, endY);
     const symbolT = getSymbolLocator(page, { symbolAlias: 'T' }).nth(2);
+    await symbolT.click();
     await modifyInRnaBuilder(page, symbolT);
 
     // should see uploaded data to RNA Builder and disabled "Update" button
@@ -134,13 +136,14 @@ test.describe('Sequence mode edit in RNA Builder', () => {
     page,
   }) => {
     // Coordinates for rectangle selection
-    const startX = 100;
-    const startY = 100;
-    const endX = 200;
-    const endY = 200;
+    const startX = 80;
+    const startY = 80;
+    const endX = 120;
+    const endY = 100;
     await selectRectangleArea(page, startX, startY, endX, endY);
     await takeEditorScreenshot(page);
     const symbolT = getSymbolLocator(page, { symbolAlias: 'T' }).first();
+    await symbolT.click();
     await modifyInRnaBuilder(page, symbolT);
     // should see uploaded nucleotides data to RNA Builder and disabled "Update" button
     await takeRNABuilderScreenshot(page);
@@ -178,7 +181,9 @@ test.describe('Modify nucleotides from sequence in RNA builder', () => {
   test.beforeEach(async ({ page }) => {
     await waitForPageInit(page);
     await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await moveMouseAway(page);
   });
 
@@ -301,7 +306,7 @@ test.describe('Modify nucleotides from sequence in RNA builder', () => {
     await Library(page).selectMonomer(Phosphates.sP_);
     await Library(page).rnaBuilder.save();
     await takeEditorScreenshot(page);
-    await selectSnakeLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Snake);
     await takeEditorScreenshot(page);
   });
 
@@ -327,7 +332,7 @@ test.describe('Modify nucleotides from sequence in RNA builder', () => {
     await Library(page).rnaBuilder.save();
     await page.getByText('Yes').click();
     await takeEditorScreenshot(page);
-    await selectSnakeLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Snake);
     await moveMouseAway(page);
     await takeEditorScreenshot(page, { hideMonomerPreview: true });
   });

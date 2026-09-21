@@ -14,15 +14,26 @@
  * limitations under the License.
  ***************************************************************************/
 import { EmptyFunction } from 'helpers';
-import { useAppDispatch } from 'hooks';
-import { useCallback, MouseEvent, useRef } from 'react';
+import { useAppDispatch, useAppSelector } from 'hooks';
+import { useCallback, MouseEvent, useRef, useState } from 'react';
 import { getMonomerUniqueKey, toggleMonomerFavorites } from 'state/library';
-import { Card, CardTitle, NumberCircle } from './styles';
+import {
+  AutochainIcon,
+  AutochainIconWrapper,
+  Card,
+  CardTitle,
+  NumberCircle,
+} from './styles';
 import { IMonomerItemProps } from './types';
 import { FavoriteStarSymbol, MONOMER_TYPES } from '../../../constants';
 import useDisabledForSequenceMode from 'components/monomerLibrary/monomerLibraryItem/hooks/useDisabledForSequenceMode';
 import { isAmbiguousMonomerLibraryItem, MonomerItemType } from 'ketcher-core';
 import { useLibraryItemDrag } from 'components/monomerLibrary/monomerLibraryItem/hooks/useLibraryItemDrag';
+import { selectEditor, selectIsSequenceMode } from 'state/common';
+import Tooltip from '@mui/material/Tooltip';
+import { cardMouseOverHandler } from 'components/monomerLibrary/monomerLibraryItem/shared';
+
+export const AUTOCHAIN_ELEMENT_CLASSNAME = 'autochain';
 
 const MonomerItem = ({
   item,
@@ -34,6 +45,10 @@ const MonomerItem = ({
   onClick = EmptyFunction,
 }: IMonomerItemProps) => {
   const dispatch = useAppDispatch();
+  const editor = useAppSelector(selectEditor);
+  const isSequenceMode = useAppSelector(selectIsSequenceMode);
+  const [autochainErrorMessage, setAutochainErrorMessage] =
+    useState<string>('');
 
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -58,6 +73,37 @@ const MonomerItem = ({
     [dispatch, item],
   );
 
+  const onAutochainIconClick = useCallback(
+    (event) => {
+      event.stopPropagation();
+
+      if (autochainErrorMessage) {
+        return;
+      }
+
+      editor?.events.autochain.dispatch(item);
+    },
+    [editor, autochainErrorMessage, item],
+  );
+
+  const onMouseOver = useCallback(
+    () =>
+      editor && cardMouseOverHandler(editor, item, setAutochainErrorMessage),
+    [editor, item],
+  );
+
+  const onAutochainIconMouseOver = useCallback(() => {
+    if (autochainErrorMessage) {
+      return;
+    }
+
+    editor?.events.previewAutochain.dispatch(item);
+  }, [autochainErrorMessage, editor, item]);
+
+  const onAutochainIconMouseOut = useCallback(() => {
+    editor?.events.removeAutochainPreview.dispatch(item);
+  }, [editor, item]);
+
   useLibraryItemDrag(item, cardRef);
 
   return (
@@ -69,19 +115,41 @@ const MonomerItem = ({
       item={monomerItem}
       isVariantMonomer={item.isAmbiguous}
       code={colorCode}
+      onMouseOver={onMouseOver}
       onMouseLeave={onMouseLeave}
       onMouseMove={onMouseMove}
+      onDoubleClick={(e) => {
+        onAutochainIconClick(e);
+        onAutochainIconMouseOut();
+      }}
       {...(!isDisabled ? { onClick } : {})}
       ref={cardRef}
     >
       <CardTitle>{item.label}</CardTitle>
       {!isDisabled && (
-        <div
-          onClick={addFavorite}
-          className={`star ${item.favorite ? 'visible' : ''}`}
-        >
-          {FavoriteStarSymbol}
-        </div>
+        <>
+          {!isSequenceMode && (
+            <Tooltip title={autochainErrorMessage}>
+              <AutochainIconWrapper>
+                <AutochainIcon
+                  className={AUTOCHAIN_ELEMENT_CLASSNAME}
+                  name="monomer-autochain"
+                  disabled={Boolean(autochainErrorMessage)}
+                  onMouseOver={onAutochainIconMouseOver}
+                  onMouseOut={onAutochainIconMouseOut}
+                  onClick={onAutochainIconClick}
+                  onDoubleClick={(e) => e.stopPropagation()}
+                />
+              </AutochainIconWrapper>
+            </Tooltip>
+          )}
+          <div
+            onClick={addFavorite}
+            className={`star ${item.favorite ? 'visible' : ''}`}
+          >
+            {FavoriteStarSymbol}
+          </div>
+        </>
       )}
       {isAmbiguousMonomerLibraryItem(item) && (
         <NumberCircle

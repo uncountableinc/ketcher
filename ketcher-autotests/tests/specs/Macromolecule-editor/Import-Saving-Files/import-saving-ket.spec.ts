@@ -15,7 +15,6 @@ import {
   openFileAndAddToCanvasAsNewProject,
   resetZoomLevelToDefault,
 } from '@utils';
-import { selectSnakeLayoutModeTool } from '@utils/canvas/tools/helpers';
 import { selectAllStructuresOnCanvas } from '@utils/canvas/selectSelection';
 import {
   FileType,
@@ -37,6 +36,8 @@ import { closeErrorMessage } from '@utils/common/helpers';
 import { CommonTopLeftToolbar } from '@tests/pages/common/CommonTopLeftToolbar';
 import { CommonTopRightToolbar } from '@tests/pages/common/CommonTopRightToolbar';
 import { Library } from '@tests/pages/macromolecules/Library';
+import { MacromoleculesTopToolbar } from '@tests/pages/macromolecules/MacromoleculesTopToolbar';
+import { LayoutMode } from '@tests/pages/constants/macromoleculesTopToolbar/Constants';
 
 let page: Page;
 
@@ -150,8 +151,11 @@ test.describe('Import-Saving .ket Files', () => {
     Test case: Import/Saving files #3827 #3757
     Description: The monomer name is present in the preview after opening the saved file.
     */
-    await Library(page).selectMonomer(Peptides.bAla);
-    await clickInTheMiddleOfTheScreen(page);
+    await Library(page).dragMonomerOnCanvas(Peptides.bAla, {
+      x: 0,
+      y: 0,
+      fromCenter: true,
+    });
     await resetZoomLevelToDefault(page);
     await verifyFileExport(page, 'KET/monomer-expected.ket', FileType.KET);
     await CommonTopLeftToolbar(page).clearCanvas();
@@ -193,8 +197,11 @@ test.describe('Import-Saving .ket Files', () => {
     markResetToDefaultState('tabSelection');
 
     await resetZoomLevelToDefault(page);
-    await Library(page).selectMonomer(Sugars._25R);
-    await clickInTheMiddleOfTheScreen(page);
+    await Library(page).dragMonomerOnCanvas(Sugars._25R, {
+      x: 0,
+      y: 0,
+      fromCenter: true,
+    });
     await verifyFileExport(page, 'KET/25R-expected.ket', FileType.KET);
   });
 
@@ -203,8 +210,11 @@ test.describe('Import-Saving .ket Files', () => {
     Test case: Import/Saving files #4172
     Description: "leavingGroup" section contain information about number of atoms.
     */
-    await Library(page).selectMonomer(Peptides.D_2Nal);
-    await clickInTheMiddleOfTheScreen(page);
+    await Library(page).dragMonomerOnCanvas(Peptides.D_2Nal, {
+      x: 0,
+      y: 0,
+      fromCenter: true,
+    });
     await verifyFileExport(page, 'KET/D-2Nal-expected.ket', FileType.KET);
   });
 
@@ -243,7 +253,7 @@ test.describe('Import-Saving .ket Files', () => {
     markResetToDefaultState('defaultLayout');
 
     await openFileAndAddToCanvasMacro(page, 'KET/snake-mode-peptides.ket');
-    await selectSnakeLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Snake);
     await moveMouseAway(page);
     await takeEditorScreenshot(page, { hideMonomerPreview: true });
   });

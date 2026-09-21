@@ -36,6 +36,12 @@ export * from './action.types';
 const disableIfViewOnly = (editor: Editor): boolean =>
   !!editor.render.options.viewOnlyMode;
 
+const disableIfMonomerCreationWizardActive = (editor: Editor): boolean =>
+  editor.isMonomerCreationWizardActive;
+
+const combinedDisable = (editor: Editor) =>
+  disableIfViewOnly(editor) || disableIfMonomerCreationWizardActive(editor);
+
 const updateConfigItem = (item: UiAction): UiAction => {
   if (typeof item.disabled === 'boolean' || item.enabledInViewOnly === true) {
     return item;
@@ -44,12 +50,14 @@ const updateConfigItem = (item: UiAction): UiAction => {
     return {
       ...item,
       disabled: (...props) =>
-        disableIfViewOnly(props[0]) || originalDisabled(...props),
+        disableIfViewOnly(props[0]) ||
+        disableIfMonomerCreationWizardActive(props[0]) ||
+        originalDisabled(...props),
     };
   } else {
     return {
       ...item,
-      disabled: disableIfViewOnly,
+      disabled: combinedDisable,
     };
   }
 };

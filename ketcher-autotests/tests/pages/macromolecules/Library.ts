@@ -11,6 +11,8 @@ import {
 } from '../constants/library/Constants';
 import { RNABuilder } from './library/RNABuilder';
 import { ContextMenu } from '../common/ContextMenu';
+import { waitForRender } from '@utils/common';
+import { getCoordinatesOfTheMiddleOfTheScreen } from '@utils';
 
 type PresetsSectionLocators = {
   newPresetsButton: Locator;
@@ -176,7 +178,17 @@ export const Library = (page: Page) => {
         await this.goToMonomerLocation(location);
       }
 
-      await getElement(monomer.testId).click();
+      const monomerCard = getElement(monomer.testId);
+      const monomerCardBbox = await monomerCard.boundingBox();
+
+      await monomerCard.click({
+        position: {
+          // eslint-disable-next-line no-magic-numbers
+          x: monomerCardBbox?.width ? monomerCardBbox.width / 2 : 0,
+          // eslint-disable-next-line no-magic-numbers
+          y: monomerCardBbox?.height ? monomerCardBbox.height - 10 : 0,
+        },
+      });
     },
 
     /**
@@ -197,12 +209,46 @@ export const Library = (page: Page) => {
       await getElement(monomer.testId).hover();
     },
 
+    async dragMonomerOnCanvas(
+      monomer: Monomer,
+      coordinates: { x: number; y: number; fromCenter?: boolean },
+      selectOnFavoritesTab = false,
+    ) {
+      let x = coordinates.x;
+      let y = coordinates.y;
+
+      if (coordinates.fromCenter) {
+        const centerOfCanvas = await getCoordinatesOfTheMiddleOfTheScreen(page);
+
+        x = centerOfCanvas.x + coordinates.x;
+        y = centerOfCanvas.y + coordinates.y;
+      }
+
+      await this.hoverMonomer(monomer, selectOnFavoritesTab);
+      await page.mouse.down();
+      await page.mouse.move(x, y);
+      await waitForRender(page, async () => {
+        await page.mouse.up();
+      });
+    },
+
     /**
      * Selects a custom preset by navigating to the Presets tab and clicking on the preset.
      */
     async selectCustomPreset(presetTestId: string) {
       await this.goToMonomerLocation(rnaTabPresetsSection);
-      await getElement(presetTestId).click();
+
+      const presetCard = getElement(presetTestId);
+      const presetCardBbox = await presetCard.boundingBox();
+
+      await presetCard.click({
+        position: {
+          // eslint-disable-next-line no-magic-numbers
+          x: presetCardBbox?.width ? presetCardBbox.width / 2 : 0,
+          // eslint-disable-next-line no-magic-numbers
+          y: presetCardBbox?.height ? presetCardBbox.height - 10 : 0,
+        },
+      });
     },
 
     async rightClickOnPreset(preset: Monomer) {

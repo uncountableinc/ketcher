@@ -1,5 +1,5 @@
 /* eslint-disable no-magic-numbers */
-import { Page, test, expect } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import {
   BondType,
   clickInTheMiddleOfTheScreen,
@@ -8,20 +8,18 @@ import {
   clickOnCanvas,
   MolFileFormat,
   openFileAndAddToCanvas,
-  pressButton,
-  resetCurrentTool,
   screenshotBetweenUndoRedo,
   selectUndoByKeyboard,
   takeEditorScreenshot,
   waitForPageInit,
 } from '@utils';
+import { resetCurrentTool } from '@utils/canvas/tools/resetCurrentTool';
 import {
   copyAndPaste,
   cutAndPaste,
   selectAllStructuresOnCanvas,
 } from '@utils/canvas/selectSelection';
 import { getBondByIndex } from '@utils/canvas/bonds';
-import { SGroupRepeatPattern } from '@utils/sgroup';
 import {
   FileType,
   verifyFileExport,
@@ -35,38 +33,16 @@ import { selectRingButton } from '@tests/pages/molecules/BottomToolbar';
 import { RingButton } from '@tests/pages/constants/ringButton/Constants';
 import { ContextMenu } from '@tests/pages/common/ContextMenu';
 import { MicroBondOption } from '@tests/pages/constants/contextMenu/Constants';
+import {
+  RepeatPatternOption,
+  TypeOption,
+} from '@tests/pages/constants/s-GroupPropertiesDialog/Constants';
+import { SGroupPropertiesDialog } from '@tests/pages/molecules/canvas/S-GroupPropertiesDialog';
+import { RGroup } from '@tests/pages/constants/rGroupDialog/Constants';
+import { RGroupDialog } from '@tests/pages/molecules/canvas/R-GroupDialog';
 
 const CANVAS_CLICK_X = 500;
 const CANVAS_CLICK_Y = 500;
-
-async function selectSruPolymer(
-  page: Page,
-  text: string,
-  dataName: string,
-  polymerLabel: string,
-  repeatPattern: SGroupRepeatPattern,
-) {
-  await page.locator('span').filter({ hasText: text }).click();
-  await page.getByRole('option', { name: dataName }).click();
-  await page.getByLabel('Polymer label').fill(polymerLabel);
-  await page
-    .locator('label')
-    .filter({ hasText: 'Repeat Pattern' })
-    .locator('span')
-    .nth(1)
-    .click();
-  await page.getByRole('option', { name: repeatPattern }).click();
-  await pressButton(page, 'Apply');
-}
-
-async function selectRepeatPattern(
-  page: Page,
-  repeatPattern: SGroupRepeatPattern,
-) {
-  await page.getByTestId('connectivity-input-span').click();
-  await page.getByRole('option', { name: repeatPattern }).click();
-  await pressButton(page, 'Apply');
-}
 
 test.describe('SRU Polymer tool', () => {
   test.beforeEach(async ({ page }) => {
@@ -81,13 +57,11 @@ test.describe('SRU Polymer tool', () => {
     await openFileAndAddToCanvas(page, 'KET/simple-chain.ket');
     await LeftToolbar(page).sGroup();
     await clickOnAtom(page, 'C', 3);
-    await selectSruPolymer(
-      page,
-      'Data',
-      'SRU Polymer',
-      'A',
-      SGroupRepeatPattern.HeadToTail,
-    );
+    await SGroupPropertiesDialog(page).setOptions({
+      Type: TypeOption.SRUPolymer,
+      PolymerLabel: 'A',
+      RepeatPattern: RepeatPatternOption.HeadToTail,
+    });
     await takeEditorScreenshot(page);
   });
 
@@ -99,13 +73,11 @@ test.describe('SRU Polymer tool', () => {
     await openFileAndAddToCanvas(page, 'KET/simple-chain.ket');
     await LeftToolbar(page).sGroup();
     await clickOnBond(page, BondType.SINGLE, 3);
-    await selectSruPolymer(
-      page,
-      'Data',
-      'SRU Polymer',
-      'A',
-      SGroupRepeatPattern.HeadToTail,
-    );
+    await SGroupPropertiesDialog(page).setOptions({
+      Type: TypeOption.SRUPolymer,
+      PolymerLabel: 'A',
+      RepeatPattern: RepeatPatternOption.HeadToTail,
+    });
     await takeEditorScreenshot(page);
   });
 
@@ -117,13 +89,11 @@ test.describe('SRU Polymer tool', () => {
     await openFileAndAddToCanvas(page, 'KET/simple-chain.ket');
     await selectAllStructuresOnCanvas(page);
     await LeftToolbar(page).sGroup();
-    await selectSruPolymer(
-      page,
-      'Data',
-      'SRU Polymer',
-      'A',
-      SGroupRepeatPattern.HeadToTail,
-    );
+    await SGroupPropertiesDialog(page).setOptions({
+      Type: TypeOption.SRUPolymer,
+      PolymerLabel: 'A',
+      RepeatPattern: RepeatPatternOption.HeadToTail,
+    });
     await takeEditorScreenshot(page);
   });
 
@@ -147,7 +117,10 @@ test.describe('SRU Polymer tool', () => {
     await LeftToolbar(page).sGroup();
     const point = await getBondByIndex(page, { type: BondType.SINGLE }, 3);
     await ContextMenu(page, point).click(MicroBondOption.EditSGroup);
-    await selectRepeatPattern(page, SGroupRepeatPattern.HeadToHead);
+    await SGroupPropertiesDialog(page).selectRepeatPattern(
+      RepeatPatternOption.HeadToHead,
+    );
+    await SGroupPropertiesDialog(page).apply();
     await takeEditorScreenshot(page);
   });
 
@@ -161,7 +134,10 @@ test.describe('SRU Polymer tool', () => {
     await LeftToolbar(page).sGroup();
     const point = await getBondByIndex(page, { type: BondType.SINGLE }, 3);
     await ContextMenu(page, point).click(MicroBondOption.EditSGroup);
-    await selectRepeatPattern(page, SGroupRepeatPattern.EitherUnknown);
+    await SGroupPropertiesDialog(page).selectRepeatPattern(
+      RepeatPatternOption.EitherUnknown,
+    );
+    await SGroupPropertiesDialog(page).apply();
     await takeEditorScreenshot(page);
   });
 
@@ -171,13 +147,15 @@ test.describe('SRU Polymer tool', () => {
       Description: The 'eu' connection label should be present at the right-top side of the brackets when the
       'Either unknown' connection type is selected. And 'n' letter changes to 'A'
     */
-    const polymerLabel = 'A';
     await openFileAndAddToCanvas(page, 'Molfiles-V2000/sru-polymer.mol');
     await LeftToolbar(page).sGroup();
     const point = await getBondByIndex(page, { type: BondType.SINGLE }, 3);
     await ContextMenu(page, point).click(MicroBondOption.EditSGroup);
-    await page.getByLabel('Polymer label').fill(polymerLabel);
-    await selectRepeatPattern(page, SGroupRepeatPattern.EitherUnknown);
+    await SGroupPropertiesDialog(page).setPolymerLabelValue('A');
+    await SGroupPropertiesDialog(page).selectRepeatPattern(
+      RepeatPatternOption.EitherUnknown,
+    );
+    await SGroupPropertiesDialog(page).apply();
     await takeEditorScreenshot(page);
     await selectUndoByKeyboard(page);
     await takeEditorScreenshot(page);
@@ -214,13 +192,11 @@ test.describe('SRU Polymer tool', () => {
 
     await selectAllStructuresOnCanvas(page);
     await LeftToolbar(page).sGroup();
-    await selectSruPolymer(
-      page,
-      'Data',
-      'SRU Polymer',
-      'A',
-      SGroupRepeatPattern.HeadToTail,
-    );
+    await SGroupPropertiesDialog(page).setOptions({
+      Type: TypeOption.SRUPolymer,
+      PolymerLabel: 'A',
+      RepeatPattern: RepeatPatternOption.HeadToTail,
+    });
 
     await selectUndoByKeyboard(page);
 
@@ -302,12 +278,10 @@ test.describe('SRU Polymer tool', () => {
       Test case: EPMLSOPKET-1532
       Description: User is able to add R-Group Label and Undo/Redo on structure with SRU polymer S-group.
     */
-    const rGroupName = 'R12';
     await openFileAndAddToCanvas(page, 'Molfiles-V2000/sru-polymer.mol');
     await LeftToolbar(page).selectRGroupTool(RGroupType.RGroupLabel);
     await clickOnAtom(page, 'C', 3);
-    await page.getByRole('button', { name: rGroupName }).click();
-    await pressButton(page, 'Apply');
+    await RGroupDialog(page).setRGroupLabels(RGroup.R12);
     await resetCurrentTool(page);
     await takeEditorScreenshot(page);
 
@@ -362,13 +336,11 @@ test.describe('SRU Polymer tool', () => {
     await openFileAndAddToCanvas(page, 'KET/cyclopropane-and-h2o.ket');
     await selectAllStructuresOnCanvas(page);
     await LeftToolbar(page).sGroup();
-    await selectSruPolymer(
-      page,
-      'Data',
-      'SRU Polymer',
-      'A',
-      SGroupRepeatPattern.HeadToTail,
-    );
+    await SGroupPropertiesDialog(page).setOptions({
+      Type: TypeOption.SRUPolymer,
+      PolymerLabel: 'A',
+      RepeatPattern: RepeatPatternOption.HeadToTail,
+    });
     await verifyFileExport(
       page,
       'KET/cyclopropane-and-h2o-sru-expected.ket',

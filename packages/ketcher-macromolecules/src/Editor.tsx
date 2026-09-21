@@ -106,6 +106,7 @@ import { RootSizeProvider } from './contexts';
 import { MacromoleculePropertiesWindow } from 'components/macromoleculeProperties';
 import { RulerArea } from 'components/Ruler/RulerArea';
 import { DragGhost } from 'components/DragGhost/DragGhost';
+import { ButtonsComponents } from 'components/ButtonsComponents/ButtonsComponents';
 
 import './theme.less';
 
@@ -313,7 +314,7 @@ function Editor({
     <>
       <Layout>
         <Layout.Top
-          shortened={isMonomerLibraryHidden}
+          shortened={!isMonomerLibraryHidden}
           data-testid="top-toolbar"
         >
           <TopMenuComponent />
@@ -330,6 +331,8 @@ function Editor({
             >
               {togglerComponent}
             </TogglerComponentWrapper>
+            <VerticalDivider />
+            <ButtonsComponents />
             <FullscreenButton />
             <VerticalDivider />
             <ZoomControls />

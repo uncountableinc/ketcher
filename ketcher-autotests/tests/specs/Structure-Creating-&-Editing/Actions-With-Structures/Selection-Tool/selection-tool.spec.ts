@@ -9,11 +9,11 @@ import {
   moveOnBond,
   BondType,
   pressButton,
-  fillFieldByPlaceholder,
   dragMouseTo,
   takeLeftToolbarScreenshot,
   waitForPageInit,
   waitForRender,
+  keyboardPressOnCanvas,
 } from '@utils';
 import { getAtomByIndex } from '@utils/canvas/atoms/getAtomByIndex/getAtomByIndex';
 import { selectAllStructuresOnCanvas } from '@utils/canvas/selectSelection';
@@ -26,6 +26,12 @@ import {
 } from '@tests/pages/molecules/BottomToolbar';
 import { RingButton } from '@tests/pages/constants/ringButton/Constants';
 import { ContextMenu } from '@tests/pages/common/ContextMenu';
+import { SGroupPropertiesDialog } from '@tests/pages/molecules/canvas/S-GroupPropertiesDialog';
+import {
+  ContextOption,
+  PropertyLabelType,
+  TypeOption,
+} from '@tests/pages/constants/s-GroupPropertiesDialog/Constants';
 
 test.describe('Selection tools', () => {
   test.beforeEach(async ({ page }) => {
@@ -66,7 +72,7 @@ test.describe('Selection tools', () => {
     */
     await openFileAndAddToCanvas(page, 'KET/two-atoms.ket');
     await selectAllStructuresOnCanvas(page);
-    await page.keyboard.press('o');
+    await keyboardPressOnCanvas(page, 'o');
     await takeEditorScreenshot(page);
   });
 
@@ -322,10 +328,13 @@ test.describe('Selection tools', () => {
     await openFileAndAddToCanvas(page, 'KET/two-benzene-with-atoms.ket');
     await LeftToolbar(page).sGroup();
     await clickOnAtom(page, 'C', 0);
-    await fillFieldByPlaceholder(page, 'Enter name', 'Test');
-    await fillFieldByPlaceholder(page, 'Enter value', '33');
-    await pressButton(page, 'Apply');
-
+    await SGroupPropertiesDialog(page).setOptions({
+      Type: TypeOption.Data,
+      Context: ContextOption.Fragment,
+      FieldName: 'Test',
+      FieldValue: '33',
+      PropertyLabelType: PropertyLabelType.Absolute,
+    });
     await CommonLeftToolbar(page).selectAreaSelectionTool(
       SelectionToolType.Rectangle,
     );

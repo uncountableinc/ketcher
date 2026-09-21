@@ -63,6 +63,7 @@ export abstract class BaseMonomerRenderer extends BaseRenderer {
     public monomer: BaseMonomer,
     private monomerHoveredElementId: string,
     public monomerSymbolElementId: string,
+    public monomerAutochainPreviewElementId: string,
     private scale?: number,
   ) {
     super(monomer as DrawingEntity);
@@ -310,7 +311,9 @@ export abstract class BaseMonomerRenderer extends BaseRenderer {
   }
 
   protected appendRootElement(
-    canvas: D3SvgElementSelection<SVGSVGElement, void>,
+    canvas:
+      | D3SvgElementSelection<SVGSVGElement, void>
+      | D3SvgElementSelection<SVGGElement, void>,
   ) {
     const rootElement = canvas
       .append('g')
@@ -483,6 +486,10 @@ export abstract class BaseMonomerRenderer extends BaseRenderer {
         this.editorEvents.mouseOnMoveMonomer.dispatch(event);
       })
       .on('mouseleave', (event) => {
+        if (event.relatedTarget?.__data__ instanceof AttachmentPoint) {
+          return;
+        }
+
         this.editorEvents.mouseLeaveDrawingEntity.dispatch(event);
         this.editorEvents.mouseLeaveMonomer.dispatch(event);
       })

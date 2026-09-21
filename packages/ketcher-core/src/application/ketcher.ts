@@ -36,6 +36,7 @@ import {
   runAsyncAction,
   SettingsManager,
   getSvgFromDrawnStructures,
+  KetcherLogger,
 } from 'utilities';
 import {
   deleteAllEntitiesOnCanvas,
@@ -75,6 +76,7 @@ export class Ketcher {
   _indigo: Indigo;
   #eventBus: EventEmitter;
   changeEvent: Subscription;
+  libraryUpdateEvent: Subscription;
 
   get editor(): Editor {
     // we should assign editor exactly after ketcher creation
@@ -94,6 +96,7 @@ export class Ketcher {
     assert(formatterFactory != null);
     this._id = uniqueId();
     this.changeEvent = new Subscription();
+    this.libraryUpdateEvent = new Subscription();
     this.structService = structService;
     this.#formatterFactory = formatterFactory;
     this._indigo = new Indigo(this.structService);
@@ -174,6 +177,10 @@ export class Ketcher {
       this.#formatterFactory,
       this.editor.struct(),
     );
+  }
+
+  getExtendedSmiles(): Promise<string> {
+    return this.getSmiles(true);
   }
 
   async getMolfile(molfileFormat?: MolfileFormat): Promise<string> {
@@ -450,7 +457,6 @@ export class Ketcher {
     options?: SetMoleculeOptions,
   ): Promise<void | undefined> {
     const macromoleculesEditor = CoreEditor.provideEditorInstance();
-
     if (macromoleculesEditor?.isSequenceEditInRNABuilderMode) return;
 
     runAsyncAction<void>(async () => {
@@ -460,6 +466,7 @@ export class Ketcher {
         deleteAllEntitiesOnCanvas();
         await parseAndAddMacromoleculesOnCanvas(structStr, this.structService);
         macromoleculesEditor?.zoomToStructuresIfNeeded();
+        macromoleculesEditor.mode.initialize();
       } else {
         const struct: Struct = await prepareStructToRender(
           structStr,
@@ -566,7 +573,10 @@ export class Ketcher {
 
   setMode(mode: SupportedModes) {
     const editor = CoreEditor.provideEditorInstance();
-    if (editor && mode) editor.events.selectMode.dispatch(ModeTypes[mode]);
+    if (editor && mode) {
+      editor.events.selectMode.dispatch(ModeTypes[mode]);
+      editor.events.layoutModeChange.dispatch(ModeTypes[mode]);
+    }
   }
 
   exportImage(format: SupportedImageFormats, params?: ExportImageParams) {
@@ -653,5 +663,35 @@ export class Ketcher {
     }
 
     editor.updateMonomersLibrary(rawMonomersData);
+    SettingsManager.addMonomerLibraryUpdate(
+      typeof rawMonomersData !== 'string'
+        ? JSON.stringify(rawMonomersData)
+        : rawMonomersData,
+    );
+    this.libraryUpdateEvent.dispatch(editor.monomersLibrary);
+  }
+
+  public switchToMacromoleculesMode() {
+    const editor = CoreEditor.provideEditorInstance();
+
+    if (!editor) {
+      KetcherLogger.error('Editor instance is not available');
+
+      return;
+    }
+
+    editor.events.switchToMacromoleculesMode.dispatch();
+  }
+
+  public switchToMoleculesMode() {
+    const editor = CoreEditor.provideEditorInstance();
+
+    if (!editor) {
+      KetcherLogger.error('Editor instance is not available');
+
+      return;
+    }
+
+    editor.events.switchToMoleculesMode.dispatch();
   }
 }
