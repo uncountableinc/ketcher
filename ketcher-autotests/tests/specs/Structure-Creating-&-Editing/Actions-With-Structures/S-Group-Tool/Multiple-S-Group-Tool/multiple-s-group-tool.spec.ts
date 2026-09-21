@@ -39,12 +39,11 @@ const CANVAS_CLICK_Y = 500;
 
 async function selectMultipleGroup(
   page: Page,
-  text: string,
   dataName: string,
   valueRepeatCount: string,
   buttonToClick?: 'Apply' | 'Cancel',
 ) {
-  await page.locator('span').filter({ hasText: text }).click();
+  await page.getByTestId('s-group-type-input-span').click();
   await page.getByRole('option', { name: dataName }).click();
   await page.getByLabel('Repeat count').fill(valueRepeatCount);
   if (buttonToClick === 'Apply') {
@@ -75,7 +74,7 @@ test.describe('Multiple S-Group tool', () => {
     await openFileAndAddToCanvas(page, 'KET/simple-chain.ket');
     await LeftToolbar(page).sGroup();
     await clickOnAtom(page, 'C', 3);
-    await selectMultipleGroup(page, 'Data', 'Multiple group', '88', 'Apply');
+    await selectMultipleGroup(page, 'Multiple group', '88', 'Apply');
     await takeEditorScreenshot(page);
   });
 
@@ -87,7 +86,7 @@ test.describe('Multiple S-Group tool', () => {
     await openFileAndAddToCanvas(page, 'KET/simple-chain.ket');
     await LeftToolbar(page).sGroup();
     await clickOnBond(page, BondType.SINGLE, 3);
-    await selectMultipleGroup(page, 'Data', 'Multiple group', '88', 'Apply');
+    await selectMultipleGroup(page, 'Multiple group', '88', 'Apply');
     await takeEditorScreenshot(page);
   });
 
@@ -99,7 +98,7 @@ test.describe('Multiple S-Group tool', () => {
     await openFileAndAddToCanvas(page, 'KET/simple-chain.ket');
     await selectAllStructuresOnCanvas(page);
     await LeftToolbar(page).sGroup();
-    await selectMultipleGroup(page, 'Data', 'Multiple group', '88', 'Apply');
+    await selectMultipleGroup(page, 'Multiple group', '88', 'Apply');
     await takeEditorScreenshot(page);
   });
 
@@ -114,7 +113,7 @@ test.describe('Multiple S-Group tool', () => {
     );
     await selectAllStructuresOnCanvas(page);
     await LeftToolbar(page).sGroup();
-    await selectMultipleGroup(page, 'Data', 'Multiple group', '88', 'Apply');
+    await selectMultipleGroup(page, 'Multiple group', '88', 'Apply');
     await takeEditorScreenshot(page);
   });
 
@@ -246,7 +245,7 @@ test.describe('Multiple S-Group tool', () => {
     await openFileAndAddToCanvas(page, 'KET/simple-chain.ket');
     await selectAllStructuresOnCanvas(page);
     await LeftToolbar(page).sGroup();
-    await selectMultipleGroup(page, 'Data', 'Multiple group', '1', 'Apply');
+    await selectMultipleGroup(page, 'Multiple group', '1', 'Apply');
     await takeEditorScreenshot(page);
   });
 
@@ -259,7 +258,7 @@ test.describe('Multiple S-Group tool', () => {
     await openFileAndAddToCanvas(page, 'KET/simple-chain.ket');
     await selectAllStructuresOnCanvas(page);
     await LeftToolbar(page).sGroup();
-    await selectMultipleGroup(page, 'Data', 'Multiple group', '200', 'Apply');
+    await selectMultipleGroup(page, 'Multiple group', '200', 'Apply');
     await takeEditorScreenshot(page);
   });
 
@@ -274,7 +273,7 @@ test.describe('Multiple S-Group tool', () => {
     await openFileAndAddToCanvas(page, 'KET/simple-chain.ket');
     await selectAllStructuresOnCanvas(page);
     await LeftToolbar(page).sGroup();
-    await selectMultipleGroup(page, 'Data', 'Multiple group', '0');
+    await selectMultipleGroup(page, 'Multiple group', '0');
     await takeEditorScreenshot(page);
   });
 
@@ -289,7 +288,7 @@ test.describe('Multiple S-Group tool', () => {
     await openFileAndAddToCanvas(page, 'KET/simple-chain.ket');
     await selectAllStructuresOnCanvas(page);
     await LeftToolbar(page).sGroup();
-    await selectMultipleGroup(page, 'Data', 'Multiple group', '201');
+    await selectMultipleGroup(page, 'Multiple group', '201');
     await takeEditorScreenshot(page);
   });
 
@@ -303,7 +302,7 @@ test.describe('Multiple S-Group tool', () => {
     await openFileAndAddToCanvas(page, 'KET/simple-chain.ket');
     await selectAllStructuresOnCanvas(page);
     await LeftToolbar(page).sGroup();
-    await selectMultipleGroup(page, 'Data', 'Multiple group', '-1');
+    await selectMultipleGroup(page, 'Multiple group', '-1');
     await takeEditorScreenshot(page);
   });
 
@@ -315,7 +314,7 @@ test.describe('Multiple S-Group tool', () => {
     await openFileAndAddToCanvas(page, 'KET/simple-chain.ket');
     await selectAllStructuresOnCanvas(page);
     await LeftToolbar(page).sGroup();
-    await selectMultipleGroup(page, 'Data', 'Multiple group', '200', 'Apply');
+    await selectMultipleGroup(page, 'Multiple group', '200', 'Apply');
     await setAttachmentPoints(
       page,
       { label: 'C', index: 3 },
@@ -368,7 +367,7 @@ test.describe('Multiple S-Group tool', () => {
     await openFileAndAddToCanvas(page, 'KET/cyclopropane-and-h2o.ket');
     await selectAllStructuresOnCanvas(page);
     await LeftToolbar(page).sGroup();
-    await selectMultipleGroup(page, 'Data', 'Multiple group', '8', 'Apply');
+    await selectMultipleGroup(page, 'Multiple group', '8', 'Apply');
     await verifyFileExport(
       page,
       'KET/cyclopropane-and-h2o-multiple-expected.ket',
