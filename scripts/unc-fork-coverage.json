@@ -473,6 +473,16 @@
       "files": [
         "packages/ketcher-core/src/application/editor/operations/atom/AtomAttr.ts"
       ]
+    },
+    {
+      "key": "browser-safe-indigo-env",
+      "summary": "Read INDIGO_VERSION and INDIGO_MACHINE only where a process global exists.",
+      "verdict": "reapply",
+      "covered": "none: the failure only appears through main's vendored browser bundle, so it is covered by main's ketcher browser tests, not by a fork test; a fork-side bundle scan reports 23 false positives from the Node shims inside assert",
+      "commits": [],
+      "files": [
+        "packages/ketcher-macromolecules/src/state/common/editorSlice.ts"
+      ]
     }
   ]
 }

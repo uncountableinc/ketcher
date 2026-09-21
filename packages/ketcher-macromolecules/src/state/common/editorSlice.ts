@@ -66,6 +66,12 @@ interface EditorState {
   app: AppMeta;
 }
 
+// The bundler replaces BUILD_DATE and VERSION at build time but leaves these two,
+// so they reach the browser as a real process lookup and throw where there is none.
+function indigoEnvValue(name: string): string {
+  return typeof process === 'undefined' ? '' : process.env[name] || '';
+}
+
 const initialState: EditorState = {
   ketcherId: '',
   isReady: null,
@@ -88,8 +94,8 @@ const initialState: EditorState = {
   oligonucleotidesValue: 200,
   app: {
     buildDate: process.env.BUILD_DATE || '',
-    indigoVersion: process.env.INDIGO_VERSION || '',
-    indigoMachine: process.env.INDIGO_MACHINE || '',
+    indigoVersion: indigoEnvValue('INDIGO_VERSION'),
+    indigoMachine: indigoEnvValue('INDIGO_MACHINE'),
     version: process.env.VERSION || '',
   },
 };
