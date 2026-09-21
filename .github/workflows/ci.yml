@@ -31,6 +31,12 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
+      - name: Fetch the upstream merge base
+        run: |
+          base=$(node -p "require('./scripts/unc-fork-coverage.json').mergeBase")
+          git cat-file -e "$base^{commit}" 2>/dev/null ||
+            git fetch --depth=1 https://github.com/epam/ketcher.git "$base"
+
       - name: Check Uncountable fork coverage
         run: npm run check:unc-fork-coverage -- HEAD
 
