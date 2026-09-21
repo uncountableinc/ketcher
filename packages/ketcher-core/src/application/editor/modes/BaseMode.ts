@@ -216,6 +216,8 @@ export abstract class BaseMode {
     }
 
     this.updateEntitiesPosition(drawingEntitiesManager);
+    editor.calculateAndStoreNextAutochainPosition(drawingEntitiesManager);
+
     const { command: modelChanges, mergedDrawingEntities } =
       drawingEntitiesManager.mergeInto(editor.drawingEntitiesManager);
 
@@ -278,7 +280,8 @@ export abstract class BaseMode {
     return (
       event.target instanceof HTMLElement &&
       (event.target?.nodeName === 'INPUT' ||
-        event.target?.nodeName === 'TEXTAREA')
+        event.target?.nodeName === 'TEXTAREA' ||
+        event.target.contentEditable === 'true')
     );
   }
 

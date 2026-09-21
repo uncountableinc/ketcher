@@ -37,6 +37,7 @@ const MacromoleculesEditorComponent = lazy(
 export const Editor = (props: Props) => {
   const [showPolymerEditor, setShowPolymerEditor] = useState(false);
   const [moleculesEditor, setMoleculesEditor] = useState<MoleculesEditor>();
+  const [ketcher, setKetcher] = useState<Ketcher>();
   const [macromoleculesEditor, setMacromoleculesEditor] =
     useState<CoreEditor>();
 
@@ -52,6 +53,35 @@ export const Editor = (props: Props) => {
       isPolymerEditor={showPolymerEditor}
     />
   ) : undefined;
+
+  useEffect(() => {
+    const switchToMacromoleculesModeHandler = () => {
+      togglePolymerEditor(true);
+    };
+    const switchToMoleculesModeHandler = () => {
+      togglePolymerEditor(false);
+    };
+
+    if (macromoleculesEditor) {
+      macromoleculesEditor.events.switchToMacromoleculesMode.add(
+        switchToMacromoleculesModeHandler,
+      );
+      macromoleculesEditor.events.switchToMoleculesMode.add(
+        switchToMoleculesModeHandler,
+      );
+    }
+
+    return () => {
+      if (macromoleculesEditor) {
+        macromoleculesEditor.events.switchToMacromoleculesMode.remove(
+          switchToMacromoleculesModeHandler,
+        );
+        macromoleculesEditor.events.switchToMoleculesMode.remove(
+          switchToMoleculesModeHandler,
+        );
+      }
+    };
+  }, [macromoleculesEditor]);
 
   useEffect(() => {
     return () => {
@@ -70,8 +100,18 @@ export const Editor = (props: Props) => {
     }
   }, [showPolymerEditor]);
 
+  useEffect(() => {
+    if (
+      ketcher &&
+      moleculesEditor &&
+      (macromoleculesEditor || props.disableMacromoleculesEditor)
+    ) {
+      props.onInit?.(ketcher);
+    }
+  }, [moleculesEditor, macromoleculesEditor]);
+
   const onInitMoleculesEditor = (ketcher: Ketcher) => {
-    props.onInit?.(ketcher);
+    setKetcher(ketcher);
     setMoleculesEditor(ketcher.editor);
   };
 

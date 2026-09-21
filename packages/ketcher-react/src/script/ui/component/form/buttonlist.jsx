@@ -27,6 +27,7 @@ function ButtonList({
   disabledIds,
   multiple,
   classes,
+  testId,
 }) {
   let className;
   const selected = classes.selected || 'selected';
@@ -40,6 +41,9 @@ function ButtonList({
               disabled={disabledIds.includes(item)}
               type="button"
               className={className}
+              data-testid={
+                testId ? testId + '-' + item : 'buttonlist-item-' + item
+              }
               onClick={() => onChange(oneOrMore(multiple, value, item))}
             >
               {schema.items.enumNames[i]}

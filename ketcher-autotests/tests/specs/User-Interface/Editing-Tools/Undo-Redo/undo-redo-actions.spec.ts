@@ -12,7 +12,6 @@ import {
   dragMouseTo,
   screenshotBetweenUndoRedo,
   openFileAndAddToCanvas,
-  fillFieldByPlaceholder,
   getCoordinatesTopAtomOfBenzeneRing,
   waitForPageInit,
   waitForRender,
@@ -47,6 +46,16 @@ import {
   ResetToSelectToolOption,
 } from '@tests/pages/constants/settingsDialog/Constants';
 import { setAttachmentPoints } from '@tests/pages/molecules/canvas/AttachmentPointsDialog';
+import { SGroupPropertiesDialog } from '@tests/pages/molecules/canvas/S-GroupPropertiesDialog';
+import {
+  ContextOption,
+  PropertyLabelType,
+  RepeatPatternOption,
+  TypeOption,
+} from '@tests/pages/constants/s-GroupPropertiesDialog/Constants';
+import { RGroup } from '@tests/pages/constants/rGroupDialog/Constants';
+import { RGroupDialog } from '@tests/pages/molecules/canvas/R-GroupDialog';
+import { AtomPropertiesDialog } from '@tests/pages/molecules/canvas/AtomPropertiesDialog';
 
 const CANVAS_CLICK_X = 300;
 const CANVAS_CLICK_Y = 300;
@@ -67,54 +76,6 @@ async function selectBondProperties(
     .getByRole('option', { name: bondReactingCenter, exact: true })
     .click();
   await pressButton(page, finalizationButton);
-}
-
-async function selectSruPolymer(
-  page: Page,
-  text: string,
-  dataName: string,
-  polymerLabel: string,
-  repeatPattern: string,
-) {
-  await page.locator('span').filter({ hasText: text }).click();
-  await page.getByRole('option', { name: dataName }).click();
-  await page.getByLabel('Polymer label').fill(polymerLabel);
-  await page
-    .locator('label')
-    .filter({ hasText: 'Repeat Pattern' })
-    .locator('span')
-    .nth(1)
-    .click();
-  await page.getByRole('option', { name: repeatPattern }).click();
-  await pressButton(page, 'Apply');
-}
-
-async function selectMultipleGroup(
-  page: Page,
-  text: string,
-  dataName: string,
-  valueRepeatCount: string,
-) {
-  await page.locator('span').filter({ hasText: text }).click();
-  await page.getByRole('option', { name: dataName }).click();
-  await page.getByLabel('Repeat count').fill(valueRepeatCount);
-  await pressButton(page, 'Apply');
-}
-
-async function addNameToSuperatom(
-  page: Page,
-  fieldLabel: string,
-  superatomName: string,
-) {
-  await page.locator('span').filter({ hasText: 'Data' }).click();
-  await page.getByRole('option', { name: 'Superatom' }).click();
-  await page.getByLabel(fieldLabel).fill(superatomName);
-  await pressButton(page, 'Apply');
-}
-
-async function fillAliasForAtom(page: Page, alias: string, button: string) {
-  await page.getByLabel('Alias').fill(alias);
-  await pressButton(page, button);
 }
 
 test.describe('Undo/Redo Actions', () => {
@@ -172,7 +133,11 @@ test.describe('Undo/Redo Actions', () => {
     );
 
     await doubleClickOnAtom(page, 'C', 0);
-    await fillAliasForAtom(page, '!@#$%123AbCd', 'Apply');
+    await AtomPropertiesDialog(page).setOptions({
+      GeneralProperties: {
+        Alias: '!@#$%123AbCd',
+      },
+    });
 
     await screenshotBetweenUndoRedo(page);
     await takeEditorScreenshot(page);
@@ -458,9 +423,13 @@ test.describe('Undo/Redo Actions', () => {
     await openFileAndAddToCanvas(page, 'KET/simple-chain.ket');
     await selectAllStructuresOnCanvas(page);
     await LeftToolbar(page).sGroup();
-    await fillFieldByPlaceholder(page, 'Enter name', 'Test');
-    await fillFieldByPlaceholder(page, 'Enter value', '33');
-    await pressButton(page, 'Apply');
+    await SGroupPropertiesDialog(page).setOptions({
+      Type: TypeOption.Data,
+      Context: ContextOption.Fragment,
+      FieldName: 'Test',
+      FieldValue: '33',
+      PropertyLabelType: PropertyLabelType.Absolute,
+    });
     await screenshotBetweenUndoRedo(page);
     await takeEditorScreenshot(page);
   });
@@ -475,7 +444,10 @@ test.describe('Undo/Redo Actions', () => {
     await openFileAndAddToCanvas(page, 'KET/simple-chain.ket');
     await selectAllStructuresOnCanvas(page);
     await LeftToolbar(page).sGroup();
-    await selectMultipleGroup(page, 'Data', 'Multiple group', '88');
+    await SGroupPropertiesDialog(page).setOptions({
+      Type: TypeOption.MultipleGroup,
+      RepeatCount: '88',
+    });
     await screenshotBetweenUndoRedo(page);
     await takeEditorScreenshot(page);
   });
@@ -490,7 +462,11 @@ test.describe('Undo/Redo Actions', () => {
     await openFileAndAddToCanvas(page, 'KET/simple-chain.ket');
     await selectAllStructuresOnCanvas(page);
     await LeftToolbar(page).sGroup();
-    await selectSruPolymer(page, 'Data', 'SRU Polymer', 'A', 'Head-to-tail');
+    await SGroupPropertiesDialog(page).setOptions({
+      Type: TypeOption.SRUPolymer,
+      PolymerLabel: 'A',
+      RepeatPattern: RepeatPatternOption.HeadToTail,
+    });
     await screenshotBetweenUndoRedo(page);
     await takeEditorScreenshot(page);
   });
@@ -505,7 +481,10 @@ test.describe('Undo/Redo Actions', () => {
     await openFileAndAddToCanvas(page, 'KET/simple-chain.ket');
     await selectAllStructuresOnCanvas(page);
     await LeftToolbar(page).sGroup();
-    await addNameToSuperatom(page, 'Name', 'Test@!#$%12345');
+    await SGroupPropertiesDialog(page).setOptions({
+      Type: TypeOption.Superatom,
+      Name: 'Test@!#$%12345',
+    });
     await screenshotBetweenUndoRedo(page);
     await takeEditorScreenshot(page);
   });
@@ -524,8 +503,7 @@ test.describe('Undo/Redo Actions', () => {
     // need fix getCoordinatesTopAtomOfBenzeneRing after change canvas design
     const { x, y } = await getCoordinatesTopAtomOfBenzeneRing(page);
     await clickOnCanvas(page, x, y);
-    await pressButton(page, 'R5');
-    await pressButton(page, 'Apply');
+    await RGroupDialog(page).setRGroupLabels(RGroup.R5);
     await screenshotBetweenUndoRedo(page);
     await takeEditorScreenshot(page);
   });
@@ -544,8 +522,7 @@ test.describe('Undo/Redo Actions', () => {
     // need fix getCoordinatesTopAtomOfBenzeneRing after change canvas design
     const { x, y } = await getCoordinatesTopAtomOfBenzeneRing(page);
     await clickOnCanvas(page, x, y);
-    await pressButton(page, 'R8');
-    await pressButton(page, 'Apply');
+    await RGroupDialog(page).setRGroupFragment(RGroup.R8);
     await screenshotBetweenUndoRedo(page);
     await takeEditorScreenshot(page);
   });
@@ -666,9 +643,7 @@ test.describe('Undo/Redo Actions', () => {
       { label: 'C', index: 3 },
       { primary: true, secondary: true },
     );
-    for (let i = 0; i < 5; i++) {
-      await ZoomOutByKeyboard(page);
-    }
+    await ZoomOutByKeyboard(page, { repeat: 5 });
     for (let i = 0; i < 2; i++) {
       await selectUndoByKeyboard(page);
     }
@@ -677,9 +652,7 @@ test.describe('Undo/Redo Actions', () => {
       await selectRedoByKeyboard(page);
     }
     await takeEditorScreenshot(page);
-    for (let i = 0; i < 5; i++) {
-      await ZoomInByKeyboard(page);
-    }
+    await ZoomInByKeyboard(page, { repeat: 5 });
     await takeEditorScreenshot(page);
   });
 
@@ -692,9 +665,13 @@ test.describe('Undo/Redo Actions', () => {
     await openFileAndAddToCanvas(page, 'KET/simple-chain.ket');
     await selectAllStructuresOnCanvas(page);
     await LeftToolbar(page).sGroup();
-    await fillFieldByPlaceholder(page, 'Enter name', 'Test');
-    await fillFieldByPlaceholder(page, 'Enter value', '33');
-    await pressButton(page, 'Apply');
+    await SGroupPropertiesDialog(page).setOptions({
+      Type: TypeOption.Data,
+      Context: ContextOption.Fragment,
+      FieldName: 'Test',
+      FieldValue: '33',
+      PropertyLabelType: PropertyLabelType.Absolute,
+    });
     await LeftToolbar(page).chain();
     const point = await getAtomByIndex(page, { label: 'C' }, 2);
     await clickOnCanvas(page, point.x, point.y);

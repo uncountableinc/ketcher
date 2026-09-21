@@ -20,11 +20,6 @@ import {
   MolFileFormat,
 } from '@utils';
 import { selectAllStructuresOnCanvas } from '@utils/canvas/selectSelection';
-import {
-  selectFlexLayoutModeTool,
-  selectSequenceLayoutModeTool,
-  selectSnakeLayoutModeTool,
-} from '@utils/canvas/tools/helpers';
 import { waitForPageInit, waitForSpinnerFinishedWork } from '@utils/common';
 import {
   FileType,
@@ -37,10 +32,7 @@ import {
   deleteHydrogenBond,
   getMonomerLocator,
   getSymbolLocator,
-  turnSyncEditModeOff,
-  turnSyncEditModeOn,
 } from '@utils/macromolecules/monomer';
-import { switchToPeptideMode } from '@utils/macromolecules/sequence';
 import { processResetToDefaultState } from '@utils/testAnnotations/resetToDefaultState';
 import {
   keyboardPressOnCanvas,
@@ -54,6 +46,8 @@ import { CommonTopRightToolbar } from '@tests/pages/common/CommonTopRightToolbar
 import { ContextMenu } from '@tests/pages/common/ContextMenu';
 import { MonomerOnMicroOption } from '@tests/pages/constants/contextMenu/Constants';
 import { KETCHER_CANVAS } from '@tests/pages/constants/canvas/Constants';
+import { MacromoleculesTopToolbar } from '@tests/pages/macromolecules/MacromoleculesTopToolbar';
+import { LayoutMode } from '@tests/pages/constants/macromoleculesTopToolbar/Constants';
 
 let page: Page;
 
@@ -89,7 +83,7 @@ test.describe('Ketcher bugs in 3.2.0', () => {
      * 3. Go to Molecules mode and return back to Macro - Flex mode
      * 4. Grab one monomer and move it
      */
-    await selectFlexLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Flex);
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
@@ -117,11 +111,11 @@ test.describe('Ketcher bugs in 3.2.0', () => {
      * 3. Take a screenshot.
      * Need to update screenshot after Indigo will be updated.
      */
-    await selectFlexLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Flex);
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      'RNA1{R(A,C,G,U)P.R(C,G,U)P.R(A,G,U)P.R(A,C,U)P.R(G,U)P.R(A,U)P.R(C,U)P}$$$$V2.0',
+      'RNA1{r(A,C,G,U)p.r(C,G,U)p.r(A,G,U)p.r(A,C,U)p.r(G,U)p.r(A,U)p.r(C,U)p}$$$$V2.0',
     );
     await takeEditorScreenshot(page, {
       hideMonomerPreview: true,
@@ -139,17 +133,19 @@ test.describe('Ketcher bugs in 3.2.0', () => {
      * 2. Load from HELM
      * 3. Take a screenshot.
      */
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      'RNA1{R(A)P.R(A)P.R(A)}|RNA2{R(U)P.R(U)P.R(U)}$RNA1,RNA2,8:pair-2:pair|RNA1,RNA2,5:pair-5:pair|RNA1,RNA2,2:pair-8:pair$$$V2.0',
+      'RNA1{r(A)p.r(A)p.r(A)}|RNA2{r(U)p.r(U)p.r(U)}$RNA1,RNA2,8:pair-2:pair|RNA1,RNA2,5:pair-5:pair|RNA1,RNA2,2:pair-8:pair$$$V2.0',
     );
     await takeEditorScreenshot(page, {
       hideMonomerPreview: true,
       hideMacromoleculeEditorScrollBars: true,
     });
-    await selectFlexLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Flex);
     await takeEditorScreenshot(page, {
       hideMonomerPreview: true,
       hideMacromoleculeEditorScrollBars: true,
@@ -168,7 +164,9 @@ test.describe('Ketcher bugs in 3.2.0', () => {
      * 4. Take a screenshot.
      */
     const anySymbolA = getSymbolLocator(page, { symbolAlias: 'A' }).first();
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       [MacroFileType.Sequence, SequenceMonomerType.RNA],
@@ -195,11 +193,13 @@ test.describe('Ketcher bugs in 3.2.0', () => {
      * 4. Switch to Flex mode
      * 5. Take a screenshot.
      */
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      'RNA1{R(A)P.R(A)P}|RNA2{R(A)P}|RNA3{R(U)P.R(U)P.R(U)}|PEPTIDE1{E}$RNA1,RNA3,2:pair-8:pair|RNA1,PEPTIDE1,6:R2-1:R1|PEPTIDE1,RNA2,1:R2-1:R1|PEPTIDE1,RNA3,1:pair-5:pair$$$V2.0',
+      'RNA1{r(A)p.r(A)p}|RNA2{r(A)p}|RNA3{r(U)p.r(U)p.r(U)}|PEPTIDE1{E}$RNA1,RNA3,2:pair-8:pair|RNA1,PEPTIDE1,6:R2-1:R1|PEPTIDE1,RNA2,1:R2-1:R1|PEPTIDE1,RNA3,1:pair-5:pair$$$V2.0',
     );
     await getSymbolLocator(page, { symbolAlias: 'p' }).first().click();
     await page.mouse.down();
@@ -208,7 +208,7 @@ test.describe('Ketcher bugs in 3.2.0', () => {
       hideMonomerPreview: true,
       hideMacromoleculeEditorScrollBars: true,
     });
-    await selectFlexLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Flex);
     await takeEditorScreenshot(page, {
       hideMonomerPreview: true,
       hideMacromoleculeEditorScrollBars: true,
@@ -227,11 +227,13 @@ test.describe('Ketcher bugs in 3.2.0', () => {
      * 4. Press Delete button
      * 5. Take a screenshot.
      */
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      'RNA1{R(A)P.R(A)P.R(A)}|RNA2{R(U)P.R(U)P.R(U)}$RNA1,RNA2,2:pair-2:pair|RNA1,RNA2,5:pair-5:pair|RNA1,RNA2,8:pair-8:pair$$$V2.0',
+      'RNA1{r(A)p.r(A)p.r(A)}|RNA2{r(U)p.r(U)p.r(U)}$RNA1,RNA2,2:pair-2:pair|RNA1,RNA2,5:pair-5:pair|RNA1,RNA2,8:pair-8:pair$$$V2.0',
     );
     await takeEditorScreenshot(page, {
       hideMonomerPreview: true,
@@ -258,11 +260,13 @@ test.describe('Ketcher bugs in 3.2.0', () => {
      * 5. Switch to Flex mode or Snake mode.
      * 6. Take a screenshot.
      */
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      'RNA1{R(A)P.R(A)P.R(A)P.R(A)}|RNA2{R(U)P.R(U)P.R(U)P.R(U)P.R(U)}$RNA1,RNA2,11:pair-2:pair|RNA1,RNA2,8:pair-5:pair|RNA1,RNA2,5:pair-11:pair|RNA1,RNA2,2:pair-14:pair$$$V2.0',
+      'RNA1{r(A)p.r(A)p.r(A)p.r(A)}|RNA2{r(U)p.r(U)p.r(U)p.r(U)p.r(U)}$RNA1,RNA2,11:pair-2:pair|RNA1,RNA2,8:pair-5:pair|RNA1,RNA2,5:pair-11:pair|RNA1,RNA2,2:pair-14:pair$$$V2.0',
     );
     await takeEditorScreenshot(page, {
       hideMonomerPreview: true,
@@ -272,7 +276,7 @@ test.describe('Ketcher bugs in 3.2.0', () => {
     await keyboardPressOnCanvas(page, 'ArrowDown');
     await keyboardPressOnCanvas(page, 'Delete');
     await CommonTopLeftToolbar(page).undo();
-    await selectFlexLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Flex);
     await takeEditorScreenshot(page, {
       hideMonomerPreview: true,
       hideMacromoleculeEditorScrollBars: true,
@@ -292,17 +296,19 @@ test.describe('Ketcher bugs in 3.2.0', () => {
      * 5. Exit edit mode
      * 6. Take a screenshot.
      */
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      'RNA1{R(A)P.R(A)P.R(A)P.R(A)}|RNA2{R(U)P.R(U)P.R(U)P.R(U)}$RNA1,RNA2,11:pair-2:pair|RNA1,RNA2,8:pair-5:pair|RNA1,RNA2,5:pair-8:pair|RNA1,RNA2,2:pair-11:pair$$$V2.0',
+      'RNA1{r(A)p.r(A)p.r(A)p.r(A)}|RNA2{r(U)p.r(U)p.r(U)p.r(U)}$RNA1,RNA2,11:pair-2:pair|RNA1,RNA2,8:pair-5:pair|RNA1,RNA2,5:pair-8:pair|RNA1,RNA2,2:pair-11:pair$$$V2.0',
     );
     await takeEditorScreenshot(page, {
       hideMonomerPreview: true,
       hideMacromoleculeEditorScrollBars: true,
     });
-    await turnSyncEditModeOff(page);
+    await MacromoleculesTopToolbar(page).turnSyncEditModeOff();
     await getSymbolLocator(page, { symbolAlias: 'U' }).nth(1).dblclick();
     await keyboardPressOnCanvas(page, 'ArrowDown');
     await keyboardTypeOnCanvas(page, 'UU');
@@ -329,11 +335,11 @@ test.describe('Ketcher bugs in 3.2.0', () => {
      * 4. Create antisense chain for selection
      * 5. Take a screenshot.
      */
-    await selectSnakeLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Snake);
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      'RNA1{R(A)P.R(A)[bP].R(A)}$$$$V2.0',
+      'RNA1{r(A)p.r(A)[bP].r(A)}$$$$V2.0',
     );
     await takeEditorScreenshot(page, {
       hideMonomerPreview: true,
@@ -370,17 +376,19 @@ test.describe('Ketcher bugs in 3.2.0', () => {
      * 4. Click Create DNA antisense stand option
      * 5. Validate HELM export.
      */
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await openFileAndAddToCanvasAsNewProject(
       page,
       'KET/Bugs/System creates ambiguous RNA nucleotides instead of DNA ones in case of DNA antisense stand creation.ket',
     );
     await selectAllStructuresOnCanvas(page);
-    const anySymbolR = getSymbolLocator(page, { symbolAlias: 'R' }).first();
+    const anySymbolR = getSymbolLocator(page, { symbolAlias: 'r' }).first();
     await createDNAAntisenseChain(page, anySymbolR);
     await verifyHELMExport(
       page,
-      'RNA1{R(A,C,G,T)P.R(A,G,T)P.R(A,C,T)P.R(A,T)}|RNA2{R(A,C,G,U)P.R(A,G,U)P.R(A,C,U)P.R(A,U)}|RNA3{R(A,C)P.R(A,G)P.R(A,C,G)}|RNA4{[dR](A,T)P.[dR](A,G,T)P.[dR](A,C,T)P.[dR](A,C,G,T)}|RNA5{[dR](A,T)P.[dR](A,G,T)P.[dR](A,C,T)P.[dR](A,C,G,T)}|RNA6{[dR](C,G,T)P.[dR](C,T)P.[dR](G,T)}$RNA1,RNA4,11:pair-2:pair|RNA1,RNA4,8:pair-5:pair|RNA1,RNA4,5:pair-8:pair|RNA1,RNA4,2:pair-11:pair|RNA2,RNA5,11:pair-2:pair|RNA2,RNA5,8:pair-5:pair|RNA2,RNA5,5:pair-8:pair|RNA2,RNA5,2:pair-11:pair|RNA3,RNA6,8:pair-2:pair|RNA3,RNA6,5:pair-5:pair|RNA3,RNA6,2:pair-8:pair$$$V2.0',
+      'RNA1{r(A,C,G,T)p.r(A,G,T)p.r(A,C,T)p.r(A,T)}|RNA2{r(A,C,G,U)p.r(A,G,U)p.r(A,C,U)p.r(A,U)}|RNA3{r(A,C)p.r(A,G)p.r(A,C,G)}|RNA4{d(A,T)p.d(A,G,T)p.d(A,C,T)p.d(A,C,G,T)}|RNA5{d(A,T)p.d(A,G,T)p.d(A,C,T)p.d(A,C,G,T)}|RNA6{d(C,G,T)p.d(C,T)p.d(G,T)}$RNA1,RNA4,11:pair-2:pair|RNA1,RNA4,8:pair-5:pair|RNA1,RNA4,5:pair-8:pair|RNA1,RNA4,2:pair-11:pair|RNA2,RNA5,11:pair-2:pair|RNA2,RNA5,8:pair-5:pair|RNA2,RNA5,5:pair-8:pair|RNA2,RNA5,2:pair-11:pair|RNA3,RNA6,8:pair-2:pair|RNA3,RNA6,5:pair-5:pair|RNA3,RNA6,2:pair-8:pair$$$V2.0',
     );
   });
 
@@ -396,11 +404,13 @@ test.describe('Ketcher bugs in 3.2.0', () => {
      * 4. Click Create DNA antisense stand option
      * 5. Take a screenshot.
      */
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      'RNA1{R(A)P.R(A)P.R(A)P.R(A)P.R(A)}|RNA2{R(U)P.R(U)P.R(U)P.R(U)P.R(U)}$RNA1,RNA2,14:pair-2:pair|RNA1,RNA2,11:pair-5:pair|RNA1,RNA2,8:pair-8:pair|RNA1,RNA2,5:pair-11:pair|RNA1,RNA2,2:pair-14:pair$$$V2.0',
+      'RNA1{r(A)p.r(A)p.r(A)p.r(A)p.r(A)}|RNA2{r(U)p.r(U)p.r(U)p.r(U)p.r(U)}$RNA1,RNA2,14:pair-2:pair|RNA1,RNA2,11:pair-5:pair|RNA1,RNA2,8:pair-8:pair|RNA1,RNA2,5:pair-11:pair|RNA1,RNA2,2:pair-14:pair$$$V2.0',
     );
     await selectAllStructuresOnCanvas(page);
     const anySymbolA = getSymbolLocator(page, { symbolAlias: 'A' }).first();
@@ -422,11 +432,13 @@ test.describe('Ketcher bugs in 3.2.0', () => {
      * 3. Switch to edit mode and try to add nucleotide (RNA or DNA - C in my case) to the last position
      * 4. Take a screenshot.
      */
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      'RNA1{R(A)P.R(A)P.R(A)}|RNA2{P.R(U)}$RNA1,RNA2,2:pair-3:pair|RNA1,RNA2,8:pair-1:pair$$$V2.0',
+      'RNA1{r(A)p.r(A)p.r(A)}|RNA2{p.r(U)}$RNA1,RNA2,2:pair-3:pair|RNA1,RNA2,8:pair-1:pair$$$V2.0',
     );
     await getSymbolLocator(page, {
       symbolAlias: 'A',
@@ -451,11 +463,13 @@ test.describe('Ketcher bugs in 3.2.0', () => {
      * 3. Switch to edit mode and try to add nucleotide (RNA or DNA, C in my case) between @ and U
      * 4. Take a screenshot.
      */
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      'CHEM1{[4aPEGMal]}|RNA1{R(U)P}|CHEM2{[4aPEGMal]}|CHEM3{[4aPEGMal]}|RNA2{R(A)P}|RNA3{P}$RNA1,CHEM2,3:R2-1:R1|CHEM3,CHEM2,1:pair-1:pair|CHEM1,RNA1,1:R2-1:R1|RNA2,RNA3,3:R2-1:R1|RNA2,CHEM3,1:R1-1:R2|CHEM1,RNA3,1:pair-1:pair|RNA1,RNA2,2:pair-2:pair$$$V2.0',
+      'CHEM1{[4aPEGMal]}|RNA1{r(U)p}|CHEM2{[4aPEGMal]}|CHEM3{[4aPEGMal]}|RNA2{r(A)p}|RNA3{p}$RNA1,CHEM2,3:R2-1:R1|CHEM3,CHEM2,1:pair-1:pair|CHEM1,RNA1,1:R2-1:R1|RNA2,RNA3,3:R2-1:R1|RNA2,CHEM3,1:R1-1:R2|CHEM1,RNA3,1:pair-1:pair|RNA1,RNA2,2:pair-2:pair$$$V2.0',
     );
     await getSymbolLocator(page, {
       symbolAlias: 'U',
@@ -480,7 +494,7 @@ test.describe('Ketcher bugs in 3.2.0', () => {
      * 3. Grab central sugar and move it around whole structure petals
      * 4. Take a screenshot.
      */
-    await selectFlexLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Flex);
     await openFileAndAddToCanvasAsNewProjectMacro(
       page,
       'KET/Bugs/Snapping wipes monomer labels in some cases.ket',
@@ -519,11 +533,13 @@ test.describe('Ketcher bugs in 3.2.0', () => {
      * 3. Switch to edit mode and try to add nucleotide (RNA or DNA - C in my case) to the first position
      * 4. Take a screenshot.
      */
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      'RNA1{R(A)P.R(A)P.R(A)}|RNA2{R(U)P.R(U)P.R(U)}$RNA1,RNA2,8:pair-2:pair|RNA1,RNA2,2:pair-8:pair|RNA1,RNA2,5:pair-5:pair$$$V2.0',
+      'RNA1{r(A)p.r(A)p.r(A)}|RNA2{r(U)p.r(U)p.r(U)}$RNA1,RNA2,8:pair-2:pair|RNA1,RNA2,2:pair-8:pair|RNA1,RNA2,5:pair-5:pair$$$V2.0',
     );
     await getSymbolLocator(page, {
       symbolAlias: 'A',
@@ -551,13 +567,15 @@ test.describe('Ketcher bugs in 3.2.0', () => {
      * 6. Start typing a new sequence
      * 7. Take a screenshot.
      */
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      'RNA1{R(A)P.R(A)P.R(A)}|RNA2{R(U)P.R(U)P.R(U)}$RNA1,RNA2,8:pair-2:pair|RNA1,RNA2,2:pair-8:pair|RNA1,RNA2,5:pair-5:pair$$$V2.0',
+      'RNA1{r(A)p.r(A)p.r(A)}|RNA2{r(U)p.r(U)p.r(U)}$RNA1,RNA2,8:pair-2:pair|RNA1,RNA2,2:pair-8:pair|RNA1,RNA2,5:pair-5:pair$$$V2.0',
     );
-    await turnSyncEditModeOff(page);
+    await MacromoleculesTopToolbar(page).turnSyncEditModeOff();
     await getSymbolLocator(page, {
       symbolAlias: 'A',
       nodeIndexOverall: 0,
@@ -593,13 +611,15 @@ test.describe('Ketcher bugs in 3.2.0', () => {
      * 6. Try to type "A" or "U" on the keyboard.
      * 7. Take a screenshot.
      */
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      'RNA1{R(A)P.R(A)P.R(A)P.R(A)}|RNA2{R(U)P.R(U)P.R(U)P.R(U)}$RNA1,RNA2,11:pair-2:pair|RNA1,RNA2,8:pair-5:pair|RNA1,RNA2,5:pair-8:pair|RNA1,RNA2,2:pair-11:pair$$$V2.0',
+      'RNA1{r(A)p.r(A)p.r(A)p.r(A)}|RNA2{r(U)p.r(U)p.r(U)p.r(U)}$RNA1,RNA2,11:pair-2:pair|RNA1,RNA2,8:pair-5:pair|RNA1,RNA2,5:pair-8:pair|RNA1,RNA2,2:pair-11:pair$$$V2.0',
     );
-    await turnSyncEditModeOff(page);
+    await MacromoleculesTopToolbar(page).turnSyncEditModeOff();
     await getSymbolLocator(page, {
       symbolAlias: 'U',
       nodeIndexOverall: 2,
@@ -607,7 +627,7 @@ test.describe('Ketcher bugs in 3.2.0', () => {
     await keyboardPressOnCanvas(page, 'ArrowDown');
     await keyboardPressOnCanvas(page, 'ArrowLeft');
     await keyboardPressOnCanvas(page, 'U');
-    await turnSyncEditModeOn(page);
+    await MacromoleculesTopToolbar(page).turnSyncEditModeOn();
     await takeEditorScreenshot(page, {
       hideMonomerPreview: true,
       hideMacromoleculeEditorScrollBars: true,
@@ -631,18 +651,20 @@ test.describe('Ketcher bugs in 3.2.0', () => {
      * 3. Switch to edit mode and try to add peptide (E in my case) between two As
      * 4. Take a screenshot.
      */
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      'RNA1{R(A)P.R(A)}|RNA2{R(U)P.R(U)}$RNA1,RNA2,5:pair-2:pair|RNA1,RNA2,2:pair-5:pair$$$V2.0',
+      'RNA1{r(A)p.r(A)}|RNA2{r(U)p.r(U)}$RNA1,RNA2,5:pair-2:pair|RNA1,RNA2,2:pair-5:pair$$$V2.0',
     );
     await getSymbolLocator(page, {
       symbolAlias: 'A',
       nodeIndexOverall: 1,
     }).dblclick();
     await keyboardPressOnCanvas(page, 'ArrowLeft');
-    await switchToPeptideMode(page);
+    await MacromoleculesTopToolbar(page).peptides();
     await keyboardPressOnCanvas(page, 'E');
     await takeEditorScreenshot(page, {
       hideMonomerPreview: true,
@@ -661,11 +683,13 @@ test.describe('Ketcher bugs in 3.2.0', () => {
      * 3. Switch to edit mode and try to add nucleotide (RNA or DNA - C in my case) before first U and - symbol
      * 4. Take a screenshot.
      */
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      'RNA1{R(A)}|RNA2{R(U)P.R(U)}|RNA3{R(A)}$RNA1,RNA2,2:pair-2:pair|RNA2,RNA3,5:pair-2:pair$$$V2.0',
+      'RNA1{r(A)}|RNA2{r(U)p.r(U)}|RNA3{r(A)}$RNA1,RNA2,2:pair-2:pair|RNA2,RNA3,5:pair-2:pair$$$V2.0',
     );
     await getSymbolLocator(page, {
       symbolAlias: 'U',
@@ -893,7 +917,9 @@ test.describe('Ketcher bugs in 3.2.0', () => {
      * 3. Go to small molecules and expand the ribose monomers
      * 4. Take a screenshot.
      */
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await keyboardTypeOnCanvas(page, 'AA');
     await CommonTopRightToolbar(page).turnOnMicromoleculesEditor();
     await selectAllStructuresOnCanvas(page);
@@ -920,11 +946,11 @@ test.describe('Ketcher bugs in 3.2.0', () => {
      * 3. Take a screenshot.
      */
     await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
-    await selectSnakeLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Snake);
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      'RNA1{[dR](A,C,G,T)P.[dR](A,G,T)P.[dR](A,T)P}|RNA2{R(A,C,G,U)P.R(A,C,U)P.R(A,U)[Ssp]}|RNA3{[RSpabC](A,U)P}$RNA1,RNA2,2:pair-8:pair|RNA1,RNA2,5:pair-5:pair|RNA2,RNA1,2:pair-8:pair$$$V2.0',
+      'RNA1{[dR](A,C,G,T)p.[dR](A,G,T)p.[dR](A,T)p}|RNA2{r(A,C,G,U)p.r(A,C,U)p.r(A,U)[Ssp]}|RNA3{[RSpabC](A,U)p}$RNA1,RNA2,2:pair-8:pair|RNA1,RNA2,5:pair-5:pair|RNA2,RNA1,2:pair-8:pair$$$V2.0',
     );
     await takeEditorScreenshot(page, {
       hideMonomerPreview: true,

@@ -221,7 +221,7 @@ function Field(props) {
       schema={desc}
       {...fieldOpts}
       {...rest}
-      data-testid={`${name}-input`}
+      data-testid={props['data-testid'] ?? `${name}-input`}
     />
   );
 
@@ -291,8 +291,10 @@ function FieldWithModal(props) {
           onClick={() => {
             onEdit(fieldOpts.onChange);
           }}
+          name="testname"
           iconName="edit"
           className={classes.editButton}
+          testId={`edit-button`}
         />
       </span>
       {dataError && anchorEl && (

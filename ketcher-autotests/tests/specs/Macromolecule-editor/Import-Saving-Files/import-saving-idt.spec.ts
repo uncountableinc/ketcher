@@ -6,8 +6,6 @@ import { Phosphates } from '@constants/monomers/Phosphates';
 import { Presets } from '@constants/monomers/Presets';
 import { chromium, expect, Page, test } from '@playwright/test';
 import {
-  clickInTheMiddleOfTheScreen,
-  clickOnCanvas,
   copyToClipboardByKeyboard,
   MacroFileType,
   moveMouseAway,
@@ -22,10 +20,6 @@ import {
   takePolymerEditorScreenshot,
   waitForPageInit,
 } from '@utils';
-import {
-  selectSnakeLayoutModeTool,
-  selectSequenceLayoutModeTool,
-} from '@utils/canvas/tools/helpers';
 import { selectAllStructuresOnCanvas } from '@utils/canvas/selectSelection';
 import {
   closeErrorMessage,
@@ -43,6 +37,7 @@ import {
 import {
   getMonomerLocator,
   getSymbolLocator,
+  MonomerAttachmentPoint,
 } from '@utils/macromolecules/monomer';
 import { bondTwoMonomersPointToPoint } from '@utils/macromolecules/polymerBond';
 import {
@@ -68,6 +63,8 @@ import { Library } from '@tests/pages/macromolecules/Library';
 import { RNASection } from '@tests/pages/constants/library/Constants';
 import { ContextMenu } from '@tests/pages/common/ContextMenu';
 import { SequenceSymbolOption } from '@tests/pages/constants/contextMenu/Constants';
+import { LayoutMode } from '@tests/pages/constants/macromoleculesTopToolbar/Constants';
+import { MacromoleculesTopToolbar } from '@tests/pages/macromolecules/MacromoleculesTopToolbar';
 
 let page: Page;
 
@@ -166,8 +163,11 @@ test.describe('Import-Saving .idt Files', () => {
     Test case: Import/Saving files/#4495
     Description: In case of peptide monomers are on canvas, error "Peptide monomers are not supported in IDT" appear.
     */
-    await Library(page).selectMonomer(Peptides._1Nal);
-    await clickInTheMiddleOfTheScreen(page);
+    await Library(page).dragMonomerOnCanvas(Peptides._1Nal, {
+      x: 0,
+      y: 0,
+      fromCenter: true,
+    });
     await CommonTopLeftToolbar(page).saveFile();
     await SaveStructureDialog(page).chooseFileFormat(
       MacromoleculesFileFormatType.IDT,
@@ -301,13 +301,17 @@ test.describe('Import-Saving .idt Files', () => {
         hideMacromoleculeEditorScrollBars: true,
       });
 
-      await selectSequenceLayoutModeTool(page);
+      await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+        LayoutMode.Sequence,
+      );
       await moveMouseAway(page);
       await takeEditorScreenshot(page, {
         hideMacromoleculeEditorScrollBars: true,
       });
 
-      await selectSnakeLayoutModeTool(page);
+      await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+        LayoutMode.Snake,
+      );
       await moveMouseAway(page);
       await takeEditorScreenshot(page, {
         hideMacromoleculeEditorScrollBars: true,
@@ -341,13 +345,17 @@ test.describe('Import-Saving .idt Files', () => {
         hideMacromoleculeEditorScrollBars: true,
       });
 
-      await selectSequenceLayoutModeTool(page);
+      await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+        LayoutMode.Sequence,
+      );
       await moveMouseAway(page);
       await takeEditorScreenshot(page, {
         hideMacromoleculeEditorScrollBars: true,
       });
 
-      await selectSnakeLayoutModeTool(page);
+      await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+        LayoutMode.Snake,
+      );
       await moveMouseAway(page);
       await takeEditorScreenshot(page, {
         hideMacromoleculeEditorScrollBars: true,
@@ -383,7 +391,9 @@ test.describe('Import-Saving .idt Files', () => {
       MacroFileType.IDT,
       `A*C*G*C*G*C*G*A*C*T*A*T*A*C*G*C*G*C*C*T`,
     );
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     const symbolG = getSymbolLocator(page, {
       symbolAlias: 'G',
       nodeIndexOverall: 2,
@@ -406,7 +416,9 @@ test.describe('Import-Saving .idt Files', () => {
       MacroFileType.IDT,
       `A*C*G*C*G*C*G*A*C*T*A*T*A*C*G*C*G*C*C*T`,
     );
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await verifyFileExport(page, 'IDT/idt-expected.idt', FileType.IDT);
     await openFileAndAddToCanvasAsNewProject(page, 'IDT/idt-expected.idt');
     await takeEditorScreenshot(page);
@@ -446,7 +458,9 @@ test.describe('Import-Saving .idt Files', () => {
       MacroFileType.IDT,
       `+G*+C*+G*C*G*A*C*T*A*T*A*C*G*+C*+G*+C`,
     );
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await verifyFileExport(
       page,
       'IDT/sequences-with-modifications-2.idt',
@@ -481,7 +495,9 @@ test.describe('Import-Saving .idt Files', () => {
       `,
     );
     await takeEditorScreenshot(page);
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await takeEditorScreenshot(page);
   });
 
@@ -506,7 +522,9 @@ test.describe('Import-Saving .idt Files', () => {
       /52MOErA/*/i2MOErC/*/i2MOErG/*/i2MOErC/*/i2MOErG/*/iMe-dC/*G*A*/iMe-dC/*T*A*T*A*/iMe-dC/*G*/i2MOErC/*/i2MOErG/*/i2MOErC/*/i2MOErC/*/32MOErT/
       `,
     );
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await verifyFileExport(
       page,
       'IDT/sequences-with-modifications-3.idt',
@@ -549,7 +567,9 @@ test.describe('Import-Saving .idt Files', () => {
       `/5Phos/ACG/3Phos/`,
     );
     await takeEditorScreenshot(page);
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await takeEditorScreenshot(page);
   });
 
@@ -565,7 +585,9 @@ test.describe('Import-Saving .idt Files', () => {
       MacroFileType.IDT,
       `/52MOErA/*/i2MOErC/*/i2MOErG/*/i2MOErC/*/i2MOErG/*/iMe-dC/*G*A*/iMe-dC/*T*A*T*A*/iMe-dC/*G*/i2MOErC/*/i2MOErG/*/i2MOErC/*/i2MOErC/*/32MOErT/`,
     );
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await verifyFileExport(
       page,
       'IDT/sequences-with-modifications-4.idt',
@@ -639,7 +661,9 @@ test.describe('Import-Saving .idt Files', () => {
       `,
     );
     await takeEditorScreenshot(page);
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await takeEditorScreenshot(page);
   });
 
@@ -662,7 +686,9 @@ test.describe('Import-Saving .idt Files', () => {
       `,
     );
     await takeEditorScreenshot(page);
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await takeEditorScreenshot(page);
   });
 
@@ -738,10 +764,12 @@ test.describe('Import-Saving .idt Files', () => {
       `/52MOErA/*/i2MOErC/*/i2MOErG/*/i2MOErC/*/i2MOErG/*/iMe-dC/*G*A*/iMe-dC/*T*A*T*A*/iMe-dC/*G*/i2MOErC/*/i2MOErG/*/i2MOErC/*/i2MOErC/*/32MOErT/`,
     );
     await takeEditorScreenshot(page);
-    await selectSnakeLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Snake);
     await moveMouseAway(page);
     await takeEditorScreenshot(page, { hideMonomerPreview: true });
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await takeEditorScreenshot(page);
   });
 
@@ -760,7 +788,9 @@ test.describe('Import-Saving .idt Files', () => {
     await getMonomerLocator(page, Chem.iMe_dC).nth(1).hover();
     await waitForMonomerPreview(page);
     await takeEditorScreenshot(page);
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await getSymbolLocator(page, { symbolAlias: '?' }).nth(1).hover();
     await waitForMonomerPreview(page);
     await takeEditorScreenshot(page);
@@ -797,14 +827,16 @@ test.describe('Import-Saving .idt Files', () => {
       MacroFileType.IDT,
       `/iMe-dC/`,
     );
-    await Library(page).selectMonomer(Peptides._1Nal);
-    await clickOnCanvas(page, x, y);
+    await Library(page).dragMonomerOnCanvas(Peptides._1Nal, {
+      x,
+      y,
+    });
     await bondTwoMonomersPointToPoint(
       page,
       firstMonomer,
       secondMonomer,
-      'R2',
-      'R1',
+      MonomerAttachmentPoint.R2,
+      MonomerAttachmentPoint.R1,
     );
     await CommonLeftToolbar(page).selectBondTool(MacroBondType.Single);
     await getMonomerLocator(page, Chem.iMe_dC).hover();
@@ -828,14 +860,16 @@ test.describe('Import-Saving .idt Files', () => {
       MacroFileType.IDT,
       `/iMe-dC/`,
     );
-    await Library(page).selectMonomer(Chem.Test_6_Ch);
-    await clickOnCanvas(page, x, y);
+    await Library(page).dragMonomerOnCanvas(Chem.Test_6_Ch, {
+      x,
+      y,
+    });
     await bondTwoMonomersPointToPoint(
       page,
       firstMonomer,
       secondMonomer,
-      'R3',
-      'R4',
+      MonomerAttachmentPoint.R3,
+      MonomerAttachmentPoint.R4,
     );
     await CommonLeftToolbar(page).selectBondTool(MacroBondType.Single);
     await getMonomerLocator(page, Chem.iMe_dC).hover();
@@ -855,14 +889,16 @@ test.describe('Import-Saving .idt Files', () => {
       MacroFileType.IDT,
       `/iMe-dC/`,
     );
-    await Library(page).selectMonomer(Peptides._1Nal);
-    await clickOnCanvas(page, x, y);
+    await Library(page).dragMonomerOnCanvas(Peptides._1Nal, {
+      x,
+      y,
+    });
     await bondTwoMonomersPointToPoint(
       page,
       firstMonomer,
       secondMonomer,
-      'R2',
-      'R1',
+      MonomerAttachmentPoint.R2,
+      MonomerAttachmentPoint.R1,
     );
 
     const bondExists = await bondLine.isVisible();
@@ -895,14 +931,16 @@ test.describe('Import-Saving .idt Files', () => {
       MacroFileType.IDT,
       `/iMe-dC/`,
     );
-    await Library(page).selectMonomer(Chem.Test_6_Ch);
-    await clickOnCanvas(page, x, y);
+    await Library(page).dragMonomerOnCanvas(Chem.Test_6_Ch, {
+      x,
+      y,
+    });
     await bondTwoMonomersPointToPoint(
       page,
       firstMonomer,
       secondMonomer,
-      'R3',
-      'R4',
+      MonomerAttachmentPoint.R3,
+      MonomerAttachmentPoint.R4,
     );
     await CommonLeftToolbar(page).selectEraseTool();
     await bondLine.click();
@@ -942,8 +980,10 @@ test.describe('Import-Saving .idt Files', () => {
       MacroFileType.IDT,
       `/iMe-dC/`,
     );
-    await Library(page).selectMonomer(Peptides._1Nal);
-    await clickOnCanvas(page, x, y);
+    await Library(page).dragMonomerOnCanvas(Peptides._1Nal, {
+      x,
+      y,
+    });
     await CommonLeftToolbar(page).selectBondTool(MacroBondType.Single);
     await getMonomerLocator(page, Peptides._1Nal).click();
     await page.mouse.down();
@@ -966,9 +1006,11 @@ test.describe('Import-Saving .idt Files', () => {
       MacroFileType.IDT,
       `/iMe-dC/`,
     );
-    await Library(page).selectMonomer(Peptides._1Nal);
-    await clickOnCanvas(page, x, y);
-    await selectSnakeLayoutModeTool(page);
+    await Library(page).dragMonomerOnCanvas(Peptides._1Nal, {
+      x,
+      y,
+    });
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Snake);
     await CommonLeftToolbar(page).selectBondTool(MacroBondType.Single);
     await getMonomerLocator(page, Peptides._1Nal).click();
     await page.mouse.down();
@@ -991,8 +1033,10 @@ test.describe('Import-Saving .idt Files', () => {
       MacroFileType.IDT,
       `/iMe-dC/`,
     );
-    await Library(page).selectMonomer(Chem.Test_6_Ch);
-    await clickOnCanvas(page, x, y);
+    await Library(page).dragMonomerOnCanvas(Chem.Test_6_Ch, {
+      x,
+      y,
+    });
     await CommonLeftToolbar(page).selectBondTool(MacroBondType.Single);
     await getMonomerLocator(page, Chem.iMe_dC).click();
     await page.mouse.down();

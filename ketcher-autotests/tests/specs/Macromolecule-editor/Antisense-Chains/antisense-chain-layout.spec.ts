@@ -15,11 +15,6 @@ import {
 } from '@utils';
 import { selectAllStructuresOnCanvas } from '@utils/canvas/selectSelection';
 import {
-  selectSequenceLayoutModeTool,
-  selectSnakeLayoutModeTool,
-  selectFlexLayoutModeTool,
-} from '@utils/canvas/tools/helpers';
-import {
   getMonomerLocator,
   MonomerLocatorOptions,
 } from '@utils/macromolecules/monomer';
@@ -35,6 +30,8 @@ import { CommonTopLeftToolbar } from '@tests/pages/common/CommonTopLeftToolbar';
 import { CommonTopRightToolbar } from '@tests/pages/common/CommonTopRightToolbar';
 import { ContextMenu } from '@tests/pages/common/ContextMenu';
 import { MonomerOption } from '@tests/pages/constants/contextMenu/Constants';
+import { MacromoleculesTopToolbar } from '@tests/pages/macromolecules/MacromoleculesTopToolbar';
+import { LayoutMode } from '@tests/pages/constants/macromoleculesTopToolbar/Constants';
 
 let page: Page;
 
@@ -44,7 +41,7 @@ test.beforeAll(async ({ browser }) => {
 
   await waitForPageInit(page);
   await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
-  await selectSnakeLayoutModeTool(page);
+  await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Snake);
 });
 
 test.afterEach(async () => {
@@ -162,10 +159,12 @@ const shortMonomerList: IMonomer[] = [
     alias: 'P',
     type: MonomerType.Phosphate,
     contentType: MacroFileType.HELM,
-    HELMString: 'RNA1{P}$$$$V2.0',
+    HELMString: 'RNA1{p}$$$$V2.0',
     eligibleForAntisense: false,
     baseWithR3R1ConnectionPresent: false,
     monomerLocatorOptions: Phosphates.P,
+    shouldFail: true,
+    issueNumber: 'https://github.com/epam/Indigo/issues/3061',
   },
   {
     id: 7,
@@ -306,6 +305,14 @@ for (const leftMonomer of shortMonomerList) {
        */
       test.setTimeout(30000);
 
+      // Test should be skipped if related bug exists
+      test.fixme(
+        leftMonomer.shouldFail === true || rightMonomer.shouldFail === true,
+        `That test fails because of ${leftMonomer.issueNumber || ''} ${
+          leftMonomer.issueNumber || ''
+        } issue(s).`,
+      );
+
       await loadMonomerOnCanvas(page, leftMonomer);
       let leftMonomerAlias;
       if (leftMonomer.type === 'Nucleoside') {
@@ -346,8 +353,12 @@ for (const leftMonomer of shortMonomerList) {
         MacroBondType.Hydrogen,
       );
 
-      await selectFlexLayoutModeTool(page);
-      await selectSnakeLayoutModeTool(page);
+      await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+        LayoutMode.Flex,
+      );
+      await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+        LayoutMode.Snake,
+      );
       await takeEditorScreenshot(page, { hideMonomerPreview: true });
     });
   }
@@ -538,8 +549,12 @@ for (const leftMonomer of eligibleForAntisenseMonomerList) {
         MacroBondType.Hydrogen,
       );
 
-      await selectFlexLayoutModeTool(page);
-      await selectSnakeLayoutModeTool(page);
+      await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+        LayoutMode.Flex,
+      );
+      await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+        LayoutMode.Snake,
+      );
       await takeEditorScreenshot(page, { hideMonomerPreview: true });
     });
   }
@@ -582,8 +597,8 @@ test(`3. Check that shorter chain (fewer monomers) should get "flipped", and if 
     MacroBondType.Hydrogen,
   );
 
-  await selectFlexLayoutModeTool(page);
-  await selectSnakeLayoutModeTool(page);
+  await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Flex);
+  await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Snake);
 
   await moveMouseAway(page);
   await takeEditorScreenshot(page, { hideMonomerPreview: true });
@@ -631,8 +646,8 @@ test(`4. For R3-R1 sugar-base side connections (when the base does not have hydr
     MacroBondType.Hydrogen,
   );
 
-  await selectFlexLayoutModeTool(page);
-  await selectSnakeLayoutModeTool(page);
+  await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Flex);
+  await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Snake);
 
   await moveMouseAway(page);
   await takeEditorScreenshot(page, { hideMonomerPreview: true });
@@ -833,9 +848,13 @@ for (const leftMonomer of eligibleForAntisenseMonomerList) {
         MacroBondType.Hydrogen,
       );
 
-      await selectSequenceLayoutModeTool(page);
+      await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+        LayoutMode.Sequence,
+      );
       await takeEditorScreenshot(page, { hideMonomerPreview: true });
-      await selectSnakeLayoutModeTool(page);
+      await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+        LayoutMode.Snake,
+      );
     });
   }
 }
@@ -860,6 +879,14 @@ for (const leftMonomer of shortMonomerList) {
          *  Screenshots must be updated after fix and fixme should be removed
          */
         test.setTimeout(20000);
+
+        // Test should be skipped if related bug exists
+        test.fixme(
+          leftMonomer.shouldFail === true || rightMonomer.shouldFail === true,
+          `That test fails because of ${leftMonomer.issueNumber || ''} ${
+            leftMonomer.issueNumber || ''
+          } issue(s).`,
+        );
 
         await loadMonomerOnCanvas(page, leftMonomer);
         let leftMonomerAlias;
@@ -901,9 +928,13 @@ for (const leftMonomer of shortMonomerList) {
           MacroBondType.Hydrogen,
         );
 
-        await selectSequenceLayoutModeTool(page);
+        await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+          LayoutMode.Sequence,
+        );
         await takeEditorScreenshot(page, { hideMonomerPreview: true });
-        await selectSnakeLayoutModeTool(page);
+        await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+          LayoutMode.Snake,
+        );
       },
     );
   }

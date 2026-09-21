@@ -8,11 +8,8 @@ import {
   clickOnAtom,
   moveOnAtom,
   waitForPageInit,
-  resetCurrentTool,
   openFileAndAddToCanvas,
   addCyclopentadieneRingWithTwoAtoms,
-  TemplateLibrary,
-  openEditDialogForTemplate,
   clickOnBond,
   BondType,
   takePageScreenshot,
@@ -20,9 +17,6 @@ import {
   moveMouseToTheMiddleOfTheScreen,
   getRightAtomByAttributes,
   clickOnTheCanvas,
-  selectUserTemplate,
-  FunctionalGroups,
-  selectFunctionalGroups,
   cutToClipboardByKeyboard,
   pasteFromClipboardByKeyboard,
   copyToClipboardByKeyboard,
@@ -34,6 +28,7 @@ import {
   RxnFileFormat,
   MolFileFormat,
 } from '@utils';
+import { resetCurrentTool } from '@utils/canvas/tools/resetCurrentTool';
 import { getAtomByIndex } from '@utils/canvas/atoms/getAtomByIndex/getAtomByIndex';
 import { selectAllStructuresOnCanvas } from '@utils/canvas/selectSelection';
 import { getRotationHandleCoordinates } from '@utils/clicks/selectButtonByTitle';
@@ -55,14 +50,20 @@ import {
   drawBenzeneRing,
   drawCyclohexaneRing,
   drawCyclopentadieneRing,
-  openStructureLibrary,
   selectRingButton,
 } from '@tests/pages/molecules/BottomToolbar';
 import { RingButton } from '@tests/pages/constants/ringButton/Constants';
 import { expandAbbreviation } from '@utils/sgroup/helpers';
 import { ContextMenu } from '@tests/pages/common/ContextMenu';
-import { MicroBondOption } from '@tests/pages/constants/contextMenu/Constants';
+import { MicroAtomOption } from '@tests/pages/constants/contextMenu/Constants';
 import { AttachmentPointsDialog } from '@tests/pages/molecules/canvas/AttachmentPointsDialog';
+import { StructureLibraryDialog } from '@tests/pages/molecules/canvas/StructureLibraryDialog';
+import {
+  AromaticsTemplate,
+  FunctionalGroupsTabItems,
+  TabSection,
+  TemplateLibraryTab,
+} from '@tests/pages/constants/structureLibraryDialog/Constants';
 
 test.describe('Template Manupulations', () => {
   test.beforeEach(async ({ page }) => {
@@ -75,7 +76,12 @@ test.describe('Template Manupulations', () => {
     Description: Look at the bottom of the application.
     Choose any template.
     */
-    await openEditDialogForTemplate(page, TemplateLibrary.Naphtalene);
+    await BottomToolbar(page).StructureLibrary();
+    await StructureLibraryDialog(page).editTemplate(
+      TemplateLibraryTab.Aromatics,
+      AromaticsTemplate.Naphtalene,
+    );
+    await page.getByPlaceholder('template').click();
     await takeEditorScreenshot(page);
   });
 });
@@ -265,7 +271,7 @@ test.describe('Template Manupulations', () => {
     await page.getByTestId('canvas').getByText('S').first().click();
     await CommonTopLeftToolbar(page).clearCanvas();
     await BottomToolbar(page).StructureLibrary();
-    await page.getByRole('tab', { name: 'Template Library' }).click();
+    await StructureLibraryDialog(page).openTab(TabSection.TemplateLibraryTab);
     await takeEditorScreenshot(page);
   });
 
@@ -292,7 +298,7 @@ test.describe('Template Manupulations', () => {
       SelectionToolType.Rectangle,
     );
 
-    await ContextMenu(page, point).click(MicroBondOption.Edit);
+    await ContextMenu(page, point).click(MicroAtomOption.Edit);
     await page.getByLabel('Label').click();
     await page.getByLabel('Label').fill('Br');
     await page.getByTestId('OK').click();
@@ -517,7 +523,10 @@ test.describe('Template Manupulations', () => {
     Attach selected structure to the FG
     */
     const X_DELTA_ONE = 100;
-    await selectFunctionalGroups(FunctionalGroups.CONH2, page);
+    await BottomToolbar(page).StructureLibrary();
+    await StructureLibraryDialog(page).addFunctionalGroup(
+      FunctionalGroupsTabItems.CONH2,
+    );
     await clickInTheMiddleOfTheScreen(page);
     const middleOfTheScreen = await getCachedBodyCenter(page);
     await expandAbbreviation(page, middleOfTheScreen);
@@ -625,10 +634,11 @@ test.describe('Open Ketcher', () => {
     Verify if the full preview of the Template is displayed under the mouse cursor
     */
     const xOffsetFromCenter = 40;
-    await openStructureLibrary(page);
-    await page.getByRole('tab', { name: 'Template Library' }).click();
-    await page.getByRole('button', { name: 'Aromatics' }).click();
-    await selectUserTemplate(TemplateLibrary.Azulene, page);
+    await BottomToolbar(page).StructureLibrary();
+    await StructureLibraryDialog(page).addTemplate(
+      TemplateLibraryTab.Aromatics,
+      AromaticsTemplate.Azulene,
+    );
     await moveMouseToTheMiddleOfTheScreen(page);
     await clickOnTheCanvas(page, xOffsetFromCenter, 0);
     await takePageScreenshot(page);
@@ -676,10 +686,11 @@ test.describe('Open Ketcher', () => {
     Verify if the full preview of merging the pasted Template with another Template is displayed under the mouse cursor, and click
     */
     const xOffsetFromCenter = 40;
-    await openStructureLibrary(page);
-    await page.getByRole('tab', { name: 'Template Library' }).click();
-    await page.getByRole('button', { name: 'Aromatics' }).click();
-    await selectUserTemplate(TemplateLibrary.Naphtalene, page);
+    await BottomToolbar(page).StructureLibrary();
+    await StructureLibraryDialog(page).addTemplate(
+      TemplateLibraryTab.Aromatics,
+      AromaticsTemplate.Naphtalene,
+    );
     await moveMouseToTheMiddleOfTheScreen(page);
     await clickOnTheCanvas(page, xOffsetFromCenter, 0);
     await takePageScreenshot(page);
@@ -709,9 +720,10 @@ test.describe('Open Ketcher', () => {
     await clickInTheMiddleOfTheScreen(page);
     await takePageScreenshot(page);
     await BottomToolbar(page).StructureLibrary();
-    await page.getByRole('tab', { name: 'Template Library' }).click();
-    await page.getByRole('button', { name: 'Aromatics' }).click();
-    await selectUserTemplate(TemplateLibrary.Azulene, page);
+    await StructureLibraryDialog(page).addTemplate(
+      TemplateLibraryTab.Aromatics,
+      AromaticsTemplate.Azulene,
+    );
     const anyAtom = 2;
     await moveOnAtom(page, 'C', anyAtom);
     await takePageScreenshot(page);

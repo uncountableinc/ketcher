@@ -64,6 +64,7 @@ export const EditorEvents = () => {
 
   const handleMonomersLibraryUpdate = useCallback(() => {
     dispatch(loadMonomerLibrary(editor?.monomersLibrary));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editor]);
 
   useEffect(() => {
@@ -120,13 +121,8 @@ export const EditorEvents = () => {
     };
   }, [editor]);
 
-  /*
-   * Redux freezes payload object which lead to the issues on changing MonomerItem properties after showing preview
-   * TODO: Ideally perform a deep clone but now it leads to the error when cloning Struct class
-   */
   const dispatchShowPreview = useCallback(
-    (payload) =>
-      dispatch(showPreview({ ...payload, monomer: { ...payload.monomer } })),
+    (payload) => dispatch(showPreview(payload)),
     [dispatch],
   );
 
@@ -322,6 +318,8 @@ export const EditorEvents = () => {
   useEffect(() => {
     editor?.events.mouseOverMonomer.add(handleOpenPreview);
     editor?.events.mouseLeaveMonomer.add(handleClosePreview);
+    editor?.events.mouseLeaveAttachmentPoint.add(handleClosePreview);
+    editor?.events.mouseDownAttachmentPoint.add(handleClosePreview);
     editor?.events.mouseOverSequenceItem.add(handleOpenPreview);
     editor?.events.mouseLeaveSequenceItem.add(handleClosePreview);
     editor?.events.mouseOverPolymerBond.add(handleOpenPreview);
@@ -335,6 +333,7 @@ export const EditorEvents = () => {
       }
     };
     editor?.events.mouseOnMoveMonomer.add(onMoveHandler);
+    editor?.events.mouseMoveAttachmentPoint.add(onMoveHandler);
     editor?.events.mouseOnMoveSequenceItem.add(onMoveHandler);
     editor?.events.mouseOnMovePolymerBond.add(onMoveHandler);
 
@@ -343,12 +342,14 @@ export const EditorEvents = () => {
     return () => {
       editor?.events.mouseOverMonomer.remove(handleOpenPreview);
       editor?.events.mouseLeaveMonomer.remove(handleClosePreview);
+      editor?.events.mouseLeaveAttachmentPoint.remove(handleClosePreview);
       editor?.events.mouseOverSequenceItem.remove(handleOpenPreview);
       editor?.events.mouseLeaveSequenceItem.remove(handleClosePreview);
       editor?.events.mouseOverPolymerBond.remove(handleOpenPreview);
       editor?.events.mouseLeavePolymerBond.remove(handleClosePreview);
 
       editor?.events.mouseOnMoveMonomer.remove(onMoveHandler);
+      editor?.events.mouseMoveAttachmentPoint.remove(onMoveHandler);
       editor?.events.mouseOnMoveSequenceItem.remove(onMoveHandler);
       editor?.events.mouseOnMovePolymerBond.remove(onMoveHandler);
 

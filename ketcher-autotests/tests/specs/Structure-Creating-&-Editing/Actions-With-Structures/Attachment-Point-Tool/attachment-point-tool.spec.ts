@@ -4,7 +4,6 @@ import {
   takeEditorScreenshot,
   openFileAndAddToCanvas,
   dragMouseTo,
-  resetCurrentTool,
   clickOnAtom,
   screenshotBetweenUndoRedo,
   waitForPageInit,
@@ -12,7 +11,9 @@ import {
   openFileAndAddToCanvasAsNewProject,
   RxnFileFormat,
   MolFileFormat,
+  deleteByKeyboard,
 } from '@utils';
+import { resetCurrentTool } from '@utils/canvas/tools/resetCurrentTool';
 import {
   copyAndPaste,
   cutAndPaste,
@@ -468,7 +469,7 @@ test.describe('Attachment Point Tool', () => {
     await takeEditorScreenshot(page);
   });
 
-  test.fail('Save as *.rxn file V3000', async ({ page }) => {
+  test('Save as *.rxn file V3000', async ({ page }) => {
     /*
      * IMPORTANT: Test fails because we have bug https://github.com/epam/Indigo/issues/2490
      * Test case: EPMLSOPKET-1652
@@ -615,11 +616,11 @@ test.describe('Attachment Point Tool', () => {
     await CommonLeftToolbar(page).selectEraseTool();
     point = await getAtomByIndex(page, { label: 'N' }, 0);
     await page.mouse.move(point.x, point.y);
-    await page.keyboard.press('Delete');
+    await deleteByKeyboard(page);
 
     point = await getAtomByIndex(page, { label: 'L#' }, 0);
     await page.mouse.move(point.x, point.y);
-    await page.keyboard.press('Delete');
+    await deleteByKeyboard(page);
 
     await takeEditorScreenshot(page);
 

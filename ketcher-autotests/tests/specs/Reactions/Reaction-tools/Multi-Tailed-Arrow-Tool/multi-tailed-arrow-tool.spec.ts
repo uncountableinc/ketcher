@@ -13,7 +13,6 @@ import {
   openFileAndAddToCanvasAsNewProject,
   openImageAndAddToCanvas,
   pasteFromClipboardByKeyboard,
-  pressButton,
   screenshotBetweenUndoRedo,
   selectPartOfMolecules,
   takeEditorScreenshot,
@@ -26,6 +25,7 @@ import {
   readFileContent,
   copyContentToClipboard,
   getCachedBodyCenter,
+  deleteByKeyboard,
 } from '@utils';
 import {
   copyAndPaste,
@@ -48,12 +48,16 @@ import { IndigoFunctionsToolbar } from '@tests/pages/molecules/IndigoFunctionsTo
 import { ArrowType } from '@tests/pages/constants/arrowSelectionTool/Constants';
 import { LeftToolbar } from '@tests/pages/molecules/LeftToolbar';
 import {
-  openStructureLibrary,
+  BottomToolbar,
   selectRingButton,
 } from '@tests/pages/molecules/BottomToolbar';
 import { RingButton } from '@tests/pages/constants/ringButton/Constants';
 import { ContextMenu } from '@tests/pages/common/ContextMenu';
 import { MultiTailedArrowOption } from '@tests/pages/constants/contextMenu/Constants';
+import { CalculatedValuesDialog } from '@tests/pages/molecules/canvas/CalculatedValuesDialog';
+import { StructureCheckDialog } from '@tests/pages/molecules/canvas/StructureCheckDialog';
+import { StructureLibraryDialog } from '@tests/pages/molecules/canvas/StructureLibraryDialog';
+import { TemplateLibraryTab } from '@tests/pages/constants/structureLibraryDialog/Constants';
 
 async function saveToTemplates(page: Page) {
   const saveToTemplatesButton = SaveStructureDialog(page).saveToTemplatesButton;
@@ -64,14 +68,6 @@ async function saveToTemplates(page: Page) {
     .getByPlaceholder('template')
     .fill('multi_tail_arrows_with_elements');
   await page.getByRole('button', { name: 'Save', exact: true }).click();
-}
-
-async function selectFromSaveToTemplates(page: Page) {
-  await page.getByRole('button', { name: 'User Templates (1)' }).click();
-  await page
-    .getByPlaceholder('Search by elements...')
-    .fill('multi_tail_arrows_with_elements');
-  await page.getByPlaceholder('Search by elements...').press('Enter');
 }
 
 async function setupElementsAndModifyMultiTailArrow(page: Page) {
@@ -629,7 +625,7 @@ test.describe('Multi-Tailed Arrow Tool', () => {
     await CommonTopLeftToolbar(page).undo();
     await takeEditorScreenshot(page);
     await selectAllStructuresOnCanvas(page);
-    await page.keyboard.press('Delete');
+    await deleteByKeyboard(page);
     await takeEditorScreenshot(page);
     await CommonTopLeftToolbar(page).undo();
     await takeEditorScreenshot(page);
@@ -655,7 +651,7 @@ test.describe('Multi-Tailed Arrow Tool', () => {
     await CommonTopLeftToolbar(page).undo();
     await takeEditorScreenshot(page);
     await selectAllStructuresOnCanvas(page);
-    await page.keyboard.press('Delete');
+    await deleteByKeyboard(page);
     await takeEditorScreenshot(page);
     await CommonTopLeftToolbar(page).undo();
     await takeEditorScreenshot(page);
@@ -954,8 +950,13 @@ test.describe('Multi-Tailed Arrow Tool', () => {
     await saveToTemplates(page);
     await CommonTopLeftToolbar(page).clearCanvas();
 
-    await openStructureLibrary(page);
-    await selectFromSaveToTemplates(page);
+    await BottomToolbar(page).StructureLibrary();
+    await StructureLibraryDialog(page).openSection(
+      TemplateLibraryTab.UserTemplate,
+    );
+    await StructureLibraryDialog(page).setSearchValue(
+      'multi_tail_arrows_with_elements',
+    );
     await takeEditorScreenshot(page);
     await page.getByText('multi_tail_arrows_with_elements').click();
     await clickInTheMiddleOfTheScreen(page);
@@ -3732,9 +3733,9 @@ test.describe('Multi-Tailed Arrow Tool', () => {
     await takeEditorScreenshot(page);
     await IndigoFunctionsToolbar(page).checkStructure();
     await takeEditorScreenshot(page, {
-      mask: [page.locator('[class*="Check-module_checkInfo"] > span')],
+      mask: [StructureCheckDialog(page).lastCheckInfo],
     });
-    await pressButton(page, 'Cancel');
+    await StructureCheckDialog(page).cancel();
     await takeEditorScreenshot(page);
     await verifyFileExport(
       page,
@@ -3769,7 +3770,7 @@ test.describe('Multi-Tailed Arrow Tool', () => {
     await takeEditorScreenshot(page);
     await IndigoFunctionsToolbar(page).calculatedValues();
     await takeEditorScreenshot(page);
-    await pressButton(page, 'Close');
+    await CalculatedValuesDialog(page).closeByX();
     await takeEditorScreenshot(page);
     await verifyFileExport(
       page,

@@ -42,6 +42,7 @@ import { tfx } from 'utilities';
 import {
   RenderOptions,
   RenderOptionStyles,
+  UsageInMacromolecule,
 } from 'application/render/render.types';
 import { MonomerMicromolecule } from 'domain/entities/monomerMicromolecule';
 import { attachmentPointNames } from 'domain/types';
@@ -151,7 +152,7 @@ class ReAtom extends ReObject {
   public makeMonomerAttachmentPointHighlightPlate(render: Render) {
     const restruct = render.ctab;
     const struct = restruct.molecule;
-    const aid = struct.atoms.keyOf(this.a) || undefined;
+    const aid = struct.atoms.keyOf(this.a) ?? undefined;
     const sgroup = struct.getGroupFromAtomId(aid);
 
     if (!(sgroup instanceof MonomerMicromolecule)) {
@@ -232,7 +233,6 @@ class ReAtom extends ReObject {
         atom,
         sgroups,
         functionalGroups,
-        true,
       ) || Atom.isHiddenLeavingGroupAtom(struct, atomId)
     );
   };
@@ -350,16 +350,11 @@ class ReAtom extends ReObject {
     const ps = Scale.modelToCanvas(this.a.pp, render.options);
     const sgroup = restruct.molecule.getGroupFromAtomId(aid);
 
-    if (Atom.isHiddenLeavingGroupAtom(struct, aid)) {
-      return;
-    }
-
     if (
       FunctionalGroup.isAtomInContractedFunctionalGroup(
         atom,
         sgroups,
         functionalGroups,
-        false,
       )
     ) {
       if (sgroup == null) {
@@ -375,17 +370,19 @@ class ReAtom extends ReObject {
           options.font.indexOf(' ') + 1,
           options.font.length,
         );
+        const sGroupName =
+          sgroup.data.name || SUPERATOM_CLASS_TEXT[sgroup.data.class] || '';
         const path = render.paper
-          .text(
-            position.x,
-            position.y,
-            sgroup.data.name || SUPERATOM_CLASS_TEXT[sgroup.data.class] || '',
-          )
+          .text(position.x, position.y, sGroupName)
           .attr({
             'font-weight': '700',
             'font-size': options.fontszInPx,
             'font-family': fontFamily,
           });
+
+        path.node?.setAttribute('data-sgroup-id', sgroup.id);
+        path.node?.setAttribute('data-sgroup-name', sGroupName);
+        path.node?.setAttribute('data-sgroup-type', sgroup.type);
 
         restruct.addReObjectPath(
           LayerMap.data,
@@ -395,6 +392,10 @@ class ReAtom extends ReObject {
           true,
         );
       }
+      return;
+    }
+
+    if (Atom.isHiddenLeavingGroupAtom(struct, aid)) {
       return;
     }
 
@@ -497,11 +498,24 @@ class ReAtom extends ReObject {
           true,
         );
       }
+      const isPreviewMode =
+        options.usageInMacromolecule === UsageInMacromolecule.MonomerPreview ||
+        options.usageInMacromolecule === UsageInMacromolecule.BondPreview ||
+        options.usageInMacromolecule ===
+          UsageInMacromolecule.MonomerConnectionsModal ||
+        (options.usageInMacromolecule === undefined && !sgroup);
+
+      const isLeavingGroupAtom =
+        this.a.rglabel !== null && this.a.rglabel !== '0';
+
+      const shouldHideHydrogenInPreview = isPreviewMode && isLeavingGroupAtom;
+
       if (
         !isHydrogen &&
         !this.a.alias &&
         implh > 0 &&
-        displayHydrogen(this, options.showHydrogenLabels)
+        displayHydrogen(this, options.showHydrogenLabels) &&
+        !shouldHideHydrogenInPreview
       ) {
         const data = showHydrogen(this, render, implh, {
           hydrogen: {},
@@ -575,6 +589,34 @@ class ReAtom extends ReObject {
           0.3 * label.rbb.height,
         );
         /* eslint-enable no-mixed-operators */
+      }
+    }
+
+    if (render.monomerCreationRenderState) {
+      const { attachmentPoints } = render.monomerCreationRenderState;
+      const restruct = render.ctab;
+      const struct = restruct.molecule;
+      const aid = struct.atoms.keyOf(this.a);
+
+      if (aid !== null) {
+        const attachmentAtoms = Array.from(attachmentPoints.keys());
+        const leavingGroups = Array.from(attachmentPoints.values());
+
+        let style: RenderOptionStyles | undefined;
+        if (attachmentAtoms.includes(aid)) {
+          style = { fill: 'none', stroke: '#4da3f8', 'stroke-width': '2px' };
+        } else if (leavingGroups.includes(aid)) {
+          style = {
+            fill: '#fff8c5',
+            stroke: '#f8dc8f',
+            'stroke-width': '2px',
+          };
+        }
+
+        if (style) {
+          const path = this.makeHighlightePlate(restruct, style, -4);
+          restruct.addReObjectPath(LayerMap.atom, this.visel, path);
+        }
       }
     }
 
@@ -1052,8 +1094,9 @@ function buildLabel(
   } = options;
   // eslint-disable-line max-statements
   const label: any = {
-    text: getLabelText(atom.a, atomId, sgroup, renderAsCarbon),
+    text: getLabelText(atom.a, atomId, sgroup, options, renderAsCarbon),
   };
+
   let tooltip: string | null = null;
   if (!label.text) {
     label.text = 'R#';
@@ -1089,6 +1132,12 @@ function buildLabel(
   }
 
   const { previewOpacity } = options;
+
+  // not properly centered otherwise
+  if (label.text === '*') {
+    ps.x = ps.x - 1;
+    ps.y = ps.y + 3;
+  }
 
   label.path = paper.text(ps.x, ps.y, label.text).attr({
     font,
@@ -1147,6 +1196,7 @@ function getLabelText(
   atom,
   atomId: number,
   sgroup?: SGroup,
+  options?: any,
   renderAsCarbon = false,
 ) {
   if (renderAsCarbon) {
@@ -1161,7 +1211,10 @@ function getLabelText(
       });
 
     if (attachmentPoint && attachmentPoint.attachmentPointNumber) {
-      return getAttachmentPointLabel(attachmentPoint.attachmentPointNumber);
+      const result = getAttachmentPointLabel(
+        attachmentPoint.attachmentPointNumber,
+      );
+      return result;
     }
   }
 
@@ -1171,26 +1224,33 @@ function getLabelText(
 
   if (atom.alias) return atom.alias;
 
-  if (atom.label === 'R#' && atom.rglabel !== null) {
-    let text = '';
+  if (
+    atom.label &&
+    atom.rglabel !== null &&
+    sgroup instanceof MonomerMicromolecule
+  ) {
+    const isExpandMode = options?.usageInMacromolecule === undefined && sgroup;
 
+    if (isExpandMode) {
+      return atom.label;
+    }
+  }
+
+  if (atom.label && atom.rglabel !== null) {
+    let text = '';
     for (let rgi = 0; rgi < 32; rgi++) {
       if (atom.rglabel & (1 << rgi)) {
-        // eslint-disable-line max-depth
         text += 'R' + (rgi + 1).toString();
       }
     }
-
     if (
       sgroup instanceof MonomerMicromolecule &&
       Atom.isSuperatomLeavingGroupAtom(sgroup, atomId)
     ) {
       text = sgroup?.monomer?.monomerItem?.props?.MonomerCaps?.[text] || text;
     }
-
     return text;
   }
-
   return atom.label;
 }
 

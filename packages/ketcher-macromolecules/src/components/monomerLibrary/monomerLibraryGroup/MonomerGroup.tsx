@@ -25,13 +25,14 @@ import {
   MonomerOrAmbiguousType,
 } from 'ketcher-core';
 import { useAppDispatch, useAppSelector } from 'hooks';
-import { selectEditor, selectTool, showPreview } from 'state/common';
+import { selectEditor, showPreview } from 'state/common';
 import { selectGroupItemValidations } from 'state/rna-builder';
 import { PreviewStyle, PreviewType } from 'state';
 import {
   calculateAmbiguousMonomerPreviewTop,
   calculateMonomerPreviewTop,
 } from 'ketcher-react';
+import { needSkipPreviewForElement } from 'components/preview/helpers';
 
 const MonomerGroup = ({
   items,
@@ -87,6 +88,11 @@ const MonomerGroup = ({
     e: React.MouseEvent<HTMLDivElement, MouseEvent>,
   ) => {
     handleItemMouseLeave();
+
+    if (needSkipPreviewForElement(e.target as HTMLElement)) {
+      return;
+    }
+
     const cardCoordinates = e.currentTarget.getBoundingClientRect();
     let style: PreviewStyle;
     let previewType: PreviewType;
@@ -115,8 +121,6 @@ const MonomerGroup = ({
   };
 
   const selectMonomer = (monomer: MonomerOrAmbiguousType) => {
-    dispatch(selectTool('monomer'));
-
     if (['FAVORITES', 'PEPTIDE', 'CHEM'].includes(libraryName ?? '')) {
       editor?.events.selectMonomer.dispatch(monomer);
     }

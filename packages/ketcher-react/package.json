@@ -1,6 +1,6 @@
 {
   "name": "ketcher-react",
-  "version": "3.6.0-unc53",
+  "version": "3.7.0",
   "description": "Web-based molecule sketcher",
   "license": "Apache-2.0",
   "homepage": "http://lifescience.opensource.epam.com/ketcher",
@@ -50,6 +50,7 @@
     "@emotion/react": "^11.7.1",
     "@emotion/styled": "^11.6.0",
     "@mui/material": "^5.2.4",
+    "ajv": "^8.10.0",
     "cfb": "^1.2.2",
     "clsx": "^1.1.1",
     "draft-js": "^0.11.7",
@@ -59,11 +60,9 @@
     "font-face-observer": "^1.0.0",
     "hoist-non-react-statics": "^3.3.2",
     "intersection-observer": "^0.12.2",
-    "jsonschema": "^1.4.1",
     "ketcher-core": "*",
     "lodash": "^4.17.21",
-    "miew-react": "^0.11.0",
-    "native-url": "^0.3.4",
+    "miew-react": "^1.0.0",
     "react-colorful": "^5.4.0",
     "react-contexify": "^6.0.0",
     "react-device-detect": "^2.2.2",
@@ -120,9 +119,6 @@
     "jest": "^27.4.5",
     "less": "^3.12.2",
     "npm-run-all": "^4.1.5",
-    "postcss": "^8.2.10",
-    "postcss-import": "^16.1.1",
-    "postcss-safe-parser": "^6.0.0",
     "prettier": "^2.5.1",
     "rollup": "^2.79.2",
     "rollup-plugin-cleanup": "^3.2.1",
@@ -146,8 +142,7 @@
     },
     "./dist/index.css": {
       "import": "./dist/index.css",
-      "require": "./dist/index.css",
-      "default": "./dist/index.css"
+      "require": "./dist/index.css"
     }
   }
 }

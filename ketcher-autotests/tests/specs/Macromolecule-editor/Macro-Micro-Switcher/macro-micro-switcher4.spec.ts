@@ -13,11 +13,6 @@ import {
   moveMouseAway,
   MolFileFormat,
 } from '@utils';
-import {
-  selectFlexLayoutModeTool,
-  selectSequenceLayoutModeTool,
-  selectSnakeLayoutModeTool,
-} from '@utils/canvas/tools/helpers';
 import { selectAllStructuresOnCanvas } from '@utils/canvas/selectSelection';
 import {
   BondType,
@@ -37,6 +32,8 @@ import { SaveStructureDialog } from '@tests/pages/common/SaveStructureDialog';
 import { CommonTopLeftToolbar } from '@tests/pages/common/CommonTopLeftToolbar';
 import { CommonTopRightToolbar } from '@tests/pages/common/CommonTopRightToolbar';
 import { Library } from '@tests/pages/macromolecules/Library';
+import { MacromoleculesTopToolbar } from '@tests/pages/macromolecules/MacromoleculesTopToolbar';
+import { LayoutMode } from '@tests/pages/constants/macromoleculesTopToolbar/Constants';
 
 let page: Page;
 
@@ -77,7 +74,7 @@ test(`Verify that bond lines between atoms do not overlap in any angle in macro 
 
   // Test should be skipped if related bug exists
   test.fixme(
-    true === true,
+    true,
     `That test results are wrong because of https://github.com/epam/ketcher/issues/5961 issue(s).`,
   );
 });
@@ -315,6 +312,9 @@ test(`Verify that all 16 bond types can't be saved correctly in macromolecules m
     MacromoleculesFileFormatType.Sequence3LetterCode,
   );
   await takeEditorScreenshot(page);
+
+  await closeErrorMessage(page);
+  await SaveStructureDialog(page).cancel();
 });
 
 test(`Verify that all 16 bond types can't be saved correctly in macromolecules mode into IDT`, async () => {
@@ -567,13 +567,15 @@ test(`Verify that switching between different visualization modes (e.g., flex, s
     'KET/Micro-Macro-Switcher/Switching between different visualization modes.ket',
   );
 
-  await selectSnakeLayoutModeTool(page);
+  await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Snake);
   await takeEditorScreenshot(page);
 
-  await selectSequenceLayoutModeTool(page);
+  await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+    LayoutMode.Sequence,
+  );
   await takeEditorScreenshot(page);
 
-  await selectFlexLayoutModeTool(page);
+  await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Flex);
 });
 
 test(`Verify the behavior when bonds are dragged and moved in macromolecules mode (e.g., ensuring they stay connected)`, async () => {
@@ -685,19 +687,21 @@ test(`Check that when entering macromolecules mode all standard stereo-labels ar
     page,
     'KET/Micro-Macro-Switcher/Stereo-labels/All types of stereo-labels.ket',
   );
-  await selectFlexLayoutModeTool(page);
+  await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Flex);
   await takeEditorScreenshot(page, {
     hideMonomerPreview: true,
     hideMacromoleculeEditorScrollBars: true,
   });
 
-  await selectSnakeLayoutModeTool(page);
+  await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Snake);
   await takeEditorScreenshot(page, {
     hideMonomerPreview: true,
     hideMacromoleculeEditorScrollBars: true,
   });
 
-  await selectSequenceLayoutModeTool(page);
+  await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+    LayoutMode.Sequence,
+  );
   await takeEditorScreenshot(page, {
     hideMonomerPreview: true,
     hideMacromoleculeEditorScrollBars: true,
@@ -725,21 +729,23 @@ test(`Check that visible stereo-labels in macromolecules mode get selected with 
     page,
     'KET/Micro-Macro-Switcher/Stereo-labels/All types of stereo-labels.ket',
   );
-  await selectFlexLayoutModeTool(page);
+  await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Flex);
   await selectAllStructuresOnCanvas(page);
   await takeEditorScreenshot(page, {
     hideMonomerPreview: true,
     hideMacromoleculeEditorScrollBars: true,
   });
 
-  await selectSnakeLayoutModeTool(page);
+  await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Snake);
   await selectAllStructuresOnCanvas(page);
   await takeEditorScreenshot(page, {
     hideMonomerPreview: true,
     hideMacromoleculeEditorScrollBars: true,
   });
 
-  await selectSequenceLayoutModeTool(page);
+  await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+    LayoutMode.Sequence,
+  );
   await selectAllStructuresOnCanvas(page);
   await takeEditorScreenshot(page, {
     hideMonomerPreview: true,

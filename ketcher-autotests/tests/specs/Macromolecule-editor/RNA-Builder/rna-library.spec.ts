@@ -18,11 +18,8 @@ import {
   takeTopToolbarScreenshot,
   clickOnCanvas,
   MonomerType,
+  Monomer,
 } from '@utils';
-import {
-  selectSnakeLayoutModeTool,
-  selectSequenceLayoutModeTool,
-} from '@utils/canvas/tools/helpers';
 import { clearLocalStorage, pageReload } from '@utils/common/helpers';
 import {
   FileType,
@@ -50,6 +47,8 @@ import {
 } from '@tests/pages/constants/library/Constants';
 import { ContextMenu } from '@tests/pages/common/ContextMenu';
 import { LibraryPresetOption } from '@tests/pages/constants/contextMenu/Constants';
+import { MacromoleculesTopToolbar } from '@tests/pages/macromolecules/MacromoleculesTopToolbar';
+import { LayoutMode } from '@tests/pages/constants/macromoleculesTopToolbar/Constants';
 
 async function drawThreeMonomers(page: Page) {
   const x1 = 301;
@@ -58,11 +57,18 @@ async function drawThreeMonomers(page: Page) {
   const y2 = 504;
   const x3 = 705;
   const y3 = 106;
-  await Library(page).selectMonomer(Sugars._3A6);
-  await clickOnCanvas(page, x1, y1);
-  await Library(page).selectMonomer(Bases.baA);
-  await clickOnCanvas(page, x2, y2);
-  await Library(page).selectMonomer(Phosphates.P);
+  await Library(page).dragMonomerOnCanvas(Sugars._3A6, {
+    x: x1,
+    y: y1,
+  });
+  await Library(page).dragMonomerOnCanvas(Bases.baA, {
+    x: x2,
+    y: y2,
+  });
+  await Library(page).dragMonomerOnCanvas(Phosphates.P, {
+    x: x3,
+    y: y3,
+  });
   await clickOnCanvas(page, x3, y3);
 }
 
@@ -89,10 +95,15 @@ async function drawBasePhosphate(page: Page) {
   const base = getMonomerLocator(page, Bases.baA).nth(0);
   const phosphate = getMonomerLocator(page, Phosphates.P).nth(0);
 
-  await Library(page).selectMonomer(Bases.baA);
-  await clickInTheMiddleOfTheScreen(page);
-  await Library(page).selectMonomer(Phosphates.P);
-  await clickOnCanvas(page, x, y);
+  await Library(page).dragMonomerOnCanvas(Bases.baA, {
+    x: 0,
+    y: 0,
+    fromCenter: true,
+  });
+  await Library(page).dragMonomerOnCanvas(Phosphates.P, {
+    x,
+    y,
+  });
   await CommonLeftToolbar(page).selectBondTool(MacroBondType.Single);
   await base.hover();
   await page.mouse.down();
@@ -108,10 +119,15 @@ async function drawSugarPhosphate(page: Page) {
   const sugar = getMonomerLocator(page, Sugars._3A6).nth(0);
   const phosphate = getMonomerLocator(page, Phosphates.P).nth(0);
 
-  await Library(page).selectMonomer(Sugars._3A6);
-  await clickInTheMiddleOfTheScreen(page);
-  await Library(page).selectMonomer(Phosphates.P);
-  await clickOnCanvas(page, x, y);
+  await Library(page).dragMonomerOnCanvas(Sugars._3A6, {
+    x: 0,
+    y: 0,
+    fromCenter: true,
+  });
+  await Library(page).dragMonomerOnCanvas(Phosphates.P, {
+    x,
+    y,
+  });
   await CommonLeftToolbar(page).selectBondTool(MacroBondType.Single);
   await sugar.hover();
   await page.mouse.down();
@@ -124,10 +140,15 @@ async function drawSugarBase(page: Page) {
   const y = 350;
   const sugar = getMonomerLocator(page, Sugars._3A6).nth(0);
   const base = getMonomerLocator(page, Bases.baA).nth(0);
-  await Library(page).selectMonomer(Sugars._3A6);
-  await clickInTheMiddleOfTheScreen(page);
-  await Library(page).selectMonomer(Bases.baA);
-  await clickOnCanvas(page, x, y);
+  await Library(page).dragMonomerOnCanvas(Sugars._3A6, {
+    x: 0,
+    y: 0,
+    fromCenter: true,
+  });
+  await Library(page).dragMonomerOnCanvas(Bases.baA, {
+    x,
+    y,
+  });
   await CommonLeftToolbar(page).selectBondTool(MacroBondType.Single);
   await sugar.hover();
   await page.mouse.down();
@@ -722,8 +743,17 @@ test.describe('RNA Library', () => {
     await Library(page).rnaBuilder.expand();
     await Library(page).selectMonomers([Sugars._3A6, Bases.baA]);
     await Library(page).rnaBuilder.addToPresets();
-    await Library(page).selectCustomPreset('3A6(baA)_baA_3A6_.');
-    await clickInTheMiddleOfTheScreen(page);
+    await Library(page).dragMonomerOnCanvas(
+      {
+        alias: '3A6(baA)_baA_3A6_.',
+        testId: '3A6(baA)_baA_3A6_.',
+      } as Monomer,
+      {
+        x: 0,
+        y: 0,
+        fromCenter: true,
+      },
+    );
     await CommonLeftToolbar(page).selectAreaSelectionTool(
       SelectionToolType.Rectangle,
     );
@@ -742,8 +772,17 @@ test.describe('RNA Library', () => {
     await Library(page).rnaBuilder.expand();
     await Library(page).selectMonomers([Sugars._3A6, Phosphates.bP]);
     await Library(page).rnaBuilder.addToPresets();
-    await Library(page).selectCustomPreset('3A6()bP_._3A6_bP');
-    await clickInTheMiddleOfTheScreen(page);
+    await Library(page).dragMonomerOnCanvas(
+      {
+        alias: '3A6()bP_._3A6_bP',
+        testId: '3A6()bP_._3A6_bP',
+      } as Monomer,
+      {
+        x: 0,
+        y: 0,
+        fromCenter: true,
+      },
+    );
     await CommonLeftToolbar(page).selectAreaSelectionTool(
       SelectionToolType.Rectangle,
     );
@@ -900,8 +939,11 @@ test.describe('RNA Library', () => {
       const anyPointX = 300;
       const anyPointY = 500;
       await page.getByTestId(`summary-${molecule.type}`).click();
-      await page.getByTestId(molecule.description.testId).click();
-      await clickInTheMiddleOfTheScreen(page);
+      await Library(page).dragMonomerOnCanvas(molecule.description, {
+        x: -10,
+        y: -10,
+        fromCenter: true,
+      });
       await CommonLeftToolbar(page).selectAreaSelectionTool(
         SelectionToolType.Rectangle,
       );
@@ -1058,9 +1100,12 @@ test.describe('RNA Library', () => {
 
       const x = 200;
       const y = 200;
-      await Library(page).selectMonomer(monomer);
+      await Library(page).dragMonomerOnCanvas(monomer, {
+        x: 0,
+        y: 0,
+        fromCenter: true,
+      });
 
-      await clickInTheMiddleOfTheScreen(page);
       await page.keyboard.press('Escape');
       await Library(page).openRNASection(RNASection.Nucleotides);
       await clickInTheMiddleOfTheScreen(page);
@@ -1092,10 +1137,12 @@ test.describe('RNA Library', () => {
       'KET/chain-with-unsplit-nucleotides.ket',
     );
     await takeEditorScreenshot(page);
-    await selectSnakeLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Snake);
     await moveMouseAway(page);
     await takeEditorScreenshot(page, { hideMonomerPreview: true });
-    await selectSequenceLayoutModeTool(page);
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+      LayoutMode.Sequence,
+    );
     await takeEditorScreenshot(page);
     await CommonTopRightToolbar(page).turnOnMicromoleculesEditor();
     await takeEditorScreenshot(page);
@@ -1158,8 +1205,10 @@ test.describe('RNA Library', () => {
       const x = 300;
       const y = 500;
 
-      await Library(page).selectMonomer(monomer);
-      await clickOnCanvas(page, x, y);
+      await Library(page).dragMonomerOnCanvas(monomer, {
+        x,
+        y,
+      });
       await page.keyboard.press('Escape');
       await clickOnCanvas(page, x, y);
       await moveMouseAway(page);
@@ -1190,12 +1239,15 @@ test.describe('RNA Library', () => {
     */
       const x = 200;
       const y = 200;
-      await Library(page).selectMonomer(monomer);
-
-      await clickInTheMiddleOfTheScreen(page);
+      await Library(page).dragMonomerOnCanvas(monomer, {
+        x: -10,
+        y: -10,
+        fromCenter: true,
+      });
       await page.keyboard.press('Escape');
       await clickInTheMiddleOfTheScreen(page);
       await dragMouseTo(x, y, page);
+      await moveMouseAway(page);
       await takeEditorScreenshot(page);
       await CommonTopLeftToolbar(page).undo();
       await takeEditorScreenshot(page);
