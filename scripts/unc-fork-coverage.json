@@ -1,5 +1,5 @@
 {
-  "mergeBase": "f098bdc23071a0be0f3a4757d907b60f1fc27e75",
+  "mergeBase": "903e6aa4677d147c307327d74ba21bc881a77338",
   "forkRef": "master",
   "upstreamTag": "v3.18.0",
   "behaviours": [
@@ -414,18 +414,6 @@
         "packages/ketcher-react/src/script/ui/views/modal/components/process/Miew/Miew.tsx",
         "packages/ketcher-react/src/script/ui/views/modal/components/process/Recognize/Recognize.jsx",
         "packages/ketcher-react/src/script/ui/views/modal/components/toolbox/Atom/ElementNumber/ElementNumber.tsx"
-      ]
-    },
-    {
-      "key": "upstream-macro-drag-ghost",
-      "summary": "Position the drag ghost at the preset top-left corner (upstream #7371).",
-      "verdict": "drop",
-      "covered": "none: upstream carries this fix in v3.18.0, so the merge brings it",
-      "commits": ["718685197"],
-      "files": [
-        "packages/ketcher-macromolecules/src/components/DragGhost/DragGhost.tsx",
-        "packages/ketcher-macromolecules/src/components/DragGhost/svg/GhostRnaPreset.tsx",
-        "packages/ketcher-macromolecules/src/components/monomerLibrary/monomerLibraryItem/hooks/useLibraryItemDrag.tsx"
       ]
     },
     {
