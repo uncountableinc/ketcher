@@ -1,6 +1,5 @@
 {
   "mergeBase": "903e6aa4677d147c307327d74ba21bc881a77338",
-  "forkRef": "master",
   "upstreamTag": "v3.18.0",
   "behaviours": [
     {
