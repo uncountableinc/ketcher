@@ -92,7 +92,6 @@ import { BaseMonomerRenderer } from 'application/render';
 import { parseMonomersLibrary } from './helpers';
 import { TransientDrawingView } from 'application/render/renderers/TransientView/TransientDrawingView';
 import { SelectLayoutModeOperation } from 'application/editor/operations/polymerBond';
-import { SelectRectangle } from 'application/editor/tools/SelectRectangle';
 import { ReinitializeModeOperation } from 'application/editor/operations';
 import {
   getAminoAcidsToModify,
@@ -106,6 +105,7 @@ import { provideEditorSettings } from 'application/editor/editorSettings';
 import { debounce } from 'lodash';
 import { D3SvgElementSelection } from 'application/render/types';
 import { DrawingEntity } from 'domain/entities/DrawingEntity';
+import { SelectBase } from 'application/editor/tools/select/SelectBase';
 
 const SCROLL_SMOOTHNESS_IM_MS = 300;
 
@@ -191,15 +191,15 @@ export class CoreEditor {
   }
 
   public mode: BaseMode;
-  private previousModes: BaseMode[] = [];
+  private readonly previousModes: BaseMode[] = [];
   public sequenceTypeEnterMode = SequenceType.RNA;
-  private micromoleculesEditor: Editor;
+  private readonly micromoleculesEditor: Editor;
   private hotKeyEventHandler: (event: KeyboardEvent) => void = () => {};
   private copyEventHandler: (event: ClipboardEvent) => void = () => {};
   private pasteEventHandler: (event: ClipboardEvent) => void = () => {};
   private keydownEventHandler: (event: KeyboardEvent) => void = () => {};
   private contextMenuEventHandler: (event: MouseEvent) => void = () => {};
-  private cleanupsForDomEvents: Array<() => void> = [];
+  private readonly cleanupsForDomEvents: Array<() => void> = [];
 
   constructor({
     ketcherId,
@@ -218,7 +218,7 @@ export class CoreEditor {
     this.drawnStructuresWrapperElement = canvas.querySelector(
       drawnStructuresSelector,
     ) as SVGGElement;
-    this.mode = mode || new SequenceMode();
+    this.mode = mode ?? new SequenceMode();
     resetEditorEvents();
     this.events = editorEvents;
     this.setMonomersLibrary(monomersDataRaw);
@@ -261,13 +261,13 @@ export class CoreEditor {
     window.addEventListener('resize', this.handleWindowResize);
   }
 
-  private handleVisibilityChange = (): void => {
+  private readonly handleVisibilityChange = (): void => {
     if (document.hidden) {
       this.cancelActiveDrag();
     }
   };
 
-  private handleWindowBlur = (): void => {
+  private readonly handleWindowBlur = (): void => {
     this.cancelActiveDrag();
   };
 
@@ -277,7 +277,7 @@ export class CoreEditor {
   };
 
   private cancelActiveDrag(): void {
-    if (this.tool instanceof SelectRectangle) {
+    if (this.tool instanceof SelectBase) {
       this.tool.stopMovement();
     }
   }
@@ -326,7 +326,7 @@ export class CoreEditor {
 
       const newMonomerProps = newMonomer.props;
       const monomerIdToUse = `${KetTemplateType.MONOMER_TEMPLATE}-${
-        newMonomerProps.id || newMonomerProps.MonomerName
+        newMonomerProps.id ?? newMonomerProps.MonomerName
       }`;
 
       if (existingMonomerIndex !== -1) {
@@ -335,7 +335,7 @@ export class CoreEditor {
         const existingMonomerProps =
           this._monomersLibrary[existingMonomerIndex].props;
         const existingMonomerIdToUse = `${KetTemplateType.MONOMER_TEMPLATE}-
-          ${existingMonomerProps.id || existingMonomerProps.MonomerName}`;
+          ${existingMonomerProps.id ?? existingMonomerProps.MonomerName}`;
         // It's safe to use non-null assertion here and below because we already specified monomers library and parsed JSON before
         const existingMonomerRefIndex =
           // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
@@ -471,9 +471,19 @@ export class CoreEditor {
 
   private setupCopyPasteEvent() {
     this.copyEventHandler = (event: ClipboardEvent) => {
+      // Need to add some abstraction for events handling to have a single point where we can disable events for macro mode
+      if (this._type === EditorType.Micromolecules) {
+        return;
+      }
+
       this.mode.onCopy(event);
     };
     this.pasteEventHandler = (event: ClipboardEvent) => {
+      // Need to add some abstraction for events handling to have a single point where we can disable events for macro mode
+      if (this._type === EditorType.Micromolecules) {
+        return;
+      }
+
       this.mode.onPaste(event);
     };
     document.addEventListener('copy', this.copyEventHandler);
@@ -597,7 +607,6 @@ export class CoreEditor {
     );
     this.events.createAntisenseChain.add((isDnaAntisense: boolean) => {
       this.onCreateAntisenseChain(isDnaAntisense);
-      this.drawingEntitiesManager.unselectAllDrawingEntities();
     });
     this.events.copySelectedStructure.add(() => {
       this.mode.onCopy();
@@ -731,10 +740,10 @@ export class CoreEditor {
   }
 
   public getDataForAutochain() {
-    const selectedMonomersWithFreeR2 =
-      this.drawingEntitiesManager.selectedMonomers.filter((monomer) => {
-        return monomer.isAttachmentPointExistAndFree(AttachmentPointName.R2);
-      });
+    const selectedMonomers = this.drawingEntitiesManager.selectedMonomers;
+    const selectedMonomersWithFreeR2 = selectedMonomers.filter((monomer) => {
+      return monomer.isAttachmentPointExistAndFree(AttachmentPointName.R2);
+    });
     const selectedMonomerToConnect =
       selectedMonomersWithFreeR2.length === 1
         ? selectedMonomersWithFreeR2[0]
@@ -755,6 +764,7 @@ export class CoreEditor {
       selectedMonomerToConnect,
       newMonomerPosition,
       selectedMonomersWithFreeR2,
+      selectedMonomers,
     };
   }
 
@@ -860,6 +870,7 @@ export class CoreEditor {
       );
     }
 
+    modelChanges.setUndoOperationsByPriority();
     this.renderersContainer.update(modelChanges);
     history.update(modelChanges);
     this.calculateAndStoreNextAutochainPosition(monomersAddResult.lastMonomer);
@@ -986,7 +997,7 @@ export class CoreEditor {
     return {
       modelChanges,
       firstMonomer: sugar,
-      lastMonomer: phosphate || sugar,
+      lastMonomer: phosphate ?? sugar,
       drawingEntities: [
         ...monomers,
         ...(sugar.attachmentPointsToBonds.R2
@@ -1178,10 +1189,15 @@ export class CoreEditor {
   }
 
   private onCreateAntisenseChain(isDnaAntisense: boolean) {
+    const history = new EditorHistory(this);
     const modelChanges =
       this.drawingEntitiesManager.createAntisenseChain(isDnaAntisense);
-    const history = new EditorHistory(this);
 
+    modelChanges.merge(
+      this.drawingEntitiesManager.unselectAllDrawingEntities(),
+    );
+
+    modelChanges.setUndoOperationsByPriority();
     this.renderersContainer.update(modelChanges);
     history.update(modelChanges);
     this.scrollToTopLeftCorner();
@@ -1653,7 +1669,7 @@ export class CoreEditor {
     this.resetKetcherRootElementOffset();
     this.resetModeIfNeeded();
 
-    const struct = this.micromoleculesEditor?.struct() || new Struct();
+    const struct = this.micromoleculesEditor?.struct() ?? new Struct();
     const ketcher = ketcherProvider.getKetcher(this.ketcherId);
     const { modelChanges } =
       MacromoleculesConverter.convertStructToDrawingEntities(

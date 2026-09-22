@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test } from '@fixtures';
 import {
   takeEditorScreenshot,
   clickInTheMiddleOfTheScreen,
@@ -10,7 +10,6 @@ import {
   MolFileFormat,
   deleteByKeyboard,
 } from '@utils';
-import { resetCurrentTool } from '@utils/canvas/tools/resetCurrentTool';
 import {
   copyAndPaste,
   cutAndPaste,
@@ -48,7 +47,7 @@ test.describe('Open Ketcher', () => {
 
     await LeftToolbar(page).selectRGroupTool(RGroupType.RGroupFragment);
     const { x, y } = await getCoordinatesTopAtomOfBenzeneRing(page);
-    await clickOnCanvas(page, x, y);
+    await clickOnCanvas(page, x, y, { from: 'pageTopLeft' });
     await RGroupDialog(page).setRGroup(RGroup.R5);
     await takeEditorScreenshot(page);
   });
@@ -62,7 +61,7 @@ test.describe('Open Ketcher', () => {
 
     await LeftToolbar(page).selectRGroupTool(RGroupType.RGroupFragment);
     const { x, y } = await getCoordinatesTopAtomOfBenzeneRing(page);
-    await clickOnCanvas(page, x, y);
+    await clickOnCanvas(page, x, y, { from: 'pageTopLeft' });
     await takeEditorScreenshot(page);
   });
 
@@ -75,7 +74,7 @@ test.describe('Open Ketcher', () => {
 
     await LeftToolbar(page).selectRGroupTool(RGroupType.RGroupFragment);
     const { x, y } = await getCoordinatesTopAtomOfBenzeneRing(page);
-    await clickOnCanvas(page, x, y);
+    await clickOnCanvas(page, x, y, { from: 'pageTopLeft' });
     await RGroupDialog(page).setRGroup(RGroup.R5);
     await RGroupDialog(page).cancel();
     await takeEditorScreenshot(page);
@@ -90,7 +89,7 @@ test.describe('Open Ketcher', () => {
 
     await LeftToolbar(page).selectRGroupTool(RGroupType.RGroupFragment);
     const { x, y } = await getCoordinatesTopAtomOfBenzeneRing(page);
-    await clickOnCanvas(page, x, y);
+    await clickOnCanvas(page, x, y, { from: 'pageTopLeft' });
     await RGroupDialog(page).setRGroupFragment(RGroup.R5);
     await takeEditorScreenshot(page);
   });
@@ -106,10 +105,10 @@ test.describe('Open Ketcher', () => {
 
     await LeftToolbar(page).selectRGroupTool(RGroupType.RGroupFragment);
     const { x, y } = await getCoordinatesTopAtomOfBenzeneRing(page);
-    await clickOnCanvas(page, x, y);
+    await clickOnCanvas(page, x, y, { from: 'pageTopLeft' });
     await RGroupDialog(page).setRGroupFragment(RGroup.R5);
 
-    await clickOnCanvas(page, x, y);
+    await clickOnCanvas(page, x, y, { from: 'pageTopLeft' });
     await RGroupDialog(page).setRGroupFragment(RGroup.R8);
     await takeEditorScreenshot(page);
   });
@@ -123,7 +122,7 @@ test.describe('Open Ketcher', () => {
 
     await LeftToolbar(page).selectRGroupTool(RGroupType.RGroupFragment);
     const { x, y } = await getCoordinatesTopAtomOfBenzeneRing(page);
-    await clickOnCanvas(page, x, y);
+    await clickOnCanvas(page, x, y, { from: 'pageTopLeft' });
     await RGroupDialog(page).setRGroupFragment(RGroup.R5);
 
     await setAttachmentPoints(page, { x, y }, { primary: true });
@@ -147,7 +146,7 @@ test.describe('Open Ketcher', () => {
       { label: 'C', index: atomIndex },
       { primary: true },
     );
-    await resetCurrentTool(page);
+    await CommonLeftToolbar(page).selectAreaSelectionTool();
     await LeftToolbar(page).selectRGroupTool(RGroupType.RGroupFragment);
     await clickOnAtom(page, 'C', atomIndex);
     await page.getByText('R8').click();
@@ -222,7 +221,7 @@ test.describe('Open Ketcher', () => {
     );
     await page.keyboard.press('Control+r');
     await page.keyboard.press('Control+r');
-    await clickOnCanvas(page, x, y);
+    await clickOnCanvas(page, x, y, { from: 'pageTopLeft' });
     await page.getByText('R8').click();
     await RGroupDialog(page).setRGroupFragment(RGroup.R5);
     await takeEditorScreenshot(page);
@@ -297,7 +296,7 @@ test.describe('Open Ketcher', () => {
       'Molfiles-V2000/r1-several-structures.mol',
     );
     await copyAndPaste(page);
-    await clickOnCanvas(page, x, y);
+    await clickOnCanvas(page, x, y, { from: 'pageTopLeft' });
     await takeEditorScreenshot(page);
   });
 
@@ -312,7 +311,7 @@ test.describe('Open Ketcher', () => {
       'Molfiles-V2000/r1-several-structures.mol',
     );
     await cutAndPaste(page);
-    await clickOnCanvas(page, x, y);
+    await clickOnCanvas(page, x, y, { from: 'pageTopLeft' });
     await takeEditorScreenshot(page);
   });
 });

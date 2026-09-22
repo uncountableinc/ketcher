@@ -1,4 +1,4 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, Page } from '@fixtures';
 import { CommonLeftToolbar } from '@tests/pages/common/CommonLeftToolbar';
 import { ArrowType } from '@tests/pages/constants/arrowSelectionTool/Constants';
 import { Atom } from '@tests/pages/constants/atoms/atoms';
@@ -17,7 +17,6 @@ import {
   clickOnCanvas,
   pasteFromClipboardAndOpenAsNewProject,
 } from '@utils';
-import { resetCurrentTool } from '@utils/canvas/tools';
 import {
   FileType,
   verifyFileExport,
@@ -182,7 +181,7 @@ test.describe('load as fragment (Add to Canvas) srtuctures from files with diffe
     async function addAndMovePlusSymbol() {
       await LeftToolbar(page).reactionPlusTool();
       await clickInTheMiddleOfTheScreen(page);
-      await resetCurrentTool(page);
+      await CommonLeftToolbar(page).selectAreaSelectionTool();
 
       await moveMouseToTheMiddleOfTheScreen(page);
       await dragMouseTo(x - shiftForReactionPlus, y, page);
@@ -200,7 +199,7 @@ test.describe('load as fragment (Add to Canvas) srtuctures from files with diffe
     async function addArrowSymbol() {
       await LeftToolbar(page).selectArrowTool(ArrowType.ArrowOpenAngle);
       await clickInTheMiddleOfTheScreen(page);
-      await resetCurrentTool(page);
+      await CommonLeftToolbar(page).selectAreaSelectionTool();
     }
 
     async function addSecondHydrogen() {
@@ -209,6 +208,7 @@ test.describe('load as fragment (Add to Canvas) srtuctures from files with diffe
       await atomToolbar.clickAtom(Atom.Hydrogen);
       await clickOnCanvas(page, x + shiftForSecondHydrogen, y, {
         button: 'left',
+        from: 'pageTopLeft',
       });
     }
 

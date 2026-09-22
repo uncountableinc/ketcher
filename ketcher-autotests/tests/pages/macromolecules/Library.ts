@@ -1,5 +1,5 @@
-import { Page, Locator } from '@playwright/test';
-import { Monomer } from '@utils/types';
+import { Page, Locator, expect } from '@playwright/test';
+import { Monomer, PresetType } from '@utils/types';
 import {
   FavoriteStarSymbol,
   LibraryTab,
@@ -12,7 +12,8 @@ import {
 import { RNABuilder } from './library/RNABuilder';
 import { ContextMenu } from '../common/ContextMenu';
 import { waitForRender } from '@utils/common';
-import { getCoordinatesOfTheMiddleOfTheScreen } from '@utils';
+import { getCoordinatesOfTheMiddleOfTheCanvas, moveMouseAway } from '@utils';
+import { KETCHER_CANVAS } from '../constants/canvas/Constants';
 
 type PresetsSectionLocators = {
   newPresetsButton: Locator;
@@ -117,7 +118,7 @@ export const Library = (page: Page) => {
       }
     },
 
-    async clickOnMonomer(monomer: Monomer) {
+    async clickOnMonomer(monomer: Monomer | PresetType) {
       await getElement(monomer.testId).click();
     },
 
@@ -138,6 +139,7 @@ export const Library = (page: Page) => {
 
     async openTab(libraryTab: LibraryTab) {
       if (!(await this.isTabOpened(libraryTab))) {
+        await expect(getElement(libraryTab)).toBeInViewport();
         await getElement(libraryTab).click();
       }
     },
@@ -149,6 +151,7 @@ export const Library = (page: Page) => {
     async openRNASection(rnaSection: RNASection) {
       await this.openTab(LibraryTab.RNA);
       if (!(await this.isRNASectionOpened(rnaSection))) {
+        await expect(getElement(rnaSection)).toBeInViewport();
         await getElement(rnaSection).click();
       }
     },
@@ -167,7 +170,10 @@ export const Library = (page: Page) => {
      * Selects a monomer by navigating to the corresponding tab and clicking on the monomer.
      * If the monomer belongs to an RNA-specific accordion group, it expands the accordion item.
      */
-    async selectMonomer(monomer: Monomer, selectOnFavoritesTab = false) {
+    async selectMonomer(
+      monomer: Monomer | PresetType,
+      selectOnFavoritesTab = false,
+    ) {
       const location = monomer.monomerType
         ? monomerLibraryTypeLocation[monomer.monomerType]
         : rnaTabPresetsSection;
@@ -195,7 +201,10 @@ export const Library = (page: Page) => {
      * Hovers a monomer by navigating to the corresponding tab and clicking on the monomer.
      * If the monomer belongs to an RNA-specific accordion group, it expands the accordion item.
      */
-    async hoverMonomer(monomer: Monomer, selectOnFavoritesTab = false) {
+    async hoverMonomer(
+      monomer: Monomer | PresetType,
+      selectOnFavoritesTab = false,
+    ) {
       const location = monomer.monomerType
         ? monomerLibraryTypeLocation[monomer.monomerType]
         : rnaTabPresetsSection;
@@ -209,19 +218,63 @@ export const Library = (page: Page) => {
       await getElement(monomer.testId).hover();
     },
 
+    /** Locator of the arrow button (autochain) on the monomer card */
+    getMonomerAutochainButton(monomer: Monomer): Locator {
+      return page.getByTestId(monomer.testId).locator('.autochain');
+    },
+
+    /** Hover over the arrow button on the monomer card */
+    async hoverMonomerAutochain(monomer: Monomer) {
+      const location = monomer.monomerType
+        ? monomerLibraryTypeLocation[monomer.monomerType]
+        : rnaTabPresetsSection;
+
+      await this.goToMonomerLocation(location);
+
+      const card = page.getByTestId(monomer.testId);
+      await card.hover();
+
+      const btn = this.getMonomerAutochainButton(monomer);
+      await btn.waitFor({ state: 'visible' });
+      await btn.hover();
+    },
+
+    /** Click on the arrow button on the monomer card */
+    async clickMonomerAutochain(monomer: Monomer) {
+      const location = monomer.monomerType
+        ? monomerLibraryTypeLocation[monomer.monomerType]
+        : rnaTabPresetsSection;
+
+      await this.goToMonomerLocation(location);
+
+      const card = page.getByTestId(monomer.testId);
+      await card.hover();
+
+      const btn = this.getMonomerAutochainButton(monomer);
+      await btn.waitFor({ state: 'visible' });
+      await btn.click();
+    },
+
     async dragMonomerOnCanvas(
-      monomer: Monomer,
+      monomer: Monomer | PresetType,
       coordinates: { x: number; y: number; fromCenter?: boolean },
       selectOnFavoritesTab = false,
     ) {
-      let x = coordinates.x;
-      let y = coordinates.y;
+      const canvas = await page
+        .getByTestId(KETCHER_CANVAS)
+        .filter({ has: page.locator(':visible') })
+        .boundingBox();
+      if (!canvas) {
+        throw new Error('Unable to get boundingBox for canvas');
+      }
+      let x = canvas.x + coordinates.x;
+      let y = canvas.y + coordinates.y;
 
       if (coordinates.fromCenter) {
-        const centerOfCanvas = await getCoordinatesOfTheMiddleOfTheScreen(page);
+        const centerOfCanvas = await getCoordinatesOfTheMiddleOfTheCanvas(page);
 
-        x = centerOfCanvas.x + coordinates.x;
-        y = centerOfCanvas.y + coordinates.y;
+        x = x + centerOfCanvas.x;
+        y = y + centerOfCanvas.y;
       }
 
       await this.hoverMonomer(monomer, selectOnFavoritesTab);
@@ -266,7 +319,7 @@ export const Library = (page: Page) => {
      * Adds a monomer to favorites by navigating to the corresponding tab and clicking on the monomer's favorite icon.
      * If the monomer belongs to an RNA-specific accordion group, it expands the accordion item.
      */
-    async addMonomerToFavorites(monomer: Monomer) {
+    async addMonomerToFavorites(monomer: Monomer | PresetType) {
       const location = monomer.monomerType
         ? monomerLibraryTypeLocation[monomer.monomerType]
         : rnaTabPresetsSection;
@@ -288,7 +341,7 @@ export const Library = (page: Page) => {
      * Removes a monomer from favorites by navigating to the Favorites tab and clicking on the monomer's favorite icon.
      */
     async removeMonomerFromFavorites(
-      monomer: Monomer,
+      monomer: Monomer | PresetType,
       removeFromFavoritesTab = true,
     ) {
       if (removeFromFavoritesTab) {
@@ -330,6 +383,7 @@ export const Library = (page: Page) => {
      */
     async addMonomersToFavorites(monomers: Array<Monomer>) {
       for (const monomer of monomers) {
+        await moveMouseAway(page);
         await this.addMonomerToFavorites(monomer);
       }
     },

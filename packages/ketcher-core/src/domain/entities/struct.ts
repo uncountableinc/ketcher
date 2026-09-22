@@ -145,7 +145,7 @@ export class Struct {
   isSingleGroup(): boolean {
     if (!this.sgroups.size || this.sgroups.size > 1) return false;
     const sgroup = this.sgroups.values().next().value; // get sgroup from map
-    return this.atoms.size === sgroup.atoms.length;
+    return sgroup !== undefined && this.atoms.size === sgroup.atoms.length;
   }
 
   clone(
@@ -240,19 +240,19 @@ export class Struct {
     multitailArrowsSet?: Pile<number> | null,
     bidMapEntity?: Map<number, number> | null,
   ): Struct {
-    atomSet = atomSet || new Pile<number>(this.atoms.keys());
-    bondSet = bondSet || new Pile<number>(this.bonds.keys());
+    atomSet = atomSet ?? new Pile<number>(this.atoms.keys());
+    bondSet = bondSet ?? new Pile<number>(this.bonds.keys());
     simpleObjectsSet =
-      simpleObjectsSet || new Pile<number>(this.simpleObjects.keys());
-    textsSet = textsSet || new Pile<number>(this.texts.keys());
-    imagesSet = imagesSet || new Pile<number>(this.images.keys());
+      simpleObjectsSet ?? new Pile<number>(this.simpleObjects.keys());
+    textsSet = textsSet ?? new Pile<number>(this.texts.keys());
+    imagesSet = imagesSet ?? new Pile<number>(this.images.keys());
     multitailArrowsSet =
-      multitailArrowsSet || new Pile<number>(this.multitailArrows.keys());
+      multitailArrowsSet ?? new Pile<number>(this.multitailArrows.keys());
     rgroupAttachmentPointSet =
-      rgroupAttachmentPointSet ||
+      rgroupAttachmentPointSet ??
       new Pile<number>(this.rgroupAttachmentPoints.keys());
-    aidMap = aidMap || new Map();
-    const bidMap = bidMapEntity || new Map();
+    aidMap = aidMap ?? new Map();
+    const bidMap = bidMapEntity ?? new Map();
 
     bondSet = bondSet.filter((bid) => {
       const bond = this.bonds.get(bid)!;
@@ -801,8 +801,14 @@ export class Struct {
     const ids = new Pile<number>();
     while (list.length > 0) {
       const aid = list.pop()!;
-      ids.add(aid);
       const atom = this.atoms.get(aid)!;
+
+      if (this.isAtomFromMacromolecule(aid)) {
+        continue;
+      }
+
+      ids.add(aid);
+
       atom.neighbors.forEach((nei) => {
         const neiId = this.halfBonds.get(nei)!.end;
         if (!ids.has(neiId)) list.push(neiId);
@@ -828,7 +834,8 @@ export class Struct {
     this.atoms.forEach((atom, aid) => {
       if (
         (discardExistingFragments || atom.fragment < 0) &&
-        !addedAtoms.has(aid)
+        !addedAtoms.has(aid) &&
+        !this.isAtomFromMacromolecule(aid)
       ) {
         const component = this.findConnectedComponent(aid);
         components.push(component);
@@ -848,6 +855,13 @@ export class Struct {
       if (atom.stereoLabel) frag.updateStereoAtom(this, aid, fid, true);
       atom.fragment = fid;
     });
+  }
+
+  clearFragments() {
+    this.atoms.forEach((atom) => {
+      atom.fragment = -1;
+    });
+    this.frags.clear();
   }
 
   markFragments(properties?) {
@@ -1061,7 +1075,7 @@ export class Struct {
     }
 
     const atom = this.atoms.get(aid)!;
-    const charge = atom.charge || 0;
+    const charge = atom.charge ?? 0;
     const [conn, isAromatic] = this.calcConn(
       atom,
       includeAtomsInCollapsedSgroups,
@@ -1194,7 +1208,7 @@ export class Struct {
 
       while (c.x > barriers[j]) ++j;
 
-      components[j] = components[j] || new Pile();
+      components[j] = components[j] ?? new Pile();
       components[j] = components[j].union(component);
     });
 
@@ -1210,7 +1224,7 @@ export class Struct {
 
       const rxnFragmentType = this.defineRxnFragmentTypeForAtomset(
         component,
-        arrowPos || 0,
+        arrowPos ?? 0,
       );
 
       if (rxnFragmentType === 1) reactants.push(component);
@@ -1256,7 +1270,7 @@ export class Struct {
       return null;
     } else {
       const firstSgroupId = [
-        ...(this.atoms.get(atomId)?.sgs.values() || []),
+        ...(this.atoms.get(atomId)?.sgs.values() ?? []),
       ][0];
 
       return isNumber(firstSgroupId) ? firstSgroupId : null;

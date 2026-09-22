@@ -1,5 +1,5 @@
 import { editorEvents } from 'application/editor/editorEvents';
-import { CoreEditor, SelectRectangle } from 'application/editor/internal';
+import { CoreEditor, SelectBase } from 'application/editor/internal';
 import { Coordinates } from 'application/editor/shared/coordinates';
 import { D3SvgElementSelection } from 'application/render/types';
 import assert from 'assert';
@@ -27,8 +27,8 @@ export const MONOMER_CSS_CLASS = 'monomer';
 let monomerSize: { width: number; height: number } = { width: 0, height: 0 };
 
 export abstract class BaseMonomerRenderer extends BaseRenderer {
-  private editorEvents: typeof editorEvents;
-  private editor: CoreEditor;
+  private readonly editorEvents: typeof editorEvents;
+  private readonly editor: CoreEditor;
   private selectionCircle?: D3SvgElementSelection<SVGCircleElement, void>;
   private selectionBorder?: D3SvgElementSelection<SVGUseElement, void>;
   public declare bodyElement?: D3SvgElementSelection<SVGUseElement, this>;
@@ -37,8 +37,8 @@ export abstract class BaseMonomerRenderer extends BaseRenderer {
   private attachmentPoints: AttachmentPoint[] | [] = [];
   private hoveredAttachmentPoint: AttachmentPointName | null = null;
 
-  private monomerSymbolElement?: SVGUseElement | SVGRectElement;
-  public monomerSize: { width: number; height: number };
+  private readonly monomerSymbolElement?: SVGUseElement | SVGRectElement;
+  public readonly monomerSize: { width: number; height: number };
 
   private enumerationElement?: D3SvgElementSelection<SVGTextElement, void>;
   public enumeration: number | null = null;
@@ -61,10 +61,10 @@ export abstract class BaseMonomerRenderer extends BaseRenderer {
 
   protected constructor(
     public monomer: BaseMonomer,
-    private monomerHoveredElementId: string,
+    private readonly monomerHoveredElementId: string,
     public monomerSymbolElementId: string,
     public monomerAutochainPreviewElementId: string,
-    private scale?: number,
+    private readonly scale?: number,
   ) {
     super(monomer as DrawingEntity);
     this.monomer.setRenderer(this);
@@ -404,7 +404,7 @@ export abstract class BaseMonomerRenderer extends BaseRenderer {
     let cursor = 'default';
 
     if (this.hoverElement) this.hoverElement.remove();
-    if (this.editor.selectedTool instanceof SelectRectangle) cursor = 'move';
+    if (this.editor.selectedTool instanceof SelectBase) cursor = 'move';
 
     return hoverAreaElement
       .style('cursor', cursor)

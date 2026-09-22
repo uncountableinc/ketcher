@@ -25,7 +25,7 @@ import { KetFormatter } from './ketFormatter';
 import { ServerFormatter } from './serverFormatter';
 
 export class FormatterFactory {
-  #structService: StructService;
+  readonly #structService: StructService;
 
   constructor(structService: StructService) {
     this.#structService = structService;

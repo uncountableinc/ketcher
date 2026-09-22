@@ -124,7 +124,7 @@ const Select = ({
               })}
               data-testid={`${option.label}-option`}
             >
-              {option.children ?? option.label}
+              <>{option.children ?? option.label}</>
             </MenuItem>
           );
         })}

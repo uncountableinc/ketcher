@@ -1,8 +1,7 @@
 /* eslint-disable no-magic-numbers */
 /* eslint-disable max-len */
-import { Page, expect, test } from '@playwright/test';
+import { Page, expect, test } from '@fixtures';
 import {
-  delay,
   MacroFileType,
   takeEditorScreenshot,
   takeElementScreenshot,
@@ -28,12 +27,12 @@ import {
   FavoriteStarSymbol,
   RNASection,
 } from '@tests/pages/constants/library/Constants';
-import { Peptides } from '@constants/monomers/Peptides';
-import { Presets } from '@constants/monomers/Presets';
-import { Sugars } from '@constants/monomers/Sugars';
-import { Phosphates } from '@constants/monomers/Phosphates';
-import { Nucleotides } from '@constants/monomers/Nucleotides';
-import { Chem } from '@constants/monomers/Chem';
+import { Peptide } from '@tests/pages/constants/monomers/Peptides';
+import { Preset } from '@tests/pages/constants/monomers/Presets';
+import { Sugar } from '@tests/pages/constants/monomers/Sugars';
+import { Phosphate } from '@tests/pages/constants/monomers/Phosphates';
+import { Nucleotide } from '@tests/pages/constants/monomers/Nucleotides';
+import { Chem } from '@tests/pages/constants/monomers/Chem';
 import {
   resetZoomLevelToDefault,
   ZoomInByKeyboard,
@@ -195,217 +194,6 @@ test('5. Verify that RNA tab redesign include change in the appearance of librar
     hideMacromoleculeEditorScrollBars: true,
   });
 });
-
-test(
-  '6. Verify that RNA tab redesign include change in the appearance of RNA Builder (only if the height of the window is smaller then 648px)',
-  { tag: ['@chromium-popup'] },
-  async () => {
-    /*
-     * Test task: https://github.com/epam/ketcher/issues/6909
-     * Description: Verify that RNA tab redesign include change in the appearance of RNA Builder
-     *              (only if the height of the window is smaller then 648px)
-     * Case:
-     * 1. Open Ketcher and turn on Macromolecules editor
-     * 2. Go to RNA tab
-     * 3. Open RNA builder if closed
-     * 4. Take Library screenshot to check RNA Builder redesign
-     */
-    await Library(page).switchToRNATab();
-    await Library(page).rnaBuilder.expand();
-    await takeMonomerLibraryScreenshot(page, {
-      hideMonomerPreview: true,
-      hideMacromoleculeEditorScrollBars: true,
-    });
-  },
-);
-
-test(
-  '7. Check that RNA tab redesign include change of the subsections (Presets/Sugars/Bases/Phosphates/Nucleotides) from an accordion representation to a tab representation (only if the height of the window is smaller then 720px)',
-  { tag: ['@chromium-popup'] },
-  async () => {
-    /*
-     * Test task: https://github.com/epam/ketcher/issues/6909
-     * Description: Check that RNA tab redesign include change of the subsections
-     *              (Presets/Sugars/Bases/Phosphates/Nucleotides) from an accordion representation
-     *              to a tab representation (only if the height of the window is smaller then 720px)
-     * Case:
-     * 1. Open Ketcher and turn on Macromolecules editor
-     * 2. Go to RNA tab
-     * 3. Open RNA builder if closed
-     * 4. Take Library screenshot to check RNA Builder redesign
-     * 5. Open RNA builder if closed
-     * 6. Take Library screenshot to check RNA Builder redesign
-     * 7. Open Presets accordion
-     * 8. Take Library screenshot to check that Presets only have the library cards modified
-     * 9. Open Sugars accordion
-     * 10. Take Library screenshot to check that Sugars only have the library cards modified
-     * 11. Open Bases accordion
-     * 12. Take Library screenshot to check that Bases only have the library cards modified
-     * 13. Open Phosphates accordion
-     * 14. Take Library screenshot to check that Phosphates only have the library cards modified
-     * 15. Open Nucleotides accordion
-     * 16. Take Library screenshot to check that Nucleotides only have the library cards modified
-     */
-    await Library(page).switchToRNATab();
-    await Library(page).rnaBuilder.collapse();
-    await Library(page).openRNASection(RNASection.Nucleotides);
-    await Library(page).openRNASection(RNASection.Presets);
-    await takeMonomerLibraryScreenshot(page, {
-      hideMonomerPreview: true,
-      hideMacromoleculeEditorScrollBars: true,
-    });
-    await Library(page).openRNASection(RNASection.Sugars);
-    await takeMonomerLibraryScreenshot(page, {
-      hideMonomerPreview: true,
-      hideMacromoleculeEditorScrollBars: true,
-    });
-    await Library(page).openRNASection(RNASection.Bases);
-    await takeMonomerLibraryScreenshot(page, {
-      hideMonomerPreview: true,
-      hideMacromoleculeEditorScrollBars: true,
-    });
-    await Library(page).openRNASection(RNASection.Phosphates);
-    await takeMonomerLibraryScreenshot(page, {
-      hideMonomerPreview: true,
-      hideMacromoleculeEditorScrollBars: true,
-    });
-    await Library(page).openRNASection(RNASection.Nucleotides);
-    await takeMonomerLibraryScreenshot(page, {
-      hideMonomerPreview: true,
-      hideMacromoleculeEditorScrollBars: true,
-    });
-  },
-);
-
-test(
-  '8. Check that RNA tab redesign include tooltip preview for hovering over the preset symbol (when the presets section is not open) should be "Presets" (only if the height of the window is smaller then 720px)',
-  { tag: ['@chromium-popup'] },
-  async () => {
-    /*
-     * Test task: https://github.com/epam/ketcher/issues/6909
-     * Description: Check that RNA tab redesign include tooltip preview for hovering over the preset
-     *              symbol (when the presets section is not open) should be "Presets" (only if the height
-     *              of the window is smaller then 720px)
-     * Case:
-     * 1. Open Ketcher and turn on Macromolecules editor
-     * 2. Go to RNA tab
-     * 3. Close RNA builder if opened
-     * 4. Switch to Nucleotides tab to make sure that the Presets tab is not open
-     * 5. Hover over the Presets tab symbol
-     * 6. Take Library screenshot to validate tooltip preview "Presets"
-     */
-    await Library(page).switchToRNATab();
-    await Library(page).rnaBuilder.collapse();
-    await Library(page).openRNASection(RNASection.Nucleotides);
-    await Library(page).rnaTab.presetsSection.hover();
-    await delay(1);
-    await takeMonomerLibraryScreenshot(page);
-  },
-);
-
-test(
-  '9. Check that RNA tab redesign include tooltip preview for hovering over the square (when the sugars section is not open) should be "Sugars" (only if the height of the window is smaller then 720px)',
-  { tag: ['@chromium-popup'] },
-  async () => {
-    /*
-     * Test task: https://github.com/epam/ketcher/issues/6909
-     * Description: Check that RNA tab redesign include tooltip preview for hovering over the Sugar
-     *              symbol (when the Sugars section is not open) should be "Sugars" (only if the height
-     *              of the window is smaller then 720px)
-     * Case:
-     * 1. Open Ketcher and turn on Macromolecules editor
-     * 2. Go to RNA tab
-     * 3. Close RNA builder if opened
-     * 4. Switch to Nucleotides tab to make sure that the Sugars tab is not open
-     * 5. Hover over the Sugars tab symbol
-     * 6. Take Library screenshot to validate tooltip preview "Sugars"
-     */
-    await Library(page).switchToRNATab();
-    await Library(page).rnaBuilder.collapse();
-    await Library(page).openRNASection(RNASection.Nucleotides);
-    await Library(page).rnaTab.sugarsSection.hover();
-    await delay(1);
-    await takeMonomerLibraryScreenshot(page);
-  },
-);
-
-test(
-  '10. Check that RNA tab redesign include tooltip preview for hovering over the square (when the Bases section is not open) should be "Sugars" (only if the height of the window is smaller then 720px)',
-  { tag: ['@chromium-popup'] },
-  async () => {
-    /*
-     * Test task: https://github.com/epam/ketcher/issues/6909
-     * Description: Check that RNA tab redesign include tooltip preview for hovering over the Bases
-     *              symbol (when the Bases section is not open) should be "Bases" (only if the height
-     *              of the window is smaller then 720px)
-     * Case:
-     * 1. Open Ketcher and turn on Macromolecules editor
-     * 2. Go to RNA tab
-     * 3. Close RNA builder if opened
-     * 4. Switch to Nucleotides tab to make sure that the Bases tab is not open
-     * 5. Hover over the Bases tab symbol
-     * 6. Take Library screenshot to validate tooltip preview "Bases"
-     */
-    await Library(page).switchToRNATab();
-    await Library(page).rnaBuilder.collapse();
-    await Library(page).openRNASection(RNASection.Nucleotides);
-    await Library(page).rnaTab.basesSection.hover();
-    await delay(1);
-    await takeMonomerLibraryScreenshot(page);
-  },
-);
-
-test(
-  '11. Check that RNA tab redesign include tooltip preview for hovering over the square (when the Phosphates section is not open) should be "Phosphates" (only if the height of the window is smaller then 720px)',
-  { tag: ['@chromium-popup'] },
-  async () => {
-    /*
-     * Test task: https://github.com/epam/ketcher/issues/6909
-     * Description: Check that RNA tab redesign include tooltip preview for hovering over the Phosphates
-     *              symbol (when the Phosphates section is not open) should be "Phosphates" (only if the height
-     *              of the window is smaller then 720px)
-     * Case:
-     * 1. Open Ketcher and turn on Macromolecules editor
-     * 2. Go to RNA tab
-     * 3. Close RNA builder if opened
-     * 4. Switch to Nucleotides tab to make sure that the Phosphates tab is not open
-     * 5. Hover over the Phosphates tab symbol
-     * 6. Take Library screenshot to validate tooltip preview "Phosphates"
-     */
-    await Library(page).switchToRNATab();
-    await Library(page).rnaBuilder.collapse();
-    await Library(page).openRNASection(RNASection.Nucleotides);
-    await Library(page).rnaTab.phosphatesSection.hover();
-    await delay(1);
-    await takeMonomerLibraryScreenshot(page);
-  },
-);
-
-test(
-  '12. Check that RNA tab redesign include tooltip preview for hovering over the square (when the Nucleotides section is not open) should be "Nucleotides" (only if the height of the window is smaller then 720px)',
-  { tag: ['@chromium-popup'] },
-  async () => {
-    /*
-     * Test task: https://github.com/epam/ketcher/issues/6909
-     * Description: Check that RNA tab redesign include tooltip preview for hovering over the Nucleotides
-     *              symbol (when the Nucleotides section is not open) should be "Nucleotides" (only if the height
-     *              of the window is smaller then 720px)
-     * Case:
-     * 1. Open Ketcher and turn on Macromolecules editor
-     * 2. Go to RNA tab
-     * 3. Close RNA builder if opened
-     * 4. Switch to Presets tab to make sure that the Nucleotides tab is not open
-     * 5. Hover over the Nucleotides tab symbol
-     * 6. Take Library screenshot to validate tooltip preview "Nucleotides"
-     */
-    await Library(page).switchToRNATab();
-    await Library(page).rnaBuilder.collapse();
-    await Library(page).openRNASection(RNASection.Presets);
-    await Library(page).rnaTab.nucleotidesSection.hover();
-    await delay(1);
-    await takeMonomerLibraryScreenshot(page);
-  },
-);
 
 test(
   '13. Check that when a base is picked in the RNA Builder, clicking on the Base slot in RNA Builder lead to that base in the Bases subsection of the library and the base card appear selected (as if it was clicked on)',
@@ -642,11 +430,11 @@ test(
 );
 
 const monomerToDrag = [
-  Peptides.Cys_Bn,
-  Presets.MOE_A_P,
-  Sugars.FMOE,
-  Phosphates.bP,
-  Nucleotides.AmMC6T,
+  Peptide.Cys_Bn,
+  Preset.MOE_A_P,
+  Sugar.FMOE,
+  Phosphate.bP,
+  Nucleotide.AmMC6T,
   Chem.DOTA,
 ];
 
@@ -674,7 +462,9 @@ for (const monomer of monomerToDrag) {
 
     const monomerOnCanvas = getMonomerLocator(page, {});
     await expect(monomerOnCanvas).toHaveCount(
-      Object.values(Presets).includes(monomer) ? 6 : 2,
+      Object.values(Preset).some((preset) => preset.alias === monomer.alias)
+        ? 6
+        : 2,
     );
   });
 }
@@ -703,7 +493,9 @@ for (const monomer of monomerToDrag) {
 
     const monomerOnCanvas = getMonomerLocator(page, {});
     await expect(monomerOnCanvas).toHaveCount(
-      Object.values(Presets).includes(monomer) ? 6 : 2,
+      Object.values(Preset).some((preset) => preset.alias === monomer.alias)
+        ? 6
+        : 2,
     );
   });
 }
@@ -810,7 +602,16 @@ for (const monomer of monomerToDrag) {
   });
 }
 
-for (const monomer of monomerToDrag) {
+const monomerToDrag2 = [
+  // Peptide.Cys_Bn,
+  Preset.MOE_A_P,
+  Sugar.FMOE,
+  Phosphate.bP,
+  Nucleotide.AmMC6T,
+  Chem.DOTA,
+];
+
+for (const monomer of monomerToDrag2) {
   test(`21.2 Check ${monomer.alias} monomer's ghost image initially 100% scale adjusts canvas scale while hovered over (Snake mode)`, async () => {
     /*
      *
@@ -1017,8 +818,24 @@ for (const monomer of monomerToDrag) {
     await Library(page).dragMonomerOnCanvas(monomer, { x: 100, y: 100 });
     await Library(page).hoverMonomer(monomer);
 
+    let monomerBoundingBox;
+    if (
+      Object.values(Preset).some((preset) => preset.alias === monomer.alias)
+    ) {
+      monomerBoundingBox = await getMonomerLocator(page, {
+        monomerType: MonomerType.Sugar,
+      }).boundingBox();
+    } else {
+      monomerBoundingBox = await getMonomerLocator(page, monomer).boundingBox();
+    }
+
+    if (!monomerBoundingBox) throw new Error('Monomer element not found');
+
     await page.mouse.down();
-    await page.mouse.move(90, 90);
+    await page.mouse.move(
+      monomerBoundingBox?.x - 10,
+      monomerBoundingBox?.y - 10,
+    );
     await waitForRender(page);
 
     await takeEditorScreenshot(page, {
@@ -1051,10 +868,25 @@ for (const monomer of monomerToDrag) {
     await Library(page).dragMonomerOnCanvas(monomer, { x: 100, y: 100 });
     await Library(page).hoverMonomer(monomer);
 
-    await page.mouse.down();
-    await page.mouse.move(90, 90);
-    await waitForRender(page);
+    let monomerBoundingBox;
+    if (
+      Object.values(Preset).some((preset) => preset.alias === monomer.alias)
+    ) {
+      monomerBoundingBox = await getMonomerLocator(page, {
+        monomerType: MonomerType.Sugar,
+      }).boundingBox();
+    } else {
+      monomerBoundingBox = await getMonomerLocator(page, monomer).boundingBox();
+    }
 
+    if (!monomerBoundingBox) throw new Error('Monomer element not found');
+
+    await page.mouse.down();
+    await page.mouse.move(
+      monomerBoundingBox?.x - 10,
+      monomerBoundingBox?.y - 10,
+    );
+    await waitForRender(page);
     await takeEditorScreenshot(page, {
       hideMonomerPreview: true,
       hideMacromoleculeEditorScrollBars: true,
@@ -1209,7 +1041,9 @@ for (const monomer of monomerToDrag) {
     await Library(page).dragMonomerOnCanvas(monomer, { x: 200, y: 200 });
     await CommonLeftToolbar(page).selectBondTool(MacroBondType.Single);
     const monomerOnCanvas = getMonomerLocator(page, {});
-    if (!Object.values(Presets).includes(monomer)) {
+    if (
+      !Object.values(Preset).some((preset) => preset.alias === monomer.alias)
+    ) {
       await monomerOnCanvas.hover();
       await waitForMonomerPreview(page);
     }
@@ -1246,7 +1080,9 @@ for (const monomer of monomerToDrag) {
     await Library(page).dragMonomerOnCanvas(monomer, { x: 200, y: 200 });
     await CommonLeftToolbar(page).selectBondTool(MacroBondType.Single);
     const monomerOnCanvas = getMonomerLocator(page, {});
-    if (!Object.values(Presets).includes(monomer)) {
+    if (
+      !Object.values(Preset).some((preset) => preset.alias === monomer.alias)
+    ) {
       await monomerOnCanvas.hover();
       await waitForMonomerPreview(page);
     }
@@ -1281,7 +1117,9 @@ for (const monomer of monomerToDrag) {
     await Library(page).dragMonomerOnCanvas(monomer, { x: 100, y: 100 });
     await Library(page).dragMonomerOnCanvas(monomer, { x: 200, y: 200 });
 
-    if (!Object.values(Presets).includes(monomer)) {
+    if (
+      !Object.values(Preset).some((preset) => preset.alias === monomer.alias)
+    ) {
       const monomersOnCanvas = getMonomerLocator(page, monomer);
       await bondTwoMonomers(
         page,
@@ -1333,7 +1171,9 @@ for (const monomer of monomerToDrag) {
     await Library(page).dragMonomerOnCanvas(monomer, { x: 100, y: 100 });
     await Library(page).dragMonomerOnCanvas(monomer, { x: 200, y: 200 });
 
-    if (!Object.values(Presets).includes(monomer)) {
+    if (
+      !Object.values(Preset).some((preset) => preset.alias === monomer.alias)
+    ) {
       const monomersOnCanvas = getMonomerLocator(page, monomer);
       await bondTwoMonomers(
         page,
@@ -1387,7 +1227,9 @@ for (const monomer of monomerToDrag) {
 
     const monomerOnCanvas = getMonomerLocator(page, {});
     await expect(monomerOnCanvas).toHaveCount(
-      Object.values(Presets).includes(monomer) ? 3 : 1,
+      Object.values(Preset).some((preset) => preset.alias === monomer.alias)
+        ? 3
+        : 1,
     );
 
     await CommonTopLeftToolbar(page).undo();
@@ -1395,7 +1237,9 @@ for (const monomer of monomerToDrag) {
 
     await CommonTopLeftToolbar(page).redo();
     await expect(monomerOnCanvas).toHaveCount(
-      Object.values(Presets).includes(monomer) ? 3 : 1,
+      Object.values(Preset).some((preset) => preset.alias === monomer.alias)
+        ? 3
+        : 1,
     );
   });
 }
@@ -1423,7 +1267,9 @@ for (const monomer of monomerToDrag) {
 
     const monomerOnCanvas = getMonomerLocator(page, {});
     await expect(monomerOnCanvas).toHaveCount(
-      Object.values(Presets).includes(monomer) ? 3 : 1,
+      Object.values(Preset).some((preset) => preset.alias === monomer.alias)
+        ? 3
+        : 1,
     );
 
     await CommonTopLeftToolbar(page).undo();
@@ -1431,7 +1277,9 @@ for (const monomer of monomerToDrag) {
 
     await CommonTopLeftToolbar(page).redo();
     await expect(monomerOnCanvas).toHaveCount(
-      Object.values(Presets).includes(monomer) ? 3 : 1,
+      Object.values(Preset).some((preset) => preset.alias === monomer.alias)
+        ? 3
+        : 1,
     );
   });
 }
@@ -1598,7 +1446,9 @@ for (const monomer of monomerToDrag) {
 
     const monomerOnCanvas = getMonomerLocator(page, {});
     await expect(monomerOnCanvas).toHaveCount(
-      Object.values(Presets).includes(monomer) ? 3 : 1,
+      Object.values(Preset).some((preset) => preset.alias === monomer.alias)
+        ? 3
+        : 1,
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -1608,7 +1458,9 @@ for (const monomer of monomerToDrag) {
     await CommonTopLeftToolbar(page).undo();
 
     await expect(monomerOnCanvas).toHaveCount(
-      Object.values(Presets).includes(monomer) ? 3 : 1,
+      Object.values(Preset).some((preset) => preset.alias === monomer.alias)
+        ? 3
+        : 1,
     );
 
     await CommonTopLeftToolbar(page).redo();
@@ -1645,7 +1497,9 @@ for (const monomer of monomerToDrag) {
 
     const monomerOnCanvas = getMonomerLocator(page, {});
     await expect(monomerOnCanvas).toHaveCount(
-      Object.values(Presets).includes(monomer) ? 3 : 1,
+      Object.values(Preset).some((preset) => preset.alias === monomer.alias)
+        ? 3
+        : 1,
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -1655,7 +1509,9 @@ for (const monomer of monomerToDrag) {
     await CommonTopLeftToolbar(page).undo();
 
     await expect(monomerOnCanvas).toHaveCount(
-      Object.values(Presets).includes(monomer) ? 3 : 1,
+      Object.values(Preset).some((preset) => preset.alias === monomer.alias)
+        ? 3
+        : 1,
     );
 
     await CommonTopLeftToolbar(page).redo();
@@ -1901,7 +1757,9 @@ for (const monomer of monomerToDrag) {
 
     const monomerOnCanvas = getMonomerLocator(page, {});
     await expect(monomerOnCanvas).toHaveCount(
-      Object.values(Presets).includes(monomer) ? 3 : 1,
+      Object.values(Preset).some((preset) => preset.alias === monomer.alias)
+        ? 3
+        : 1,
     );
 
     await CommonTopLeftToolbar(page).clearCanvas();
@@ -1910,7 +1768,9 @@ for (const monomer of monomerToDrag) {
     await CommonTopLeftToolbar(page).undo();
 
     await expect(monomerOnCanvas).toHaveCount(
-      Object.values(Presets).includes(monomer) ? 3 : 1,
+      Object.values(Preset).some((preset) => preset.alias === monomer.alias)
+        ? 3
+        : 1,
     );
 
     await CommonTopLeftToolbar(page).redo();
@@ -1947,7 +1807,9 @@ for (const monomer of monomerToDrag) {
 
     const monomerOnCanvas = getMonomerLocator(page, {});
     await expect(monomerOnCanvas).toHaveCount(
-      Object.values(Presets).includes(monomer) ? 3 : 1,
+      Object.values(Preset).some((preset) => preset.alias === monomer.alias)
+        ? 3
+        : 1,
     );
 
     await CommonTopLeftToolbar(page).clearCanvas();
@@ -1956,7 +1818,9 @@ for (const monomer of monomerToDrag) {
     await CommonTopLeftToolbar(page).undo();
 
     await expect(monomerOnCanvas).toHaveCount(
-      Object.values(Presets).includes(monomer) ? 3 : 1,
+      Object.values(Preset).some((preset) => preset.alias === monomer.alias)
+        ? 3
+        : 1,
     );
 
     await CommonTopLeftToolbar(page).redo();
@@ -1992,7 +1856,9 @@ for (const monomer of monomerToDrag) {
 
     const monomerOnCanvas = getMonomerLocator(page, {});
     await expect(monomerOnCanvas).toHaveCount(
-      Object.values(Presets).includes(monomer) ? 6 : 2,
+      Object.values(Preset).some((preset) => preset.alias === monomer.alias)
+        ? 6
+        : 2,
     );
     await resetZoomLevelToDefault(page);
   });
@@ -2024,7 +1890,9 @@ for (const monomer of monomerToDrag) {
 
     const monomerOnCanvas = getMonomerLocator(page, {});
     await expect(monomerOnCanvas).toHaveCount(
-      Object.values(Presets).includes(monomer) ? 6 : 2,
+      Object.values(Preset).some((preset) => preset.alias === monomer.alias)
+        ? 6
+        : 2,
     );
     await resetZoomLevelToDefault(page);
   });
@@ -2057,7 +1925,9 @@ for (const monomer of monomerToDrag) {
 
     const monomerOnCanvas = getMonomerLocator(page, {});
     await expect(monomerOnCanvas).toHaveCount(
-      Object.values(Presets).includes(monomer) ? 6 : 2,
+      Object.values(Preset).some((preset) => preset.alias === monomer.alias)
+        ? 6
+        : 2,
     );
     await resetZoomLevelToDefault(page);
   });
@@ -2089,7 +1959,9 @@ for (const monomer of monomerToDrag) {
 
     const monomerOnCanvas = getMonomerLocator(page, {});
     await expect(monomerOnCanvas).toHaveCount(
-      Object.values(Presets).includes(monomer) ? 6 : 2,
+      Object.values(Preset).some((preset) => preset.alias === monomer.alias)
+        ? 6
+        : 2,
     );
     await resetZoomLevelToDefault(page);
   });

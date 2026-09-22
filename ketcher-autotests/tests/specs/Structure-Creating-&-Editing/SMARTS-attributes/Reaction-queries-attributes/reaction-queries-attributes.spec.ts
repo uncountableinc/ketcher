@@ -1,4 +1,4 @@
-import { Page, test } from '@playwright/test';
+import { Page, test } from '@fixtures';
 import {
   clickInTheMiddleOfTheScreen,
   clickOnAtom,
@@ -12,8 +12,6 @@ import {
   clickOnCanvas,
   pasteFromClipboardAndAddToCanvas,
 } from '@utils';
-import { resetCurrentTool } from '@utils/canvas/tools/resetCurrentTool';
-import { getAtomByIndex } from '@utils/canvas/atoms/getAtomByIndex/getAtomByIndex';
 import { selectAllStructuresOnCanvas } from '@utils/canvas/selectSelection';
 import { checkSmartsValue } from '../utils';
 import { MicroBondType } from '@tests/pages/constants/bondSelectionTool/Constants';
@@ -27,6 +25,9 @@ import { selectRingButton } from '@tests/pages/molecules/BottomToolbar';
 import { RingButton } from '@tests/pages/constants/ringButton/Constants';
 import { SGroupPropertiesDialog } from '@tests/pages/molecules/canvas/S-GroupPropertiesDialog';
 import { TypeOption } from '@tests/pages/constants/s-GroupPropertiesDialog/Constants';
+import { getAtomLocator } from '@utils/canvas/atoms/getAtomLocator/getAtomLocator';
+import { AtomsSetting } from '@tests/pages/constants/settingsDialog/Constants';
+import { setSettingsOption } from '@tests/pages/molecules/canvas/SettingsDialog';
 
 async function drawStructureWithArrowOpenAngle(page: Page) {
   const { x, y } = await getCoordinatesOfTheMiddleOfTheScreen(page);
@@ -37,22 +38,22 @@ async function drawStructureWithArrowOpenAngle(page: Page) {
 
   await atomToolbar.clickAtom(Atom.Hydrogen);
   await clickInTheMiddleOfTheScreen(page);
-  await resetCurrentTool(page);
+  await CommonLeftToolbar(page).selectAreaSelectionTool();
 
   await moveMouseToTheMiddleOfTheScreen(page);
   await dragMouseTo(x - shiftForHydrogen, y, page);
-  await resetCurrentTool(page);
+  await CommonLeftToolbar(page).selectAreaSelectionTool();
 
   await LeftToolbar(page).selectArrowTool(ArrowType.ArrowOpenAngle);
   await clickInTheMiddleOfTheScreen(page);
-  await resetCurrentTool(page);
+  await CommonLeftToolbar(page).selectAreaSelectionTool();
 
   await page.mouse.move(x, y + shiftForCoordinatesToResetArrowOpenAngleTool);
-  await clickOnCanvas;
 
   await atomToolbar.clickAtom(Atom.Oxygen);
   await clickOnCanvas(page, x + shiftForOxygen, y, {
     button: 'left',
+    from: 'pageTopLeft',
   });
 }
 
@@ -93,7 +94,7 @@ test.describe('Checking reaction queries attributes in SMARTS format', () => {
 
     await LeftToolbar(page).sGroup();
     const { x, y } = await getCoordinatesTopAtomOfBenzeneRing(page);
-    await clickOnCanvas(page, x, y);
+    await clickOnCanvas(page, x, y, { from: 'pageTopLeft' });
     await SGroupPropertiesDialog(page).setOptions({
       Type: TypeOption.QueryComponent,
     });
@@ -113,7 +114,7 @@ test.describe('Checking reaction queries attributes in SMARTS format', () => {
     await clickInTheMiddleOfTheScreen(page);
     await moveMouseAway(page);
     await atomToolbar.clickAtom(Atom.Carbon);
-    await clickOnCanvas(page, x + shiftValue, y);
+    await clickOnCanvas(page, x + shiftValue, y, { from: 'pageTopLeft' });
 
     await selectAllStructuresOnCanvas(page);
     await LeftToolbar(page).sGroup();
@@ -139,7 +140,7 @@ test.describe('Checking reaction queries attributes in SMARTS format', () => {
     await atomToolbar.clickAtom(Atom.Carbon);
     await clickInTheMiddleOfTheScreen(page);
     await atomToolbar.clickAtom(Atom.Fluorine);
-    await clickOnCanvas(page, x + shiftValue, y);
+    await clickOnCanvas(page, x + shiftValue, y, { from: 'pageTopLeft' });
     await page.keyboard.press('Escape');
 
     await LeftToolbar(page).selectReactionMappingTool(
@@ -148,15 +149,25 @@ test.describe('Checking reaction queries attributes in SMARTS format', () => {
     await clickOnAtom(page, 'C', 0);
     await clickOnAtom(page, 'F', 0);
 
-    const carbonPoint = await getAtomByIndex(page, { label: 'C' }, 0);
-    const fluorinePoint = await getAtomByIndex(page, { label: 'F' }, 0);
+    await setSettingsOption(page, AtomsSetting.DisplayCarbonExplicitly);
+
+    const carbonPoint = await getAtomLocator(page, { atomLabel: 'C' })
+      .first()
+      .boundingBox();
+    const fluorinePoint = await getAtomLocator(page, { atomLabel: 'F' })
+      .first()
+      .boundingBox();
 
     await LeftToolbar(page).sGroup();
 
-    await page.mouse.move(carbonPoint.x - delta, carbonPoint.y + delta);
-    await page.mouse.down();
-    await page.mouse.move(fluorinePoint.x + delta, fluorinePoint.y - delta);
-    await page.mouse.up();
+    if (carbonPoint) {
+      await page.mouse.move(carbonPoint.x - delta, carbonPoint.y + delta);
+      await page.mouse.down();
+    }
+    if (fluorinePoint) {
+      await page.mouse.move(fluorinePoint.x + delta, fluorinePoint.y - delta);
+      await page.mouse.up();
+    }
 
     await SGroupPropertiesDialog(page).setOptions({
       Type: TypeOption.QueryComponent,

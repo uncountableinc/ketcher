@@ -1,12 +1,11 @@
 /* eslint-disable no-magic-numbers */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '@fixtures';
 import { LeftToolbar } from '@tests/pages/molecules/LeftToolbar';
 import { takeEditorScreenshot } from '@utils/canvas';
 import {
   getBottomAtomByAttributes,
   getRightAtomByAttributes,
 } from '@utils/canvas/atoms';
-import { getAtomByIndex } from '@utils/canvas/atoms/getAtomByIndex/getAtomByIndex';
 import { getBondByIndex } from '@utils/canvas/bonds';
 import { BondType } from '@utils/canvas/types';
 import {
@@ -19,6 +18,9 @@ import { waitForPageInit } from '@utils/common';
 import { selectRingButton } from '@tests/pages/molecules/BottomToolbar';
 import { RingButton } from '@tests/pages/constants/ringButton/Constants';
 import { keyboardPressOnCanvas } from '@utils/keyboard';
+import { getAtomLocator } from '@utils/canvas/atoms/getAtomLocator/getAtomLocator';
+import { AtomsSetting } from '@tests/pages/constants/settingsDialog/Constants';
+import { setSettingsOption } from '@tests/pages/molecules/canvas/SettingsDialog';
 
 const DELTA = 100;
 const DELTA_Y = 110;
@@ -53,7 +55,9 @@ test.describe('Chain Tool drawing', () => {
     await dragMouseTo(point.x, point.y + DELTA, page);
 
     await selectRingButton(page, RingButton.Benzene);
-    await clickOnCanvas(page, point.x - DELTA, point.y + DELTA_Y);
+    await clickOnCanvas(page, point.x - DELTA, point.y + DELTA_Y, {
+      from: 'pageTopLeft',
+    });
 
     await LeftToolbar(page).chain();
     point = await getBottomAtomByAttributes(page, { label: 'C' });
@@ -73,8 +77,8 @@ test.describe('Chain Tool drawing', () => {
     Description: Drawing the chain on the canvas, selecting and changing atoms
     */
 
-    point = await getAtomByIndex(page, { label: 'C' }, 1);
-    await page.mouse.move(point.x, point.y);
+    await setSettingsOption(page, AtomsSetting.DisplayCarbonExplicitly);
+    await getAtomLocator(page, { atomLabel: 'C', atomId: 1 }).hover();
     await keyboardPressOnCanvas(page, 'o');
     await takeEditorScreenshot(page);
   });
@@ -86,12 +90,12 @@ test.describe('Chain Tool drawing', () => {
     */
 
     point = await getBondByIndex(page, { type: BondType.SINGLE }, 0);
-    await clickOnCanvas(page, point.x, point.y);
+    await clickOnCanvas(page, point.x, point.y, { from: 'pageTopLeft' });
 
     const doubleBond = await getBondByIndex(page, { type: BondType.DOUBLE }, 0);
     expect(doubleBond.type).toEqual(BondType.DOUBLE);
 
-    await clickOnCanvas(page, point.x, point.y);
+    await clickOnCanvas(page, point.x, point.y, { from: 'pageTopLeft' });
     const tripleBond = await getBondByIndex(page, { type: BondType.TRIPLE }, 0);
     expect(tripleBond.type).toEqual(BondType.TRIPLE);
     await takeEditorScreenshot(page);
