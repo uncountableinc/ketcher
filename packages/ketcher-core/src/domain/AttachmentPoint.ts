@@ -19,16 +19,16 @@ import { CoreEditor, SnakeMode } from 'application/editor';
 import { isBondBetweenSugarAndBaseOfRna } from 'domain/helpers/monomers';
 
 export class AttachmentPoint {
-  static attachmentPointVector = 6;
-  static attachmentPointLength = Math.hypot(
+  static readonly attachmentPointVector = 6;
+  static readonly attachmentPointLength = Math.hypot(
     AttachmentPoint.attachmentPointVector,
     AttachmentPoint.attachmentPointVector,
   );
 
-  static labelOffset = 3.5;
-  static radius = 3;
-  static labelSize = { x: 3.5, y: 2.5 };
-  static colors = {
+  static readonly labelOffset = 3.5;
+  static readonly radius = 3;
+  static readonly labelSize = { x: 3.5, y: 2.5 };
+  static readonly colors = {
     fillUsed: '#0097A8',
     fill: 'white',
     fillPotentially: '#167782',
@@ -54,10 +54,10 @@ export class AttachmentPoint {
     | undefined;
 
   protected initialAngle = 0;
-  private isUsed: boolean;
-  private isSnake;
-  private editorEvents: typeof editorEvents;
-  private applyZoomForPositionCalculation: boolean;
+  private readonly isUsed: boolean;
+  private readonly isSnake;
+  private readonly editorEvents: typeof editorEvents;
+  private readonly applyZoomForPositionCalculation: boolean;
 
   constructor(
     constructorParams: AttachmentPointConstructorParams,
@@ -269,13 +269,15 @@ export class AttachmentPoint {
       const sideConnectionEndpointDirection =
         bondRenderer.getSideConnectionEndpointAngle(this.monomer);
 
-      angleRadians = isAttachmentpointR1
-        ? Math.PI * 2
-        : isAttachmentpointR2
-        ? Math.PI
-        : isNumber(sideConnectionEndpointDirection)
-        ? sideConnectionEndpointDirection
-        : this.rotateToAngle(polymerBond, flip);
+      if (isAttachmentpointR1) {
+        angleRadians = Math.PI * 2;
+      } else if (isAttachmentpointR2) {
+        angleRadians = Math.PI;
+      } else if (isNumber(sideConnectionEndpointDirection)) {
+        angleRadians = sideConnectionEndpointDirection;
+      } else {
+        angleRadians = this.rotateToAngle(polymerBond, flip);
+      }
       angleDegrees = Vec2.radiansToDegrees(angleRadians);
     } else {
       angleRadians = this.rotateToAngle(polymerBond, flip);

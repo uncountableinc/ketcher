@@ -8,7 +8,6 @@ import {
   MacroFileType,
   MonomerType,
   openFileAndAddToCanvasAsNewProjectMacro,
-  takeElementScreenshot,
   openFileAndAddToCanvasAsNewProject,
   MolFileFormat,
   resetZoomLevelToDefault,
@@ -25,9 +24,8 @@ import { ContextMenu } from '@tests/pages/common/ContextMenu';
 import {
   FileType,
   verifyFileExport,
+  verifySVGExport,
 } from '@utils/files/receiveFileComparisonData';
-import { SaveStructureDialog } from '@tests/pages/common/SaveStructureDialog';
-import { MoleculesFileFormatType } from '@tests/pages/constants/fileFormats/microFileFormats';
 import { CommonLeftToolbar } from '@tests/pages/common/CommonLeftToolbar';
 import { MacromoleculesTopToolbar } from '@tests/pages/macromolecules/MacromoleculesTopToolbar';
 import { LayoutMode } from '@tests/pages/constants/macromoleculesTopToolbar/Constants';
@@ -539,7 +537,7 @@ for (const aminoAcidForPhosphorylation of aminoAcidsForPhosphorylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForPhosphorylation.HELMString || '',
+      aminoAcidForPhosphorylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -586,7 +584,7 @@ for (const aminoAcidForSideChainAcetylation of aminoAcidsForSideChainAcetylation
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForSideChainAcetylation.HELMString || '',
+      aminoAcidForSideChainAcetylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -631,7 +629,7 @@ for (const aminoAcidForCitrullination of aminoAcidsForCitrullination) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForCitrullination.HELMString || '',
+      aminoAcidForCitrullination.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -677,7 +675,7 @@ for (const aminoAcidForHydroxylation of aminoAcidsForHydroxylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForHydroxylation.HELMString || '',
+      aminoAcidForHydroxylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -725,7 +723,7 @@ for (const aminoAcidForNMethylation of aminoAcidsForNMethylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForNMethylation.HELMString || '',
+      aminoAcidForNMethylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -773,7 +771,7 @@ for (const aminoAcidForInversion of aminoAcidsForInversion) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForInversion.HELMString || '',
+      aminoAcidForInversion.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -821,7 +819,7 @@ for (const aminoAcidForNaturalAminoAcid of aminoAcidsForNaturalAminoAcid) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForNaturalAminoAcid.HELMString || '',
+      aminoAcidForNaturalAminoAcid.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -1521,7 +1519,7 @@ for (const aminoAcidForPhosphorylation of aminoAcidsForPhosphorylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForPhosphorylation.HELMString || '',
+      aminoAcidForPhosphorylation.HELMString ?? '',
     );
     await resetZoomLevelToDefault(page);
     await selectAllStructuresOnCanvas(page);
@@ -1580,7 +1578,7 @@ for (const aminoAcidForSideChainAcetylation of aminoAcidsForSideChainAcetylation
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForSideChainAcetylation.HELMString || '',
+      aminoAcidForSideChainAcetylation.HELMString ?? '',
     );
     await resetZoomLevelToDefault(page);
     await selectAllStructuresOnCanvas(page);
@@ -1639,7 +1637,7 @@ for (const aminoAcidForCitrullination of aminoAcidsForCitrullination) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForCitrullination.HELMString || '',
+      aminoAcidForCitrullination.HELMString ?? '',
     );
     await resetZoomLevelToDefault(page);
     await selectAllStructuresOnCanvas(page);
@@ -1698,7 +1696,7 @@ for (const aminoAcidForHydroxylation of aminoAcidsForHydroxylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForHydroxylation.HELMString || '',
+      aminoAcidForHydroxylation.HELMString ?? '',
     );
     await resetZoomLevelToDefault(page);
     await selectAllStructuresOnCanvas(page);
@@ -1757,7 +1755,7 @@ for (const aminoAcidForNMethylation of aminoAcidsForNMethylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForNMethylation.HELMString || '',
+      aminoAcidForNMethylation.HELMString ?? '',
     );
     await resetZoomLevelToDefault(page);
     await selectAllStructuresOnCanvas(page);
@@ -1816,7 +1814,7 @@ for (const aminoAcidForInversion of aminoAcidsForInversion) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForInversion.HELMString || '',
+      aminoAcidForInversion.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -1875,7 +1873,7 @@ for (const aminoAcidForNaturalAminoAcid of aminoAcidsForNaturalAminoAcid) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForNaturalAminoAcid.HELMString || '',
+      aminoAcidForNaturalAminoAcid.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -1934,7 +1932,7 @@ for (const aminoAcidForPhosphorylation of aminoAcidsForPhosphorylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForPhosphorylation.HELMString || '',
+      aminoAcidForPhosphorylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -1993,7 +1991,7 @@ for (const aminoAcidForSideChainAcetylation of aminoAcidsForSideChainAcetylation
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForSideChainAcetylation.HELMString || '',
+      aminoAcidForSideChainAcetylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -2053,7 +2051,7 @@ for (const aminoAcidForCitrullination of aminoAcidsForCitrullination) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForCitrullination.HELMString || '',
+      aminoAcidForCitrullination.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -2113,7 +2111,7 @@ for (const aminoAcidForHydroxylation of aminoAcidsForHydroxylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForHydroxylation.HELMString || '',
+      aminoAcidForHydroxylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -2173,7 +2171,7 @@ for (const aminoAcidForNMethylation of aminoAcidsForNMethylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForNMethylation.HELMString || '',
+      aminoAcidForNMethylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -2233,7 +2231,7 @@ for (const aminoAcidForInversion of aminoAcidsForInversion) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForInversion.HELMString || '',
+      aminoAcidForInversion.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -2293,7 +2291,7 @@ for (const aminoAcidForNaturalAminoAcid of aminoAcidsForNaturalAminoAcid) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForNaturalAminoAcid.HELMString || '',
+      aminoAcidForNaturalAminoAcid.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -2351,7 +2349,7 @@ for (const aminoAcidForPhosphorylation of aminoAcidsForPhosphorylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForPhosphorylation.HELMString || '',
+      aminoAcidForPhosphorylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -2364,17 +2362,7 @@ for (const aminoAcidForPhosphorylation of aminoAcidsForPhosphorylation) {
       MonomerOption.ModifyAminoAcids,
       ModifyAminoAcidsOption.Phosphorylation,
     ]);
-
-    await CommonTopLeftToolbar(page).saveFile();
-    await SaveStructureDialog(page).chooseFileFormat(
-      MoleculesFileFormatType.SVGDocument,
-    );
-
-    await takeElementScreenshot(
-      page,
-      SaveStructureDialog(page).saveStructureTextarea,
-    );
-    await SaveStructureDialog(page).cancel();
+    await verifySVGExport(page);
 
     // Test should be skipped if related bug exists
     test.fixme(
@@ -2403,7 +2391,7 @@ for (const aminoAcidForSideChainAcetylation of aminoAcidsForSideChainAcetylation
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForSideChainAcetylation.HELMString || '',
+      aminoAcidForSideChainAcetylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -2416,17 +2404,7 @@ for (const aminoAcidForSideChainAcetylation of aminoAcidsForSideChainAcetylation
       MonomerOption.ModifyAminoAcids,
       ModifyAminoAcidsOption.SideChainAcetylation,
     ]);
-
-    await CommonTopLeftToolbar(page).saveFile();
-    await SaveStructureDialog(page).chooseFileFormat(
-      MoleculesFileFormatType.SVGDocument,
-    );
-
-    await takeElementScreenshot(
-      page,
-      SaveStructureDialog(page).saveStructureTextarea,
-    );
-    await SaveStructureDialog(page).cancel();
+    await verifySVGExport(page);
 
     // Test should be skipped if related bug exists
     test.fixme(
@@ -2455,7 +2433,7 @@ for (const aminoAcidForCitrullination of aminoAcidsForCitrullination) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForCitrullination.HELMString || '',
+      aminoAcidForCitrullination.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -2468,17 +2446,7 @@ for (const aminoAcidForCitrullination of aminoAcidsForCitrullination) {
       MonomerOption.ModifyAminoAcids,
       ModifyAminoAcidsOption.Citrullination,
     ]);
-
-    await CommonTopLeftToolbar(page).saveFile();
-    await SaveStructureDialog(page).chooseFileFormat(
-      MoleculesFileFormatType.SVGDocument,
-    );
-
-    await takeElementScreenshot(
-      page,
-      SaveStructureDialog(page).saveStructureTextarea,
-    );
-    await SaveStructureDialog(page).cancel();
+    await verifySVGExport(page);
 
     // Test should be skipped if related bug exists
     test.fixme(
@@ -2507,7 +2475,7 @@ for (const aminoAcidForHydroxylation of aminoAcidsForHydroxylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForHydroxylation.HELMString || '',
+      aminoAcidForHydroxylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -2520,17 +2488,7 @@ for (const aminoAcidForHydroxylation of aminoAcidsForHydroxylation) {
       MonomerOption.ModifyAminoAcids,
       ModifyAminoAcidsOption.Hydroxylation,
     ]);
-
-    await CommonTopLeftToolbar(page).saveFile();
-    await SaveStructureDialog(page).chooseFileFormat(
-      MoleculesFileFormatType.SVGDocument,
-    );
-
-    await takeElementScreenshot(
-      page,
-      SaveStructureDialog(page).saveStructureTextarea,
-    );
-    await SaveStructureDialog(page).cancel();
+    await verifySVGExport(page);
 
     // Test should be skipped if related bug exists
     test.fixme(
@@ -2559,7 +2517,7 @@ for (const aminoAcidForNMethylation of aminoAcidsForNMethylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForNMethylation.HELMString || '',
+      aminoAcidForNMethylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -2572,17 +2530,7 @@ for (const aminoAcidForNMethylation of aminoAcidsForNMethylation) {
       MonomerOption.ModifyAminoAcids,
       ModifyAminoAcidsOption.NMethylation,
     ]);
-
-    await CommonTopLeftToolbar(page).saveFile();
-    await SaveStructureDialog(page).chooseFileFormat(
-      MoleculesFileFormatType.SVGDocument,
-    );
-
-    await takeElementScreenshot(
-      page,
-      SaveStructureDialog(page).saveStructureTextarea,
-    );
-    await SaveStructureDialog(page).cancel();
+    await verifySVGExport(page);
 
     // Test should be skipped if related bug exists
     test.fixme(
@@ -2611,7 +2559,7 @@ for (const aminoAcidForInversion of aminoAcidsForInversion) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForInversion.HELMString || '',
+      aminoAcidForInversion.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -2624,17 +2572,7 @@ for (const aminoAcidForInversion of aminoAcidsForInversion) {
       MonomerOption.ModifyAminoAcids,
       ModifyAminoAcidsOption.Inversion,
     ]);
-
-    await CommonTopLeftToolbar(page).saveFile();
-    await SaveStructureDialog(page).chooseFileFormat(
-      MoleculesFileFormatType.SVGDocument,
-    );
-
-    await takeElementScreenshot(
-      page,
-      SaveStructureDialog(page).saveStructureTextarea,
-    );
-    await SaveStructureDialog(page).cancel();
+    await verifySVGExport(page);
 
     // Test should be skipped if related bug exists
     test.fixme(
@@ -2663,7 +2601,7 @@ for (const aminoAcidForNaturalAminoAcid of aminoAcidsForNaturalAminoAcid) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForNaturalAminoAcid.HELMString || '',
+      aminoAcidForNaturalAminoAcid.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -2676,17 +2614,7 @@ for (const aminoAcidForNaturalAminoAcid of aminoAcidsForNaturalAminoAcid) {
       MonomerOption.ModifyAminoAcids,
       ModifyAminoAcidsOption.NaturalAminoAcid,
     ]);
-
-    await CommonTopLeftToolbar(page).saveFile();
-    await SaveStructureDialog(page).chooseFileFormat(
-      MoleculesFileFormatType.SVGDocument,
-    );
-
-    await takeElementScreenshot(
-      page,
-      SaveStructureDialog(page).saveStructureTextarea,
-    );
-    await SaveStructureDialog(page).cancel();
+    await verifySVGExport(page);
 
     // Test should be skipped if related bug exists
     test.fixme(
@@ -2715,7 +2643,7 @@ for (const aminoAcidForPhosphorylation of aminoAcidsForPhosphorylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForPhosphorylation.HELMString || '',
+      aminoAcidForPhosphorylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -2766,7 +2694,7 @@ for (const aminoAcidForSideChainAcetylation of aminoAcidsForSideChainAcetylation
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForSideChainAcetylation.HELMString || '',
+      aminoAcidForSideChainAcetylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -2817,7 +2745,7 @@ for (const aminoAcidForCitrullination of aminoAcidsForCitrullination) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForCitrullination.HELMString || '',
+      aminoAcidForCitrullination.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -2868,7 +2796,7 @@ for (const aminoAcidForHydroxylation of aminoAcidsForHydroxylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForHydroxylation.HELMString || '',
+      aminoAcidForHydroxylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -2919,7 +2847,7 @@ for (const aminoAcidForNMethylation of aminoAcidsForNMethylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForNMethylation.HELMString || '',
+      aminoAcidForNMethylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -2970,7 +2898,7 @@ for (const aminoAcidForInversion of aminoAcidsForInversion) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForInversion.HELMString || '',
+      aminoAcidForInversion.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -3021,7 +2949,7 @@ for (const aminoAcidForNaturalAminoAcid of aminoAcidsForNaturalAminoAcid) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForNaturalAminoAcid.HELMString || '',
+      aminoAcidForNaturalAminoAcid.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -3074,7 +3002,7 @@ for (const aminoAcidForPhosphorylation of aminoAcidsForPhosphorylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForPhosphorylation.HELMString || '',
+      aminoAcidForPhosphorylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -3131,7 +3059,7 @@ for (const aminoAcidForSideChainAcetylation of aminoAcidsForSideChainAcetylation
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForSideChainAcetylation.HELMString || '',
+      aminoAcidForSideChainAcetylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -3188,7 +3116,7 @@ for (const aminoAcidForCitrullination of aminoAcidsForCitrullination) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForCitrullination.HELMString || '',
+      aminoAcidForCitrullination.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -3245,7 +3173,7 @@ for (const aminoAcidForHydroxylation of aminoAcidsForHydroxylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForHydroxylation.HELMString || '',
+      aminoAcidForHydroxylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -3302,7 +3230,7 @@ for (const aminoAcidForNMethylation of aminoAcidsForNMethylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForNMethylation.HELMString || '',
+      aminoAcidForNMethylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -3359,7 +3287,7 @@ for (const aminoAcidForInversion of aminoAcidsForInversion) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForInversion.HELMString || '',
+      aminoAcidForInversion.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -3416,7 +3344,7 @@ for (const aminoAcidForNaturalAminoAcid of aminoAcidsForNaturalAminoAcid) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForNaturalAminoAcid.HELMString || '',
+      aminoAcidForNaturalAminoAcid.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -3473,7 +3401,7 @@ for (const aminoAcidForPhosphorylation of aminoAcidsForPhosphorylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForPhosphorylation.HELMString || '',
+      aminoAcidForPhosphorylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -3533,7 +3461,7 @@ for (const aminoAcidForSideChainAcetylation of aminoAcidsForSideChainAcetylation
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForSideChainAcetylation.HELMString || '',
+      aminoAcidForSideChainAcetylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -3593,7 +3521,7 @@ for (const aminoAcidForCitrullination of aminoAcidsForCitrullination) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForCitrullination.HELMString || '',
+      aminoAcidForCitrullination.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -3653,7 +3581,7 @@ for (const aminoAcidForHydroxylation of aminoAcidsForHydroxylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForHydroxylation.HELMString || '',
+      aminoAcidForHydroxylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -3713,7 +3641,7 @@ for (const aminoAcidForNMethylation of aminoAcidsForNMethylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForNMethylation.HELMString || '',
+      aminoAcidForNMethylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -3773,7 +3701,7 @@ for (const aminoAcidForInversion of aminoAcidsForInversion) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForInversion.HELMString || '',
+      aminoAcidForInversion.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -3833,7 +3761,7 @@ for (const aminoAcidForNaturalAminoAcid of aminoAcidsForNaturalAminoAcid) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForNaturalAminoAcid.HELMString || '',
+      aminoAcidForNaturalAminoAcid.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -3891,7 +3819,7 @@ for (const aminoAcidForPhosphorylation of aminoAcidsForPhosphorylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForPhosphorylation.HELMString || '',
+      aminoAcidForPhosphorylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -3940,7 +3868,7 @@ for (const aminoAcidForSideChainAcetylation of aminoAcidsForSideChainAcetylation
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForSideChainAcetylation.HELMString || '',
+      aminoAcidForSideChainAcetylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -3989,7 +3917,7 @@ for (const aminoAcidForCitrullination of aminoAcidsForCitrullination) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForCitrullination.HELMString || '',
+      aminoAcidForCitrullination.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -4038,7 +3966,7 @@ for (const aminoAcidForHydroxylation of aminoAcidsForHydroxylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForHydroxylation.HELMString || '',
+      aminoAcidForHydroxylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -4087,7 +4015,7 @@ for (const aminoAcidForNMethylation of aminoAcidsForNMethylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForNMethylation.HELMString || '',
+      aminoAcidForNMethylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -4136,7 +4064,7 @@ for (const aminoAcidForInversion of aminoAcidsForInversion) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForInversion.HELMString || '',
+      aminoAcidForInversion.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -4185,7 +4113,7 @@ for (const aminoAcidForNaturalAminoAcid of aminoAcidsForNaturalAminoAcid) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForNaturalAminoAcid.HELMString || '',
+      aminoAcidForNaturalAminoAcid.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -4237,7 +4165,7 @@ for (const aminoAcidForPhosphorylation of aminoAcidsForPhosphorylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForPhosphorylation.HELMString || '',
+      aminoAcidForPhosphorylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -4299,7 +4227,7 @@ for (const aminoAcidForSideChainAcetylation of aminoAcidsForSideChainAcetylation
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForSideChainAcetylation.HELMString || '',
+      aminoAcidForSideChainAcetylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -4361,7 +4289,7 @@ for (const aminoAcidForCitrullination of aminoAcidsForCitrullination) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForCitrullination.HELMString || '',
+      aminoAcidForCitrullination.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -4423,7 +4351,7 @@ for (const aminoAcidForHydroxylation of aminoAcidsForHydroxylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForHydroxylation.HELMString || '',
+      aminoAcidForHydroxylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -4485,7 +4413,7 @@ for (const aminoAcidForNMethylation of aminoAcidsForNMethylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForNMethylation.HELMString || '',
+      aminoAcidForNMethylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -4547,7 +4475,7 @@ for (const aminoAcidForInversion of aminoAcidsForInversion) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForInversion.HELMString || '',
+      aminoAcidForInversion.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -4609,7 +4537,7 @@ for (const aminoAcidForNaturalAminoAcid of aminoAcidsForNaturalAminoAcid) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForNaturalAminoAcid.HELMString || '',
+      aminoAcidForNaturalAminoAcid.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -4671,7 +4599,7 @@ for (const aminoAcidForPhosphorylation of aminoAcidsForPhosphorylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForPhosphorylation.HELMString || '',
+      aminoAcidForPhosphorylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -4735,7 +4663,7 @@ for (const aminoAcidForSideChainAcetylation of aminoAcidsForSideChainAcetylation
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForSideChainAcetylation.HELMString || '',
+      aminoAcidForSideChainAcetylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -4800,7 +4728,7 @@ for (const aminoAcidForCitrullination of aminoAcidsForCitrullination) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForCitrullination.HELMString || '',
+      aminoAcidForCitrullination.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -4863,7 +4791,7 @@ for (const aminoAcidForHydroxylation of aminoAcidsForHydroxylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForHydroxylation.HELMString || '',
+      aminoAcidForHydroxylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -4926,7 +4854,7 @@ for (const aminoAcidForNMethylation of aminoAcidsForNMethylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForNMethylation.HELMString || '',
+      aminoAcidForNMethylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -4991,7 +4919,7 @@ for (const aminoAcidForInversion of aminoAcidsForInversion) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForInversion.HELMString || '',
+      aminoAcidForInversion.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -5056,7 +4984,7 @@ for (const aminoAcidForNaturalAminoAcid of aminoAcidsForNaturalAminoAcid) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForNaturalAminoAcid.HELMString || '',
+      aminoAcidForNaturalAminoAcid.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -5120,7 +5048,7 @@ for (const aminoAcidForPhosphorylation of aminoAcidsForPhosphorylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForPhosphorylation.HELMString || '',
+      aminoAcidForPhosphorylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -5176,7 +5104,7 @@ for (const aminoAcidForSideChainAcetylation of aminoAcidsForSideChainAcetylation
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForSideChainAcetylation.HELMString || '',
+      aminoAcidForSideChainAcetylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -5231,7 +5159,7 @@ for (const aminoAcidForCitrullination of aminoAcidsForCitrullination) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForCitrullination.HELMString || '',
+      aminoAcidForCitrullination.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -5287,7 +5215,7 @@ for (const aminoAcidForHydroxylation of aminoAcidsForHydroxylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForHydroxylation.HELMString || '',
+      aminoAcidForHydroxylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -5343,7 +5271,7 @@ for (const aminoAcidForNMethylation of aminoAcidsForNMethylation) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForNMethylation.HELMString || '',
+      aminoAcidForNMethylation.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -5399,7 +5327,7 @@ for (const aminoAcidForInversion of aminoAcidsForInversion) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForInversion.HELMString || '',
+      aminoAcidForInversion.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);
@@ -5455,7 +5383,7 @@ for (const aminoAcidForNaturalAminoAcid of aminoAcidsForNaturalAminoAcid) {
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,
       MacroFileType.HELM,
-      aminoAcidForNaturalAminoAcid.HELMString || '',
+      aminoAcidForNaturalAminoAcid.HELMString ?? '',
     );
 
     await selectAllStructuresOnCanvas(page);

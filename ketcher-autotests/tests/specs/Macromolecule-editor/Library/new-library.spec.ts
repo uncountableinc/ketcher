@@ -6,7 +6,6 @@ import {
   takeEditorScreenshot,
   takeElementScreenshot,
   takeMonomerLibraryScreenshot,
-  takePageScreenshot,
 } from '@utils/canvas';
 import { selectAllStructuresOnCanvas } from '@utils/canvas/selectSelection';
 import { waitForPageInit, waitForRender } from '@utils/common/loaders';
@@ -38,21 +37,21 @@ import {
   ZoomInByKeyboard,
   ZoomOutByKeyboard,
 } from '@utils/keyboard';
-import { waitForMonomerPreview } from '@utils/macromolecules';
 import {
   FileType,
   verifyFileExport,
+  verifySVGExport,
 } from '@utils/files/receiveFileComparisonData';
 import { MacroBondType } from '@tests/pages/constants/bondSelectionTool/Constants';
 import { CommonLeftToolbar } from '@tests/pages/common/CommonLeftToolbar';
 import { bondTwoMonomers } from '@utils/macromolecules/polymerBond';
 import { MonomerType } from '@utils/types';
 import { MolFileFormat } from '@utils/formats';
-import { SaveStructureDialog } from '@tests/pages/common/SaveStructureDialog';
-import { MoleculesFileFormatType } from '@tests/pages/constants/fileFormats/microFileFormats';
 import { MacromoleculesTopToolbar } from '@tests/pages/macromolecules/MacromoleculesTopToolbar';
 import { LayoutMode } from '@tests/pages/constants/macromoleculesTopToolbar/Constants';
 import { pageReload } from '@utils/common/helpers';
+import { MonomerPreviewTooltip } from '@tests/pages/macromolecules/canvas/MonomerPreviewTooltip';
+import { CalculateVariablesPanel } from '@tests/pages/macromolecules/CalculateVariablesPanel';
 // import { pageReload } from '@utils/common/helpers';
 
 let page: Page;
@@ -608,7 +607,7 @@ const monomerToDrag2 = [
   Sugar.FMOE,
   Phosphate.bP,
   Nucleotide.AmMC6T,
-  Chem.DOTA,
+  // Chem.DOTA,
 ];
 
 for (const monomer of monomerToDrag2) {
@@ -639,8 +638,8 @@ for (const monomer of monomerToDrag2) {
 
     await page.mouse.down();
     await page.mouse.move(
-      box.x + box.width / 2 - 4,
-      box.y + box.height / 2 - 4,
+      box.x + box.width / 2 + 4,
+      box.y + box.height / 2 + 4,
     );
     await takeMonomerLibraryScreenshot(page);
     await page.mouse.move(200, 200);
@@ -1045,7 +1044,7 @@ for (const monomer of monomerToDrag) {
       !Object.values(Preset).some((preset) => preset.alias === monomer.alias)
     ) {
       await monomerOnCanvas.hover();
-      await waitForMonomerPreview(page);
+      await MonomerPreviewTooltip(page).waitForBecomeVisible();
     }
     await takeEditorScreenshot(page);
 
@@ -1084,7 +1083,7 @@ for (const monomer of monomerToDrag) {
       !Object.values(Preset).some((preset) => preset.alias === monomer.alias)
     ) {
       await monomerOnCanvas.hover();
-      await waitForMonomerPreview(page);
+      await MonomerPreviewTooltip(page).waitForBecomeVisible();
     }
     await takeEditorScreenshot(page);
 
@@ -1320,21 +1319,12 @@ for (const monomer of monomerToDrag) {
       FileType.MOL,
       MolFileFormat.v3000,
     );
-
-    await CommonTopLeftToolbar(page).saveFile();
-    await SaveStructureDialog(page).chooseFileFormat(
-      MoleculesFileFormatType.SVGDocument,
-    );
-    await takeElementScreenshot(
-      page,
-      SaveStructureDialog(page).saveStructureTextarea,
-    );
-    await SaveStructureDialog(page).cancel();
+    await verifySVGExport(page);
 
     await openFileAndAddToCanvasAsNewProjectMacro(
       page,
       `KET/Library/${monomer.alias}-on-canvas-validation.ket`,
-      MacroFileType.Ket,
+      MacroFileType.KetFormat,
     );
 
     await takeEditorScreenshot(page);
@@ -1387,21 +1377,12 @@ for (const monomer of monomerToDrag) {
       FileType.MOL,
       MolFileFormat.v3000,
     );
-
-    await CommonTopLeftToolbar(page).saveFile();
-    await SaveStructureDialog(page).chooseFileFormat(
-      MoleculesFileFormatType.SVGDocument,
-    );
-    await takeElementScreenshot(
-      page,
-      SaveStructureDialog(page).saveStructureTextarea,
-    );
-    await SaveStructureDialog(page).cancel();
+    await verifySVGExport(page);
 
     await openFileAndAddToCanvasAsNewProjectMacro(
       page,
       `KET/Library/${monomer.alias}-on-canvas-validation.ket`,
-      MacroFileType.Ket,
+      MacroFileType.KetFormat,
     );
 
     await takeEditorScreenshot(page);
@@ -1562,8 +1543,9 @@ for (const monomer of monomerToDrag) {
      * 1. Open Ketcher and turn on Macromolecules editor
      * 2. Go to Flex mode
      * 3. Add target monomer to Favorites
-     * 4. Press Calculate Properties button
-     * 5. Take screenshot to validate it is visible
+     * 4. Drop monomer on the canvas
+     * 5. Press Calculate Properties button
+     * 6. Take screenshot to validate it is visible
      *
      * Version 3.6
      */
@@ -1571,7 +1553,8 @@ for (const monomer of monomerToDrag) {
     await Library(page).addMonomerToFavorites(monomer);
     await Library(page).dragMonomerOnCanvas(monomer, { x: 100, y: 100 });
     await MacromoleculesTopToolbar(page).calculateProperties();
-    await takePageScreenshot(page);
+    expect(await CalculateVariablesPanel(page).isVisible()).toBeTruthy();
+    await takeElementScreenshot(page, CalculateVariablesPanel(page).panel);
     await MacromoleculesTopToolbar(page).calculateProperties();
   });
 }

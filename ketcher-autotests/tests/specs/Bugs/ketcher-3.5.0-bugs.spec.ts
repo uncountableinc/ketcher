@@ -29,7 +29,6 @@ import { Library } from '@tests/pages/macromolecules/Library';
 import { ContextMenu } from '@tests/pages/common/ContextMenu';
 import { SaveStructureDialog } from '@tests/pages/common/SaveStructureDialog';
 import { MacromoleculesFileFormatType } from '@tests/pages/constants/fileFormats/macroFileFormats';
-import { MoleculesFileFormatType } from '@tests/pages/constants/fileFormats/microFileFormats';
 import { CalculateVariablesPanel } from '@tests/pages/macromolecules/CalculateVariablesPanel';
 import {
   ModifyAminoAcidsOption,
@@ -39,6 +38,7 @@ import { Ruler } from '@tests/pages/macromolecules/tools/Ruler';
 import { MacromoleculesTopToolbar } from '@tests/pages/macromolecules/MacromoleculesTopToolbar';
 import { LayoutMode } from '@tests/pages/constants/macromoleculesTopToolbar/Constants';
 import { MolecularMassUnit } from '@tests/pages/constants/calculateVariablesPanel/Constants';
+import { verifySVGExport } from '@utils/files/receiveFileComparisonData';
 
 let page: Page;
 
@@ -269,6 +269,7 @@ test.describe('Ketcher bugs in 3.5.0', () => {
     ).getMolecularMassValue();
     expect(molecularFormula).toEqual('C3H3');
     expect(molecularMass).toEqual('39.057');
+    await CalculateVariablesPanel(page).closeWindow();
   });
 
   test('Case 8: Monomer selection without bonds work the same as with bonds', async () => {
@@ -715,11 +716,7 @@ test.describe('Ketcher bugs in 3.5.0', () => {
       page,
       'KET/Bugs/SiEt3-two-s-groups.ket',
     );
-    await CommonTopLeftToolbar(page).saveFile();
-    await SaveStructureDialog(page).chooseFileFormat(
-      MoleculesFileFormatType.SVGDocument,
-    );
-    await takeEditorScreenshot(page);
+    await verifySVGExport(page);
   });
 
   test('Case 21: Export of unknown for Ketcher monomers works correct', async () => {

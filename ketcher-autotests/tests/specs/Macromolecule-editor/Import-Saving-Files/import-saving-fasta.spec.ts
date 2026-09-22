@@ -10,10 +10,7 @@ import {
   takeEditorScreenshot,
   MacroFileType,
 } from '@utils';
-import {
-  waitForMonomerPreview,
-  zoomWithMouseWheel,
-} from '@utils/macromolecules';
+import { zoomWithMouseWheel } from '@utils/macromolecules';
 import { getSymbolLocator } from '@utils/macromolecules/monomer';
 import {
   FileType,
@@ -28,6 +25,7 @@ import { CommonTopRightToolbar } from '@tests/pages/common/CommonTopRightToolbar
 import { LayoutMode } from '@tests/pages/constants/macromoleculesTopToolbar/Constants';
 import { MacromoleculesTopToolbar } from '@tests/pages/macromolecules/MacromoleculesTopToolbar';
 import { ErrorMessageDialog } from '@tests/pages/common/ErrorMessageDialog';
+import { MonomerPreviewTooltip } from '@tests/pages/macromolecules/canvas/MonomerPreviewTooltip';
 
 // function removeNotComparableData(file: string) {
 //   return file.replaceAll('\r', '');
@@ -89,19 +87,6 @@ test.describe('Import-Saving .fasta Files', () => {
     await expect(addToCanvasButton).toBeDisabled();
   });
 
-  // Fail while performance issue on Indigo side
-  // test('Check that system does not let uploading corrupted .fasta file', async ({
-  //   page,
-  // }) => {
-  //   await CommonTopLeftToolbar(page).openFile();
-  //
-  //   const filename = 'FASTA/fasta-corrupted.fasta';
-  //   await openFile(page, filename);
-  //   await selectOptionInDropdown(filename, page);
-  //   await pressButton(page, 'Add to Canvas');
-  //   await takeEditorScreenshot(page);
-  // });
-
   test('Validate correct displaying of snake viewed RNA chain loaded from .fasta file format', async () => {
     await openFileAndAddToCanvasMacro(
       page,
@@ -138,8 +123,12 @@ test.describe('Import-Saving .fasta Files', () => {
     await SaveStructureDialog(page).chooseFileFormat(
       MacromoleculesFileFormatType.FASTA,
     );
-
-    await takeEditorScreenshot(page);
+    const convertErrorMessage = await ErrorMessageDialog(
+      page,
+    ).getErrorMessage();
+    const expectedErrorMessage =
+      'Convert error! Error during sequence type recognition(RNA, DNA or Peptide)';
+    expect(convertErrorMessage).toEqual(expectedErrorMessage);
   });
 
   // Should not convert to Fasta type in case of there is any CHEM
@@ -149,8 +138,12 @@ test.describe('Import-Saving .fasta Files', () => {
     await SaveStructureDialog(page).chooseFileFormat(
       MacromoleculesFileFormatType.FASTA,
     );
-
-    await takeEditorScreenshot(page);
+    const convertErrorMessage = await ErrorMessageDialog(
+      page,
+    ).getErrorMessage();
+    const expectedErrorMessage =
+      'Convert error! Error during sequence type recognition(RNA, DNA or Peptide)';
+    expect(convertErrorMessage).toEqual(expectedErrorMessage);
   });
 
   // const testData = [
@@ -275,7 +268,7 @@ test.describe('Import-Saving .fasta Files', () => {
       symbolAlias: 'U',
       nodeIndexOverall: 4,
     }).click();
-    await waitForMonomerPreview(page);
+    await MonomerPreviewTooltip(page).waitForBecomeVisible();
     await takeEditorScreenshot(page);
   });
 
@@ -314,7 +307,12 @@ test.describe('Import-Saving .fasta Files', () => {
       await SaveStructureDialog(page).chooseFileFormat(
         MacromoleculesFileFormatType.FASTA,
       );
-      await takeEditorScreenshot(page);
+      const convertErrorMessage = await ErrorMessageDialog(
+        page,
+      ).getErrorMessage();
+      const expectedErrorMessage =
+        'Convert error! Error during sequence type recognition(RNA, DNA or Peptide)';
+      expect(convertErrorMessage).toEqual(expectedErrorMessage);
     },
   );
 

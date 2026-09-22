@@ -7,9 +7,7 @@ import { Page } from '@playwright/test';
 import { CommonLeftToolbar } from '@tests/pages/common/CommonLeftToolbar';
 import { CommonTopLeftToolbar } from '@tests/pages/common/CommonTopLeftToolbar';
 import { CommonTopRightToolbar } from '@tests/pages/common/CommonTopRightToolbar';
-import { SaveStructureDialog } from '@tests/pages/common/SaveStructureDialog';
 import { SelectionToolType } from '@tests/pages/constants/areaSelectionTool/Constants';
-import { MoleculesFileFormatType } from '@tests/pages/constants/fileFormats/microFileFormats';
 import { LayoutMode } from '@tests/pages/constants/macromoleculesTopToolbar/Constants';
 import { Base } from '@tests/pages/constants/monomers/Bases';
 import { Peptide } from '@tests/pages/constants/monomers/Peptides';
@@ -33,7 +31,6 @@ import {
   RxnFileFormat,
   selectAllStructuresOnCanvas,
   takeEditorScreenshot,
-  takeElementScreenshot,
   takeMonomerLibraryScreenshot,
 } from '@utils';
 import { expandMonomer, expandMonomers } from '@utils/canvas/monomer/helpers';
@@ -41,6 +38,7 @@ import { getAbbreviationLocator } from '@utils/canvas/s-group-signes/getAbbrevia
 import {
   FileType,
   verifyFileExport,
+  verifySVGExport,
 } from '@utils/files/receiveFileComparisonData';
 
 let page: Page;
@@ -229,7 +227,7 @@ test.describe('Ketcher bugs in 3.7.0', () => {
       expect(
         await CalculateVariablesPanel(page).getIsoelectricPointValue(),
       ).toEqual(expected);
-      await CalculateVariablesPanel(page).close();
+      await CalculateVariablesPanel(page).closeWindow();
       await CommonTopLeftToolbar(page).clearCanvas();
     }
   });
@@ -254,7 +252,7 @@ test.describe('Ketcher bugs in 3.7.0', () => {
     expect(
       await CalculateVariablesPanel(page).getNucleotideNaturalAnalogCountList(),
     ).toEqual(['A6', 'C6', 'G6', 'T6', 'U12', 'Other168']);
-    await CalculateVariablesPanel(page).close();
+    await CalculateVariablesPanel(page).closeWindow();
   });
 
   test('Case 9: HELM load not fails if it contains more than one instance of monomers with aliasHELM property', async ({
@@ -353,7 +351,7 @@ test.describe('Ketcher bugs in 3.7.0', () => {
       hideMonomerPreview: true,
       hideMacromoleculeEditorScrollBars: true,
     });
-    await CalculateVariablesPanel(page).close();
+    await CalculateVariablesPanel(page).closeWindow();
     await clickOnCanvas(page, 700, 310, { from: 'pageTopLeft' });
     await MacromoleculesTopToolbar(page).calculateProperties();
     expect(await CalculateVariablesPanel(page).getMolecularFormula()).toEqual(
@@ -366,7 +364,7 @@ test.describe('Ketcher bugs in 3.7.0', () => {
       hideMonomerPreview: true,
       hideMacromoleculeEditorScrollBars: true,
     });
-    await CalculateVariablesPanel(page).close();
+    await CalculateVariablesPanel(page).closeWindow();
     await resetZoomLevelToDefault(page);
   });
 
@@ -552,16 +550,12 @@ test.describe('Ketcher bugs in 3.7.0', () => {
      * 2. Load from CDXML
      * 3. Save as SVG
      */
-    const saveStructureArea = SaveStructureDialog(page).saveStructureTextarea;
+
     await openFileAndAddToCanvasAsNewProject(
       page,
       'CDXML/Bugs/structure-with-stereolabels.cdxml',
     );
-    await CommonTopLeftToolbar(page).saveFile();
-    await SaveStructureDialog(page).chooseFileFormat(
-      MoleculesFileFormatType.SVGDocument,
-    );
-    await takeElementScreenshot(page, saveStructureArea);
+    await verifySVGExport(page);
   });
 
   test('Case 21: Loading monomer chain from SDF file works - bonds between monomers not lost ', async () => {

@@ -160,7 +160,7 @@ interface MonomerConnectedToSelection {
 export class DrawingEntitiesManager {
   public monomers: Map<number, BaseMonomer> = new Map();
   public polymerBonds: Map<number, PolymerBond | HydrogenBond> = new Map();
-  private bondsMonomersOverlaps: Map<number, BaseMonomer> = new Map();
+  private readonly bondsMonomersOverlaps: Map<number, BaseMonomer> = new Map();
   public atoms: Map<number, Atom> = new Map();
   public bonds: Map<number, Bond> = new Map();
   public monomerToAtomBonds: Map<number, MonomerToAtomBond> = new Map();
@@ -212,6 +212,17 @@ export class DrawingEntitiesManager {
 
   public get selectedMonomers() {
     return this.monomersArray.filter((monomer) => monomer.selected);
+  }
+
+  public get selectedMicromoleculeEntities() {
+    return this.selectedEntitiesArr.filter(
+      (entity) =>
+        !(
+          entity instanceof BaseMonomer ||
+          entity instanceof PolymerBond ||
+          entity instanceof HydrogenBond
+        ),
+    );
   }
 
   public get externalConnectionsToSelection() {
@@ -757,10 +768,7 @@ export class DrawingEntitiesManager {
         editor.mode instanceof SequenceMode &&
         drawingEntity instanceof PolymerBond
       ) {
-        isValueChanged = this.checkBondSelectionForSequenceMode(
-          drawingEntity,
-          isValueChanged,
-        );
+        isValueChanged = this.checkBondSelectionForSequenceMode(drawingEntity);
       } else {
         isValueChanged = drawingEntity.selectIfLocatedInRectangle(
           rectangleTopLeftPoint,
@@ -804,10 +812,7 @@ export class DrawingEntitiesManager {
         editor.mode instanceof SequenceMode &&
         drawingEntity instanceof PolymerBond
       ) {
-        isValueChanged = this.checkBondSelectionForSequenceMode(
-          drawingEntity,
-          isValueChanged,
-        );
+        isValueChanged = this.checkBondSelectionForSequenceMode(drawingEntity);
       } else {
         isValueChanged = drawingEntity.selectIfLocatedInPolygon(
           polygonPoints,
@@ -825,18 +830,14 @@ export class DrawingEntitiesManager {
     return command;
   }
 
-  private checkBondSelectionForSequenceMode(
-    bond: PolymerBond,
-    isValueChanged: boolean,
-  ) {
+  private checkBondSelectionForSequenceMode(bond: PolymerBond) {
     const prevSelectedValue = bond.selected;
     if (bond.firstMonomer.selected && bond.secondMonomer?.selected) {
       bond.turnOnSelection();
     } else {
       bond.turnOffSelection();
     }
-    isValueChanged = prevSelectedValue !== bond.selected;
-    return isValueChanged;
+    return prevSelectedValue !== bond.selected;
   }
 
   public startPolymerBondCreationChangeModel(
@@ -1555,22 +1556,21 @@ export class DrawingEntitiesManager {
       monomersGroupedByX?.set(x, monomer);
     });
 
-    const sortedGroupedMonomers = [...monomersGroupedByY.entries()]
-      .map(([y, groupedByX]) => {
+    const sortedGroupedMonomers = [...monomersGroupedByY.entries()].map(
+      ([y, groupedByX]) => {
         const groupedByYArray: [number, [number, BaseMonomer][]] = [
           y,
           [...groupedByX.entries()],
         ];
 
         return groupedByYArray;
-      })
-      .sort((a, b) => a[0] - b[0]);
+      },
+    );
+    sortedGroupedMonomers.sort((a, b) => a[0] - b[0]);
 
     sortedGroupedMonomers.forEach(([y, groupedByY], index) => {
-      sortedGroupedMonomers[index] = [
-        y,
-        groupedByY.sort((a, b) => Number(a[0]) - Number(b[0])),
-      ];
+      groupedByY.sort((a, b) => Number(a[0]) - Number(b[0]));
+      sortedGroupedMonomers[index] = [y, groupedByY];
     });
 
     const monomerXToIndexInMatrix = {};
@@ -2476,12 +2476,14 @@ export class DrawingEntitiesManager {
     let isValid = true;
 
     this.monomers.forEach((monomer) => {
-      const monomerType =
-        monomer instanceof AmbiguousMonomer
-          ? monomer.monomerClass === KetMonomerClass.CHEM
+      let monomerType = monomer.monomerItem.props.MonomerType;
+
+      if (monomer instanceof AmbiguousMonomer) {
+        monomerType =
+          monomer.monomerClass === KetMonomerClass.CHEM
             ? MONOMER_CONST.CHEM
-            : monomer.monomers[0].monomerItem.props.MonomerType
-          : monomer.monomerItem.props.MonomerType;
+            : monomer.monomers[0].monomerItem.props.MonomerType;
+      }
       monomerTypes.add(monomerType);
       if (monomerType === MONOMER_CONST.CHEM || monomerTypes.size > 1) {
         isValid = false;
@@ -3147,12 +3149,19 @@ export class DrawingEntitiesManager {
     rnaBaseMonomerOrLabel: RNABase | AmbiguousMonomer | string,
     isDnaAntisense: boolean,
   ) {
+    let baseLabelKey: string;
+
+    if (typeof rnaBaseMonomerOrLabel === 'string') {
+      baseLabelKey = rnaBaseMonomerOrLabel;
+    } else if (rnaBaseMonomerOrLabel instanceof AmbiguousMonomer) {
+      baseLabelKey = rnaBaseMonomerOrLabel.monomerItem.label;
+    } else {
+      baseLabelKey =
+        rnaBaseMonomerOrLabel.monomerItem.props.MonomerNaturalAnalogCode;
+    }
+
     return DrawingEntitiesManager.antisenseChainBasesMap(isDnaAntisense)[
-      typeof rnaBaseMonomerOrLabel === 'string'
-        ? rnaBaseMonomerOrLabel
-        : rnaBaseMonomerOrLabel instanceof AmbiguousMonomer
-        ? rnaBaseMonomerOrLabel.monomerItem.label
-        : rnaBaseMonomerOrLabel.monomerItem.props.MonomerNaturalAnalogCode
+      baseLabelKey
     ];
   }
 

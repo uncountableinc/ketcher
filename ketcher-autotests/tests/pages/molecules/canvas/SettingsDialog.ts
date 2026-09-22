@@ -104,6 +104,7 @@ type OptionsForDebuggingSectionLocators = {
 };
 
 type SettingsDialogLocators = {
+  window: Locator;
   openFromFileButton: Locator;
   saveToFileButton: Locator;
   resetButton: Locator;
@@ -265,6 +266,7 @@ export const SettingsDialog = (page: Page) => {
   };
 
   const locators: SettingsDialogLocators = {
+    window: page.getByTestId('settings-dialog'),
     openFromFileButton: page.getByTestId('open-settings-from-file-button'),
     saveToFileButton: page.getByTestId('save-settings-to-file-button'),
     resetButton: page.getByTestId('reset-settings-button'),
@@ -295,7 +297,6 @@ export const SettingsDialog = (page: Page) => {
 
     async close() {
       await locators.closeWindowButton.click();
-      await locators.generalSection.resetToSelectToolCombobox.click();
     },
 
     async apply() {
@@ -446,9 +447,10 @@ export async function setSettingsOptions(
 
   let openedSection = SettingsSection.General;
 
-  for (const { option, value } of options.sort((a, b) =>
-    a.option.localeCompare(b.option),
-  )) {
+  const sortedOptions = [...options];
+  sortedOptions.sort((a, b) => a.option.localeCompare(b.option));
+
+  for (const { option, value } of sortedOptions) {
     const section = optionsToSectionMap.get(option) ?? SettingsSection.General;
     if (openedSection !== section) {
       await SettingsDialog(page).openSection(openedSection);
@@ -502,6 +504,9 @@ export async function resetSettingsValuesToDefault(page: Page) {
   await TopRightToolbar(page).Settings();
   await SettingsDialog(page).reset();
   await SettingsDialog(page).apply();
+  if (await InfoMessageDialog(page).isVisible()) {
+    await InfoMessageDialog(page).ok();
+  }
 }
 
 export type SettingsDialogLocatorsType = ReturnType<typeof SettingsDialog>;

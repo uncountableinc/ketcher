@@ -19,7 +19,6 @@ import {
   dragMouseTo,
 } from '@utils';
 import { selectAllStructuresOnCanvas } from '@utils/canvas/selectSelection';
-import { waitForMonomerPreview } from '@utils/macromolecules';
 import { waitForPageInit } from '@utils/common';
 import {
   createRNAAntisenseChain,
@@ -33,10 +32,7 @@ import { Phosphate } from '@tests/pages/constants/monomers/Phosphates';
 import { CommonTopLeftToolbar } from '@tests/pages/common/CommonTopLeftToolbar';
 import { CommonTopRightToolbar } from '@tests/pages/common/CommonTopRightToolbar';
 import { verifyHELMExport } from '@utils/files/receiveFileComparisonData';
-import {
-  BottomToolbar,
-  selectRingButton,
-} from '@tests/pages/molecules/BottomToolbar';
+import { BottomToolbar } from '@tests/pages/molecules/BottomToolbar';
 import { RingButton } from '@tests/pages/constants/ringButton/Constants';
 import { Library } from '@tests/pages/macromolecules/Library';
 import { RNASection } from '@tests/pages/constants/library/Constants';
@@ -48,6 +44,7 @@ import { LayoutMode } from '@tests/pages/constants/macromoleculesTopToolbar/Cons
 import { MacromoleculesTopToolbar } from '@tests/pages/macromolecules/MacromoleculesTopToolbar';
 import { StructureLibraryDialog } from '@tests/pages/molecules/canvas/StructureLibraryDialog';
 import { SaltsAndSolventsTabItems } from '@tests/pages/constants/structureLibraryDialog/Constants';
+import { MonomerPreviewTooltip } from '@tests/pages/macromolecules/canvas/MonomerPreviewTooltip';
 
 let page: Page;
 
@@ -114,7 +111,7 @@ test.describe('Ketcher bugs in 3.3.0', () => {
     });
     await keyboardPressOnCanvas(page, 'Escape');
     await getMonomerLocator(page, Sugar.fR).first().hover();
-    await waitForMonomerPreview(page);
+    await MonomerPreviewTooltip(page).waitForBecomeVisible();
     // Screenshot suppression is not used on purpose, as it’s required for the test
     await takeEditorScreenshot(page);
   });
@@ -133,7 +130,7 @@ test.describe('Ketcher bugs in 3.3.0', () => {
     await Library(page).openRNASection(RNASection.Sugars);
     await Library(page).selectMonomer(Sugar._5R6Sm5);
     await Library(page).hoverMonomer(Sugar.ALmecl);
-    await waitForMonomerPreview(page);
+    await MonomerPreviewTooltip(page).waitForBecomeVisible();
     // Screenshot suppression is not used on purpose, as it’s required for the test
     await takeMonomerLibraryScreenshot(page);
   });
@@ -230,12 +227,12 @@ test.describe('Ketcher bugs in 3.3.0', () => {
      * 3. Select h456UR and e6A monomers
      */
     await Library(page).selectMonomer(Base.h456UR);
-    await waitForMonomerPreview(page);
+    await MonomerPreviewTooltip(page).waitForBecomeVisible();
     // Screenshot suppression is not used on purpose, as it’s required for the test
     await takePageScreenshot(page);
     await keyboardPressOnCanvas(page, 'Escape');
     await Library(page).selectMonomer(Base.e6A);
-    await waitForMonomerPreview(page);
+    await MonomerPreviewTooltip(page).waitForBecomeVisible();
     // Screenshot suppression is not used on purpose, as it’s required for the test
     await takePageScreenshot(page);
   });
@@ -812,7 +809,7 @@ test.describe('Ketcher bugs in 3.3.0', () => {
       .getByTestId(KETCHER_CANVAS)
       .getByText(Peptide._1Nal.alias, { exact: true });
     await expandMonomer(page, peptide1Nal);
-    await selectRingButton(page, RingButton.Cyclohexane);
+    await BottomToolbar(page).clickRing(RingButton.Cyclohexane);
     await clickOnCanvas(page, 505, 400, { from: 'pageTopLeft' });
     await takeEditorScreenshot(page);
   });

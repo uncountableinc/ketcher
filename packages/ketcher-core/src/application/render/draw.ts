@@ -94,8 +94,9 @@ function ellipse(paper: RaphaelPaper, points: [Vec2, Vec2]) {
 
 function polyline(paper: RaphaelPaper, points: Vec2[]) {
   const path = ['M', points[0].x, points[0].y];
-  for (let i = 1; i < points.length; i++)
-    path.push('L', points[i].x, points[i].y);
+  for (const point of points.slice(1)) {
+    path.push('L', point.x, point.y);
+  }
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore: raphael typing issues
   return paper.path(path);
@@ -1497,8 +1498,13 @@ function reactingCenter(
   options: RenderOptions,
 ) {
   let pathDesc = '';
-  for (let i = 0; i < points.length / 2; ++i) {
-    pathDesc += makeStroke(points[2 * i], points[2 * i + 1]);
+  for (const [index, point] of points.entries()) {
+    if (index % 2 === 0) {
+      const nextPoint = points[index + 1];
+      if (nextPoint) {
+        pathDesc += makeStroke(point, nextPoint);
+      }
+    }
   }
   return paper.path(pathDesc).attr(options.lineattr);
 }
@@ -1632,8 +1638,8 @@ function selectionPolygon(
 ) {
   const v = r[r.length - 1];
   let pstr = 'M' + tfx(v.x) + ',' + tfx(v.y);
-  for (let i = 0; i < r.length; ++i) {
-    pstr += 'L' + tfx(r[i].x) + ',' + tfx(r[i].y);
+  for (const point of r) {
+    pstr += 'L' + tfx(point.x) + ',' + tfx(point.y);
   }
   return paper.path(pstr).attr(options.lassoStyle);
 }

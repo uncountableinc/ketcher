@@ -35,12 +35,12 @@ import { delay, MacroFileType } from '@utils/canvas';
 import { selectAllStructuresOnCanvas } from '@utils/canvas/selectSelection';
 import { pageReload } from '@utils/common/helpers';
 import { waitForMonomerPreviewMicro } from '@utils/common/loaders/previewWaiters';
-import { miewApplyButtonIsEnabled } from '@utils/common/loaders/waitForMiewApplyButtonIsEnabled';
 import {
   FileType,
   verifyFileExport,
+  verifyPNGExport,
+  verifySVGExport,
 } from '@utils/files/receiveFileComparisonData';
-import { waitForMonomerPreview } from '@utils/macromolecules';
 import {
   getMonomerLocator,
   moveMonomerOnMicro,
@@ -62,10 +62,8 @@ import {
   resetZoomLevelToDefault,
 } from '@utils/keyboard/index';
 import { PasteFromClipboardDialog } from '@tests/pages/common/PasteFromClipboardDialog';
-import { MoleculesFileFormatType } from '@tests/pages/constants/fileFormats/microFileFormats';
 import { Atom } from '@tests/pages/constants/atoms/atoms';
 import { RightToolbar } from '@tests/pages/molecules/RightToolbar';
-import { SaveStructureDialog } from '@tests/pages/common/SaveStructureDialog';
 import { CommonTopLeftToolbar } from '@tests/pages/common/CommonTopLeftToolbar';
 import { CommonTopRightToolbar } from '@tests/pages/common/CommonTopRightToolbar';
 import { IndigoFunctionsToolbar } from '@tests/pages/molecules/IndigoFunctionsToolbar';
@@ -74,7 +72,6 @@ import { RGroupType } from '@tests/pages/constants/rGroupSelectionTool/Constants
 import {
   BottomToolbar,
   drawBenzeneRing,
-  selectRingButton,
 } from '@tests/pages/molecules/BottomToolbar';
 import { RingButton } from '@tests/pages/constants/ringButton/Constants';
 import {
@@ -109,6 +106,8 @@ import { CalculatedValuesDialog } from '@tests/pages/molecules/canvas/Calculated
 import { getAtomLocator } from '@utils/canvas/atoms/getAtomLocator/getAtomLocator';
 import { ErrorMessageDialog } from '@tests/pages/common/ErrorMessageDialog';
 import { OpenStructureDialog } from '@tests/pages/common/OpenStructureDialog';
+import { MonomerPreviewTooltip } from '@tests/pages/macromolecules/canvas/MonomerPreviewTooltip';
+import { SaveStructureDialog } from '@tests/pages/common/SaveStructureDialog';
 
 const topLeftCorner = {
   x: -325,
@@ -127,13 +126,6 @@ async function scrollHorizontally(page: Page, scrollValue: number) {
   await waitForRender(page, async () => {
     await page.mouse.wheel(scrollValue, 0);
   });
-}
-
-async function open3DViewer(page: Page, waitForButtonIsEnabled = true) {
-  await IndigoFunctionsToolbar(page).ThreeDViewer();
-  if (waitForButtonIsEnabled) {
-    await miewApplyButtonIsEnabled(page);
-  }
 }
 
 export let page: Page;
@@ -543,9 +535,9 @@ test.describe('Macro-Micro-Switcher', () => {
     });
     await moveMouseAway(page);
     await CommonTopRightToolbar(page).turnOnMicromoleculesEditor();
-    await selectRingButton(page, RingButton.Benzene);
+    await BottomToolbar(page).clickRing(RingButton.Benzene);
     await clickInTheMiddleOfTheScreen(page);
-    await IndigoFunctionsToolbar(page).ThreeDViewer();
+    await IndigoFunctionsToolbar(page).threeDViewer();
     await moveMouseAway(page);
     await takeEditorScreenshot(page, {
       maxDiffPixelRatio: 0.05,
@@ -595,6 +587,7 @@ test.describe('Macro-Micro-Switcher', () => {
     await takeEditorScreenshot(page);
     await PasteFromClipboardDialog(page).closeWindowButton.click();
     await CommonTopLeftToolbar(page).saveFile();
+    expect(SaveStructureDialog(page).window).toBeVisible();
     await takeEditorScreenshot(page);
   });
 });
@@ -623,7 +616,7 @@ test.describe('Macro-Micro-Switcher', () => {
       await getMonomerLocator(page, {
         monomerAlias: 'F1',
       }).hover();
-      await waitForMonomerPreview(page);
+      await MonomerPreviewTooltip(page).waitForBecomeVisible();
       await takeEditorScreenshot(page);
     },
   );
@@ -646,7 +639,7 @@ test.describe('Macro-Micro-Switcher', () => {
       await getMonomerLocator(page, {
         monomerAlias: 'F1',
       }).hover();
-      await waitForMonomerPreview(page);
+      await MonomerPreviewTooltip(page).waitForBecomeVisible();
       await takeEditorScreenshot(page);
     },
   );
@@ -669,7 +662,7 @@ test.describe('Macro-Micro-Switcher', () => {
       await getMonomerLocator(page, {
         monomerAlias: 'F2',
       }).hover();
-      await waitForMonomerPreview(page);
+      await MonomerPreviewTooltip(page).waitForBecomeVisible();
       await takeEditorScreenshot(page);
     },
   );
@@ -692,7 +685,7 @@ test.describe('Macro-Micro-Switcher', () => {
       await getMonomerLocator(page, {
         monomerAlias: 'F1',
       }).hover();
-      await waitForMonomerPreview(page);
+      await MonomerPreviewTooltip(page).waitForBecomeVisible();
       await takeEditorScreenshot(page);
     },
   );
@@ -755,7 +748,7 @@ test.describe('Macro-Micro-Switcher', () => {
       await getMonomerLocator(page, {
         monomerAlias: 'F1',
       }).hover();
-      await waitForMonomerPreview(page);
+      await MonomerPreviewTooltip(page).waitForBecomeVisible();
       await takeEditorScreenshot(page);
     },
   );
@@ -830,7 +823,7 @@ test.describe('Macro-Micro-Switcher', () => {
       await getMonomerLocator(page, {
         monomerAlias: 'F1',
       }).hover();
-      await waitForMonomerPreview(page);
+      await MonomerPreviewTooltip(page).waitForBecomeVisible();
       await takeEditorScreenshot(page);
     },
   );
@@ -932,7 +925,7 @@ test.describe('Macro-Micro-Switcher', () => {
     await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
     await CommonLeftToolbar(page).selectBondTool(MacroBondType.Single);
     await getMonomerLocator(page, Chem.F1).hover();
-    await waitForMonomerPreview(page);
+    await MonomerPreviewTooltip(page).waitForBecomeVisible();
     await takeEditorScreenshot(page);
   });
 
@@ -970,7 +963,7 @@ test.describe('Macro-Micro-Switcher', () => {
     await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
     await CommonLeftToolbar(page).selectBondTool(MacroBondType.Single);
     await getMonomerLocator(page, Chem.F1).hover();
-    await waitForMonomerPreview(page);
+    await MonomerPreviewTooltip(page).waitForBecomeVisible();
     await takeEditorScreenshot(page);
   });
 
@@ -993,6 +986,7 @@ test.describe('Macro-Micro-Switcher', () => {
       ).open();
     });
     await takeEditorScreenshot(page);
+    await setSettingsOption(page, AtomsSetting.DisplayCarbonExplicitly);
   });
 
   test('Check that in context menu for AP - only Delete and Highlight avaliable', async () => {
@@ -1022,14 +1016,14 @@ test.describe('Macro-Micro-Switcher', () => {
       const y = 200;
       const x1 = 600;
       const y1 = 600;
-      await selectRingButton(page, RingButton.Benzene);
+      await BottomToolbar(page).clickRing(RingButton.Benzene);
       await clickOnCanvas(page, x, y, { from: 'pageTopLeft' });
       await takeEditorScreenshot(page);
       await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
       await getMonomerLocator(page, {
         monomerAlias: 'F1',
       }).hover();
-      await waitForMonomerPreview(page);
+      await MonomerPreviewTooltip(page).waitForBecomeVisible();
       await dragMouseTo(x1, y1, page);
       await moveMouseAway(page);
       await takeEditorScreenshot(page);
@@ -1059,7 +1053,7 @@ test.describe('Macro-Micro-Switcher', () => {
       await getMonomerLocator(page, {
         monomerAlias: 'F1',
       }).hover();
-      await waitForMonomerPreview(page);
+      await MonomerPreviewTooltip(page).waitForBecomeVisible();
       await dragMouseTo(x1, y1, page);
       await moveMouseAway(page);
       await takeEditorScreenshot(page);
@@ -1090,7 +1084,7 @@ test.describe('Macro-Micro-Switcher', () => {
       await getMonomerLocator(page, {
         monomerAlias: 'F1',
       }).hover();
-      await waitForMonomerPreview(page);
+      await MonomerPreviewTooltip(page).waitForBecomeVisible();
       await dragMouseTo(x1, y1, page);
       await moveMouseAway(page);
       await takeEditorScreenshot(page);
@@ -1121,7 +1115,7 @@ test.describe('Macro-Micro-Switcher', () => {
       await getMonomerLocator(page, {
         monomerAlias: 'F1',
       }).hover();
-      await waitForMonomerPreview(page);
+      await MonomerPreviewTooltip(page).waitForBecomeVisible();
       await dragMouseTo(x1, y1, page);
       await moveMouseAway(page);
       await takeEditorScreenshot(page);
@@ -1222,7 +1216,7 @@ test.describe('Macro-Micro-Switcher', () => {
       bondType: MacroBondDataIds.Single,
     }).first();
     await bondLine.hover({ force: true });
-    await waitForMonomerPreview(page);
+    await MonomerPreviewTooltip(page).waitForBecomeVisible();
     await takeEditorScreenshot(page);
   });
 
@@ -1594,6 +1588,7 @@ test.describe('Macro-Micro-Switcher', () => {
       getAtomLocator(page, { atomLabel: 'C', atomId: 4 }),
     ).open();
     await takeEditorScreenshot(page);
+    await setSettingsOption(page, AtomsSetting.DisplayCarbonExplicitly);
   });
 
   test('Validate that we can save bond between micro and macro structures to KET', async () => {
@@ -1797,11 +1792,7 @@ test.describe('Macro-Micro-Switcher', () => {
         page,
         'KET/one-attachment-point-added-in-micro-mode.ket',
       );
-      await CommonTopLeftToolbar(page).saveFile();
-      await SaveStructureDialog(page).chooseFileFormat(
-        MoleculesFileFormatType.SVGDocument,
-      );
-      await takeEditorScreenshot(page);
+      await verifySVGExport(page);
     },
   );
 
@@ -1819,11 +1810,7 @@ test.describe('Macro-Micro-Switcher', () => {
         page,
         'KET/one-attachment-point-added-in-micro-mode.ket',
       );
-      await CommonTopLeftToolbar(page).saveFile();
-      await SaveStructureDialog(page).chooseFileFormat(
-        MoleculesFileFormatType.PNGImage,
-      );
-      await takeEditorScreenshot(page);
+      await verifyPNGExport(page);
     },
   );
 
@@ -1925,7 +1912,7 @@ test.describe('Macro-Micro-Switcher', () => {
       page,
       'KET/one-attachment-point-added-in-micro-mode.ket',
     );
-    await open3DViewer(page);
+    await IndigoFunctionsToolbar(page).threeDViewer();
     await expect(page).toHaveScreenshot({
       animations: 'disabled',
       maxDiffPixelRatio: 0.05,
@@ -1977,7 +1964,7 @@ test.describe('Macro-Micro-Switcher', () => {
         await getMonomerLocator(page, {
           monomerAlias: 'F1',
         }).hover();
-        await waitForMonomerPreview(page);
+        await MonomerPreviewTooltip(page).waitForBecomeVisible();
         await takeEditorScreenshot(page);
       },
     );
@@ -2884,7 +2871,7 @@ test('Switch to Macro mode, verify that user cant open reactions from RDF RXN V2
   await openFileAndAddToCanvasAsNewProjectMacro(
     page,
     'RDF-V3000/rdf-rxn-v3000-cascade-reaction-2-1-1.rdf',
-    MacroFileType.Ket,
+    MacroFileType.KetFormat,
     // error is expected
     true,
   );

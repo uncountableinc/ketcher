@@ -150,6 +150,7 @@ interface IAutochainMonomerAddResult {
 
 export const EditorClassName = 'Ketcher-polymer-editor-root';
 export const KETCHER_MACROMOLECULES_ROOT_NODE_SELECTOR = `.${EditorClassName}`;
+export const NATURAL_AMINO_ACID_MODIFICATION_TYPE = 'Natural amino acid';
 
 let persistentMonomersLibrary: MonomerItemType[] = [];
 let persistentMonomersLibraryParsedJson: IKetMacromoleculesContent | null =
@@ -190,7 +191,7 @@ export class CoreEditor {
   public theme;
   public zoomTool: ZoomTool;
   // private lastEvent: Event | undefined;
-  private tool?: Tool | BaseTool | undefined;
+  private tool?: Tool | BaseTool;
 
   public get selectedTool(): Tool | BaseTool | undefined {
     return this.tool;
@@ -290,7 +291,7 @@ export class CoreEditor {
     this.cancelActiveDrag();
   };
 
-  private handleWindowResize = () => {
+  private readonly handleWindowResize = () => {
     this.resetCanvasOffset();
     this.resetKetcherRootElementOffset();
   };
@@ -541,9 +542,13 @@ export class CoreEditor {
   }
 
   private setupKeyboardEvents() {
-    this.keydownEventHandler = async (event: KeyboardEvent) => {
+    this.keydownEventHandler = (event: KeyboardEvent) => {
       this.events.keyDown.dispatch(event);
-      if (!event.cancelBubble) await this.mode.onKeyDown(event);
+      if (!event.cancelBubble) {
+        this.mode.onKeyDown(event).catch((error) => {
+          KetcherLogger.error('Editor.ts::keydownEventHandler', error);
+        });
+      }
     };
 
     document.addEventListener('keydown', this.keydownEventHandler);
@@ -638,7 +643,14 @@ export class CoreEditor {
     document.addEventListener('contextmenu', this.contextMenuEventHandler);
   }
 
+  private onLayoutCircular() {
+    const ketcher = ketcherProvider.getKetcher(this.ketcherId);
+
+    ketcher.circularLayoutMonomers();
+  }
+
   private subscribeEvents() {
+    this.events.layoutCircular.add(() => this.onLayoutCircular());
     this.events.selectMonomer.add((monomer) => this.onSelectMonomer(monomer));
     this.events.selectPreset.add((preset) => this.onSelectRNAPreset(preset));
     this.events.selectTool.add(([tool, options]) =>
@@ -828,17 +840,26 @@ export class CoreEditor {
       selectedMonomersWithFreeR2.length === 1
         ? selectedMonomersWithFreeR2[0]
         : undefined;
-    const newMonomerPosition = selectedMonomerToConnect
-      ? selectedMonomerToConnect.position.add(new Vec2(1.5, 0))
-      : this.drawingEntitiesManager.hasMonomers
-      ? this.nextAutochainPosition && !(this.mode instanceof SnakeMode)
-        ? this.nextAutochainPosition
-        : this.drawingEntitiesManager.bottomLeftMonomerPosition.add(
+    let newMonomerPosition: Vec2;
+
+    if (selectedMonomerToConnect) {
+      newMonomerPosition = selectedMonomerToConnect.position.add(
+        new Vec2(1.5, 0),
+      );
+    } else if (this.drawingEntitiesManager.hasMonomers) {
+      if (this.nextAutochainPosition && !(this.mode instanceof SnakeMode)) {
+        newMonomerPosition = this.nextAutochainPosition;
+      } else {
+        newMonomerPosition =
+          this.drawingEntitiesManager.bottomLeftMonomerPosition.add(
             new Vec2(0, 1.5),
-          )
-      : Coordinates.canvasToModel(
-          new Vec2(MONOMER_START_X_POSITION, MONOMER_START_Y_POSITION),
-        );
+          );
+      }
+    } else {
+      newMonomerPosition = Coordinates.canvasToModel(
+        new Vec2(MONOMER_START_X_POSITION, MONOMER_START_Y_POSITION),
+      );
+    }
 
     return {
       selectedMonomerToConnect,
@@ -1410,6 +1431,42 @@ export class CoreEditor {
 
   public setMode(mode: BaseMode) {
     this.mode = mode;
+  }
+
+  public getAllAminoAcidsModificationTypesGroupedByNaturalAnalogue() {
+    const grouped: Record<string, Set<string>> = {};
+
+    this.monomersLibrary.forEach((monomerItem) => {
+      const naturalAnalogue = monomerItem.props?.MonomerNaturalAnalogCode;
+
+      if (monomerItem.props?.modificationTypes) {
+        if (!grouped[naturalAnalogue]) {
+          grouped[naturalAnalogue] = new Set<string>();
+        }
+
+        monomerItem.props.modificationTypes.forEach((modificationType) => {
+          grouped[naturalAnalogue].add(modificationType);
+        });
+      }
+    });
+
+    // Convert sets to sorted arrays, with 'Natural amino acid' first if present
+    const result: Record<string, string[]> = {};
+    Object.entries(grouped).forEach(([analogue, typesSet]) => {
+      const types = Array.from(typesSet).sort((a, b) => {
+        const aTitle = a.toLowerCase();
+        const bTitle = b.toLowerCase();
+        const naturalType = NATURAL_AMINO_ACID_MODIFICATION_TYPE.toLowerCase();
+
+        if (aTitle === naturalType) return -1;
+        if (bTitle === naturalType) return 1;
+
+        return aTitle.localeCompare(bTitle);
+      });
+      result[analogue] = types;
+    });
+
+    return result;
   }
 
   private onModifyAminoAcids(

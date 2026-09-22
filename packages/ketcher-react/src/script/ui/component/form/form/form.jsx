@@ -78,7 +78,7 @@ class Form extends Component {
     const extraValue = extraName ? result[extraName] : null;
 
     const handleOnChange = (name, value) => {
-      const newState = Object.assign({}, this.props.result, { [name]: value });
+      const newState = { ...this.props.result, [name]: value };
 
       if (name === 'type') {
         switch (value) {
@@ -99,7 +99,7 @@ class Form extends Component {
     };
 
     return {
-      dataError: errors && errors[name],
+      dataError: errors?.[name],
       value,
       extraValue,
       onChange: (val) => handleOnChange(name, val),
@@ -126,51 +126,63 @@ export default connect(null, (dispatch) => ({
   },
 }))(Form);
 
+function renderLabelContent(title, tooltip) {
+  if (!title) {
+    return '';
+  }
+
+  if (tooltip) {
+    return (
+      <div
+        className={clsx({
+          [classes.divWithTooltipAndAboutIcon]: true,
+        })}
+      >
+        <span>{title}</span>
+        <Tooltip title={tooltip}>
+          <div>
+            <Icon name="about"></Icon>
+          </div>
+        </Tooltip>
+      </div>
+    );
+  }
+
+  return <span>{title}</span>;
+}
+
+function renderLabelContentAfter(title, tooltip) {
+  if (!title) {
+    return '';
+  }
+
+  if (tooltip) {
+    return (
+      <div
+        className={clsx({
+          [classes.divWithTooltipAndAboutIcon]: true,
+        })}
+      >
+        <Tooltip title={tooltip}>
+          <div>
+            <Icon name="about"></Icon>
+          </div>
+        </Tooltip>
+        <span>{title}</span>
+      </div>
+    );
+  }
+
+  return <span>{title}</span>;
+}
+
 function Label({ labelPos, title, children, ...props }) {
   const tooltip = props.tooltip ? props.tooltip : null;
   return (
     <label {...props}>
-      {title && labelPos !== 'after' ? (
-        tooltip ? (
-          <div
-            className={clsx({
-              [classes.divWithTooltipAndAboutIcon]: true,
-            })}
-          >
-            <span>{title}</span>
-            <Tooltip title={tooltip}>
-              <div>
-                <Icon name="about"></Icon>
-              </div>
-            </Tooltip>
-          </div>
-        ) : (
-          <span>{title}</span>
-        )
-      ) : (
-        ''
-      )}
+      {labelPos !== 'after' && renderLabelContent(title, tooltip)}
       {children}
-      {title && labelPos === 'after' ? (
-        tooltip ? (
-          <div
-            className={clsx({
-              [classes.divWithTooltipAndAboutIcon]: true,
-            })}
-          >
-            <Tooltip title={tooltip}>
-              <div>
-                <Icon name="about"></Icon>
-              </div>
-            </Tooltip>
-            <span>{title}</span>
-          </div>
-        ) : (
-          <span>{title}</span>
-        )
-      ) : (
-        ''
-      )}
+      {labelPos === 'after' && renderLabelContentAfter(title, tooltip)}
     </label>
   );
 }

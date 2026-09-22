@@ -7,7 +7,12 @@ export type MonomerTypeSelectItem = {
   iconName: IconName;
 };
 
-export type WizardFormFieldId = 'type' | 'symbol' | 'name' | 'naturalAnalogue';
+export type WizardFormFieldId =
+  | 'type'
+  | 'symbol'
+  | 'name'
+  | 'naturalAnalogue'
+  | 'aliasHELM';
 
 export type StringWizardFormFieldId = Exclude<WizardFormFieldId, 'type'>;
 
@@ -17,7 +22,7 @@ export type WizardValues = {
   [key in StringWizardFormFieldId]: string;
 };
 
-export type WizardNotificationType = 'info' | 'error';
+export type WizardNotificationType = 'info' | 'error' | 'warning';
 
 export type WizardNotificationId =
   | 'defaultAttachmentPoints'
@@ -29,8 +34,12 @@ export type WizardNotificationId =
   | 'incorrectAttachmentPointsOrder'
   | 'creationSuccessful'
   | 'incontinuousStructure'
+  | 'notUniqueModificationTypes'
+  | 'modificationTypeExists'
   | 'notMinimalViableStructure'
-  | 'impureStructure';
+  | 'impureStructure'
+  | 'notUniqueHELMAlias'
+  | 'invalidHELMAlias';
 
 export type WizardNotificationTypeMap = Record<
   WizardNotificationId,
@@ -44,7 +53,9 @@ export type WizardNotification = {
   message: string;
 };
 
-export type WizardErrors = Partial<Record<WizardFormFieldId, boolean>>;
+export type WizardErrors = Partial<
+  Record<WizardFormFieldId | 'emptyModificationType', boolean>
+>;
 
 export type WizardNotifications = Map<WizardNotificationId, WizardNotification>;
 

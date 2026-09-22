@@ -50,6 +50,7 @@ import { getAttachmentPointLabel } from 'domain/helpers/attachmentPointCalculati
 import { VALENCE_MAP } from 'application/render/restruct/constants';
 import { SUPERATOM_CLASS_TEXT } from 'application/render/restruct/resgroup';
 import assert from 'assert';
+import { getAttachmentPointTooltip } from 'domain/helpers/attachmentPointTooltips';
 
 interface ElemAttr {
   text: string;
@@ -313,7 +314,7 @@ class ReAtom extends ReObject {
 
   getSelectionContour(render: Render, highlightPadding = 0) {
     const hasLabel =
-      (this.a.pseudo && this.a.pseudo.length > 1 && !getQueryAttrsText(this)) ||
+      (this.a.pseudo?.length > 1 && !getQueryAttrsText(this)) ||
       (this.showLabel && this.a.implicitH !== 0);
 
     return hasLabel
@@ -321,7 +322,7 @@ class ReAtom extends ReObject {
       : this.getUnlabeledSelectionContour(render, highlightPadding);
   }
 
-  private isPlateShouldBeHidden = (atom: Atom, render: Render) => {
+  private readonly isPlateShouldBeHidden = (atom: Atom, render: Render) => {
     const sgroups = render.ctab.sgroups;
     const functionalGroups = render.ctab.molecule.functionalGroups;
     const struct = render.ctab.molecule;
@@ -336,7 +337,7 @@ class ReAtom extends ReObject {
     );
   };
 
-  private makeHighlightePlate = (
+  private readonly makeHighlightePlate = (
     restruct: ReStruct,
     style: RenderOptionStyles,
     highlightPadding = -2,
@@ -384,7 +385,7 @@ class ReAtom extends ReObject {
   ): number {
     const DEFAULT_BOND_LENGTH = 40;
     const DEFAULT_SUB_FONT_SIZE = 13;
-    const subFontSize = renderOptions.fontszsubInPx || DEFAULT_SUB_FONT_SIZE;
+    const subFontSize = renderOptions.fontszsubInPx ?? DEFAULT_SUB_FONT_SIZE;
     if (!bondLen) return 1;
     const showCharge = renderOptions.showCharge;
 
@@ -412,14 +413,14 @@ class ReAtom extends ReObject {
     bondLen: number | null = null,
   ): Vec2 {
     const atomPosition = Scale.modelToCanvas(
-      _atomPosition || this.a.pp,
+      _atomPosition ?? this.a.pp,
       renderOptions,
     );
     let atomSymbolShift = 0;
     const exts = this.visel.exts;
     const ratio = this.getRatio(renderOptions, bondLen);
-    for (let k = 0; k < exts.length; ++k) {
-      const box = exts[k].translate(atomPosition);
+    for (const ext of exts) {
+      const box = ext.translate(atomPosition);
       const shiftRayBox = util.shiftRayBox(atomPosition, direction, box);
       const shift = shiftRayBox * ratio;
       atomSymbolShift = Math.max(atomSymbolShift, shift);
@@ -470,7 +471,7 @@ class ReAtom extends ReObject {
           options.font.length,
         );
         const sGroupName =
-          sgroup.data.name || SUPERATOM_CLASS_TEXT[sgroup.data.class] || '';
+          sgroup.data.name ?? SUPERATOM_CLASS_TEXT[sgroup.data.class] ?? '';
         const path = render.paper
           .text(position.x, position.y, sGroupName)
           .attr({
@@ -774,6 +775,16 @@ class ReAtom extends ReObject {
               cursor: 'pointer',
             });
 
+          const selectedClass =
+            render.monomerCreationState?.selectedMonomerClass;
+          const apTooltip = getAttachmentPointTooltip(
+            selectedClass,
+            attachmentPointName,
+          );
+          if (apTooltip) {
+            addTooltip(rLabelElement.node, apTooltip);
+          }
+
           const labelBBox = rLabelElement.getBBox();
           const bgRadius = Math.max(labelBBox.width, labelBBox.height) / 2 + 5;
           const background = render.paper
@@ -784,6 +795,10 @@ class ReAtom extends ReObject {
               cursor: 'pointer',
               opacity: 0,
             });
+
+          if (apTooltip) {
+            background.node?.setAttribute('data-tooltip', apTooltip);
+          }
 
           if (isProblematic) {
             background.attr({
@@ -958,8 +973,8 @@ class ReAtom extends ReObject {
       let t = 3;
       let dir = this.bisectLargestSector(restruct.molecule);
       // estimate the shift to clear the atom label
-      for (let i = 0; i < visel.exts.length; ++i) {
-        t = Math.max(t, util.shiftRayBox(ps, dir, visel.exts[i].translate(ps)));
+      for (const ext of visel.exts) {
+        t = Math.max(t, util.shiftRayBox(ps, dir, ext.translate(ps)));
       }
       // estimate the shift backwards to account for the size of the aam/query text box itself
       t += util.shiftRayBox(ps, dir.negated(), Box2Abs.fromRelBox(aamBox));
@@ -1021,10 +1036,10 @@ class ReAtom extends ReObject {
 
       let baseDistance = 3;
       const direction = this.bisectLargestSector(render.ctab.molecule);
-      for (let i = 0; i < this.visel.exts.length; ++i) {
+      for (const ext of this.visel.exts) {
         baseDistance = Math.max(
           baseDistance,
-          util.shiftRayBox(ps, direction, this.visel.exts[i].translate(ps)),
+          util.shiftRayBox(ps, direction, ext.translate(ps)),
         );
       }
       const shiftDistance =
@@ -1166,16 +1181,18 @@ class ReAtom extends ReObject {
     });
     angles = angles.sort((a, b) => a - b);
     const largeAngles: Array<number> = [];
-    for (let i = 0; i < angles.length - 1; ++i) {
-      largeAngles.push(angles[(i + 1) % angles.length] - angles[i]);
+    for (const [index, angle] of angles.entries()) {
+      if (index < angles.length - 1) {
+        largeAngles.push(angles[(index + 1) % angles.length] - angle);
+      }
     }
     largeAngles.push(angles[0] - angles[angles.length - 1] + 2 * Math.PI);
     let largestAngle = 0;
     let neighborAngle = -Math.PI / 2;
-    for (let i = 0; i < angles.length; ++i) {
-      if (largeAngles[i] > largestAngle) {
-        largestAngle = largeAngles[i];
-        neighborAngle = angles[i];
+    for (const [index, angle] of angles.entries()) {
+      if (largeAngles[index] > largestAngle) {
+        largestAngle = largeAngles[index];
+        neighborAngle = angle;
       }
     }
 
@@ -1384,7 +1401,7 @@ function shouldHydrogenBeOnLeft(struct, atom) {
 
 function getOnlyQueryAttributesCustomQuery(atom: Atom) {
   const queryText =
-    atom.queryProperties.customQuery ||
+    atom.queryProperties.customQuery ??
     getAtomCustomQuery(
       {
         ...atom,
@@ -1434,7 +1451,7 @@ function buildLabel(
   if (label.text === atom.a.label) {
     const element = Elements.get(label.text);
     if (atomColoring && element) {
-      atom.color = ElementColor[label.text] || '#000';
+      atom.color = ElementColor[label.text] ?? '#000';
     }
   }
 
@@ -1539,7 +1556,7 @@ function getLabelText(
         return attachmentPoint.leaveAtomId === atomId;
       });
 
-    if (attachmentPoint && attachmentPoint.attachmentPointNumber) {
+    if (attachmentPoint?.attachmentPointNumber) {
       const result = getAttachmentPointLabel(
         attachmentPoint.attachmentPointNumber,
       );
@@ -1576,7 +1593,7 @@ function getLabelText(
       sgroup instanceof MonomerMicromolecule &&
       Atom.isSuperatomLeavingGroupAtom(sgroup, atomId)
     ) {
-      text = sgroup?.monomer?.monomerItem?.props?.MonomerCaps?.[text] || text;
+      text = sgroup?.monomer?.monomerItem?.props?.MonomerCaps?.[text] ?? text;
     }
     return text;
   }
@@ -1656,7 +1673,7 @@ function showIsotope(
   const options = render.options;
   const delta = 0.5 * options.lineWidth;
   const isotope: any = {};
-  isotope.text = atom.a.isotope === null ? '' : atom.a.isotope.toString();
+  isotope.text = atom.a.isotope?.toString() ?? '';
   isotope.path = render.paper.text(ps.x, ps.y, isotope.text).attr({
     font: options.font,
     'font-size': options.fontszsubInPx,
@@ -1921,11 +1938,15 @@ function getSubstitutionCountAttrText(value: number) {
 }
 
 export function getAtomType(atom: Atom) {
-  return atom.atomList
-    ? 'list'
-    : atom.pseudo === atom.label
-    ? 'pseudo'
-    : 'single';
+  if (atom.atomList) {
+    return 'list';
+  }
+
+  if (atom.pseudo === atom.label) {
+    return 'pseudo';
+  }
+
+  return 'single';
 }
 
 export function checkIsSmartPropertiesExist(atom) {
@@ -1954,13 +1975,13 @@ export function getAtomCustomQuery(atom, includeOnlyQueryAttributes?: boolean) {
     aromaticity: (value) => (value === 'aromatic' ? 'a' : 'A'),
     charge: (value) => {
       if (value === '') return value;
-      const regExpResult = /^([+-]?)([0-9]{1,3}|1000)([+-]?)$/.exec(value);
+      const regExpResult = /^([+-]?)(\d{1,3}|1000)([+-]?)$/.exec(value);
       const charge = regExpResult
         ? parseInt(
             regExpResult[1] + regExpResult[3] + regExpResult[2],
           ).toString()
         : value;
-      return charge[0] !== '-' ? `+${charge}` : charge;
+      return !charge.startsWith('-') ? `+${charge}` : charge;
     },
     unsaturatedAtom: (value) => (Number(value) === 1 ? 'u' : ''),
     explicitValence: (value) => (Number(value) !== -1 ? `v${value}` : ''),

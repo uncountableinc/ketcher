@@ -52,6 +52,7 @@ interface DialogProps {
     [key in string]: string;
   };
   focusable?: boolean;
+  primaryButtons?: string[];
 }
 
 interface DialogCallProps {
@@ -76,6 +77,7 @@ export const Dialog: FC<PropsWithChildren & Props> = (props) => {
     needMargin = true,
     withDivider = false,
     focusable = true,
+    primaryButtons,
     ...rest
   } = props;
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -98,6 +100,13 @@ export const Dialog: FC<PropsWithChildren & Props> = (props) => {
     return button === 'OK' || button === 'Save';
   };
 
+  const isPrimary = (button) => {
+    if (primaryButtons && primaryButtons.length > 0) {
+      return primaryButtons.includes(button);
+    }
+    return isButtonOk(button);
+  };
+
   const exit = (mode) => {
     const key = isButtonOk(mode) ? 'onOk' : 'onCancel';
     if (params && key in params && (key !== 'onOk' || valid())) {
@@ -108,7 +117,7 @@ export const Dialog: FC<PropsWithChildren & Props> = (props) => {
   const keyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const { key } = event;
     const active = document.activeElement;
-    const activeTextarea = active && active.tagName === 'TEXTAREA';
+    const activeTextarea = active?.tagName === 'TEXTAREA';
     if (key === 'Escape' || (key === 'Enter' && !activeTextarea)) {
       exit(key === 'Enter' ? 'OK' : 'Cancel');
       event.preventDefault();
@@ -160,14 +169,10 @@ export const Dialog: FC<PropsWithChildren & Props> = (props) => {
                   key={button}
                   type="button"
                   className={clsx(
-                    isButtonOk(button) ? styles.ok : styles.cancel,
+                    isPrimary(button) ? styles.ok : styles.cancel,
                     button === 'Save' && styles.save,
                   )}
-                  value={
-                    buttonsNameMap && buttonsNameMap[button]
-                      ? buttonsNameMap[button]
-                      : button
-                  }
+                  value={buttonsNameMap?.[button] ?? button}
                   disabled={isButtonOk(button) && !valid()}
                   onClick={() => exit(button)}
                   data-testid={button}

@@ -53,7 +53,7 @@ test.describe('Calculate Properties tests', () => {
 
   test.afterEach(async ({ context: _ }, testInfo) => {
     if (await CalculateVariablesPanel(page).closeButton.isVisible()) {
-      await CalculateVariablesPanel(page).close();
+      await CalculateVariablesPanel(page).closeWindow();
     }
     await CommonTopLeftToolbar(page).clearCanvas();
     await resetZoomLevelToDefault(page);
@@ -252,7 +252,7 @@ test.describe('Calculate Properties tests', () => {
     await takePageScreenshot(page);
     await MacromoleculesTopToolbar(page).calculateProperties();
     await takePageScreenshot(page);
-    await CalculateVariablesPanel(page).close();
+    await CalculateVariablesPanel(page).closeWindow();
     await takePageScreenshot(page);
   });
 
@@ -1335,7 +1335,9 @@ test.describe('Calculate Properties tests', () => {
       page,
       'KET/peptide-rna-microstructure-connected.ket',
     );
-    await MacromoleculesTopToolbar(page).calculateProperties();
+
+    await MacromoleculesTopToolbar(page).calculateProperties({ timeout: 3000 });
+
     expect(await CalculateVariablesPanel(page).getMolecularFormula()).toEqual(
       'C19H23N6O7P',
     );
@@ -1361,7 +1363,7 @@ test.describe('Calculate Properties tests', () => {
       page,
       'KET/peptide-dna-microstructure-connected.ket',
     );
-    await MacromoleculesTopToolbar(page).calculateProperties();
+    await MacromoleculesTopToolbar(page).calculateProperties({ timeout: 3000 });
     expect(await CalculateVariablesPanel(page).getMolecularFormula()).toEqual(
       'C19H23N6O6P',
     );
@@ -1616,6 +1618,12 @@ test.describe('Calculate Properties tests', () => {
 
     await MacromoleculesTopToolbar(page).calculateProperties();
     await waitForCalculateProperties(page);
+    // Dirty hack
+    await CalculateVariablesPanel(page).closeWindow();
+    await delay(1);
+    await MacromoleculesTopToolbar(page).calculateProperties();
+    await waitForCalculateProperties(page);
+
     await takeElementScreenshot(
       page,
       CalculateVariablesPanel(page).peptidesTab.hydrophobicityGraph,

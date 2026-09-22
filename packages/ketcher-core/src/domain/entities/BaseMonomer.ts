@@ -4,6 +4,7 @@ import {
   AttachmentPointName,
   AttachmentPointsToBonds,
   MonomerItemType,
+  MonomerBond,
 } from 'domain/types';
 import { PolymerBond } from 'domain/entities/PolymerBond';
 import { BaseMonomerRenderer } from 'application/render/renderers/BaseMonomerRenderer';
@@ -123,7 +124,7 @@ export abstract class BaseMonomer extends DrawingEntity {
   }
 
   public getAttachmentPointByBond(
-    bond: PolymerBond | MonomerToAtomBond | HydrogenBond,
+    bond: MonomerBond,
   ): AttachmentPointName | undefined {
     if (bond instanceof HydrogenBond) {
       return this.hydrogenBonds.find((hydrogenBond) => hydrogenBond === bond)
@@ -174,7 +175,7 @@ export abstract class BaseMonomer extends DrawingEntity {
   private getMaxAttachmentPointNumber() {
     let maxAttachmentPointNumber = 1;
     for (const attachmentPoint in this.attachmentPointsToBonds) {
-      const match = attachmentPoint.match(/R(\d+)/);
+      const match = /R(\d+)/.exec(attachmentPoint);
       if (match) {
         const pointNumber = parseInt(match[1]);
         if (!isNaN(pointNumber) && pointNumber > maxAttachmentPointNumber) {
@@ -219,7 +220,7 @@ export abstract class BaseMonomer extends DrawingEntity {
 
   public forEachBond(
     callback: (
-      polymerBond: PolymerBond | MonomerToAtomBond | HydrogenBond,
+      polymerBond: MonomerBond,
       attachmentPointName: AttachmentPointName,
     ) => void,
   ) {
@@ -237,10 +238,7 @@ export abstract class BaseMonomer extends DrawingEntity {
     });
   }
 
-  public setBond(
-    attachmentPointName: AttachmentPointName,
-    bond: PolymerBond | MonomerToAtomBond | HydrogenBond,
-  ) {
+  public setBond(attachmentPointName: AttachmentPointName, bond: MonomerBond) {
     if (!(bond instanceof HydrogenBond)) {
       this.attachmentPointsToBonds[attachmentPointName] = bond;
 

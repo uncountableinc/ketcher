@@ -11,7 +11,7 @@ export type DistanceSnapViewParams = {
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 export class DistanceSnapView extends TransientView {
-  public static viewName = 'DistanceSnapView';
+  public static readonly viewName = 'DistanceSnapView';
 
   public static show(
     transientLayer: D3SvgElementSelection<SVGGElement, void>,
@@ -23,7 +23,8 @@ export class DistanceSnapView extends TransientView {
       return;
     }
 
-    const sortedMonomers = alignedMonomers.sort((a, b) => {
+    const sortedMonomers = [...alignedMonomers];
+    sortedMonomers.sort((a, b) => {
       return alignment === 'horizontal'
         ? a.center.x - b.center.x
         : a.center.y - b.center.y;
