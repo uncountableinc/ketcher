@@ -186,7 +186,7 @@ test.describe('SRU Polymer tool', () => {
     });
 
     await openFileAndAddToCanvas(page, 'KET/simple-chain.ket');
-    await CommonLeftToolbar(page).selectEraseTool();
+    await CommonLeftToolbar(page).erase();
     await clickOnAtom(page, 'C', 3);
 
     await selectAllStructuresOnCanvas(page);
