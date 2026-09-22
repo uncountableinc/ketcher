@@ -23,7 +23,13 @@ const MAX_DIFF_BYTES = 256 * 1024 * 1024;
 const manifestPath = join(dirname(fileURLToPath(import.meta.url)), 'unc-fork-coverage.json');
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
 
-const forkRef = process.argv[2] ?? manifest.forkRef;
+/*
+ * Default to HEAD, never to a branch name. A local `master` is whatever the
+ * checkout last fetched, so on a feature branch the bare command measures
+ * master and reports success while the branch's own new files go unchecked -
+ * the exact silent pass this check exists to prevent.
+ */
+const forkRef = process.argv[2] ?? 'HEAD';
 
 const changedFiles = execFileSync(
   'git',

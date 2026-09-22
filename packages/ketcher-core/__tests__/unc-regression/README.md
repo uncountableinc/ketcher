@@ -58,6 +58,12 @@ missed eleven fork behaviours, found by comparing the fork's net source diff aga
 files the listed commits touch. `scripts/check-unc-fork-coverage.mjs` now enforces the
 comparison, and `scripts/unc-fork-coverage.json` carries the per-behaviour verdicts.
 
+```bash
+npm run check:unc-fork-coverage
+```
+
+It measures the working checkout. Pass a ref to measure a different one.
+
 | Test file | Fork commits | fork | vanilla 3.18 | verdict |
 | --- | --- | --- | --- | --- |
 | `server-format-routing.test.ts` | `6576cd745`, `52fc7376a`, `b53ffb290` | 9/9 | 0/9 | **reapply** |
