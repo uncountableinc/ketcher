@@ -114,9 +114,13 @@ test.describe('Data S-Group tool', () => {
     await openFileAndAddToCanvas(page, 'KET/simple-chain.ket');
     await selectAllStructuresOnCanvas(page);
     await LeftToolbar(page).sGroup();
-    await SGroupPropertiesDialog(page).setFieldNameValue('atropisomer');
-    await SGroupPropertiesDialog(page).setFieldValueValue('P');
-    await SGroupPropertiesDialog(page).apply();
+    await SGroupPropertiesDialog(page).setOptions({
+      Type: TypeOption.Data,
+      Context: ContextOption.Fragment,
+      FieldName: 'atropisomer',
+      FieldValue: 'P',
+      PropertyLabelType: PropertyLabelType.Absolute,
+    });
 
     await page.evaluate(() => {
       delete (window as unknown as { ketcher?: unknown }).ketcher;
