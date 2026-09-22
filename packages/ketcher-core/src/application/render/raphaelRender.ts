@@ -27,9 +27,14 @@ import { KetcherLogger } from 'utilities';
 import { CoordinateTransformation } from './coordinateTransformation';
 import { ScrollbarContainer } from './scrollbar';
 import { notifyRenderComplete } from './notifyRenderComplete';
+import { AttachmentPointName } from 'domain/types';
 
-export type MonomerCreationRenderState = {
-  attachmentPoints: Map<number, number>;
+export type MonomerCreationState = {
+  // R-label mapping to [attachment atom id, leaving atom id]
+  assignedAttachmentPoints: Map<AttachmentPointName, [number, number]>;
+  potentialAttachmentPoints: Map<number, number>;
+  problematicAttachmentPoints: Set<AttachmentPointName>;
+  clickedAttachmentPoint?: AttachmentPointName | null;
 } | null;
 
 export class Render {
@@ -46,7 +51,7 @@ export class Render {
   private oldCb: Box2Abs | null = null;
   private scrollbar: ScrollbarContainer;
   private resizeObserver: ResizeObserver | null = null;
-  private _monomerCreationRenderState: MonomerCreationRenderState = null;
+  private _monomerCreationState: MonomerCreationState = null;
 
   constructor(
     clientArea: HTMLElement,
@@ -58,8 +63,8 @@ export class Render {
     this.clientArea = clientArea;
     this.paper = new Raphael(
       clientArea,
-      options.width || '100%',
-      options.height || '100%',
+      options.width ?? '100%',
+      options.height ?? '100%',
     );
     this.sz = this.getCanvasSizeVector();
     this.options = defaultOptions(this.userOpts);
@@ -237,10 +242,10 @@ export class Render {
   update(force = false, viewSz: Vec2 | null = null) {
     // eslint-disable-line max-statements
     viewSz =
-      viewSz ||
+      viewSz ??
       new Vec2(
-        this.userOpts.width || this.clientArea.clientWidth || 100,
-        this.userOpts.height || this.clientArea.clientHeight || 100,
+        this.userOpts.width ?? this.clientArea.clientWidth ?? 100,
+        this.userOpts.height ?? this.clientArea.clientHeight ?? 100,
       );
 
     const changes = this.ctab.update(force);
@@ -249,7 +254,7 @@ export class Render {
       const bb = this.ctab
         .getVBoxObj()
         .transform(Scale.modelToCanvas, this.options)
-        .translate(this.options.offset || new Vec2());
+        .translate(this.options.offset ?? new Vec2());
 
       if (this.options.downScale) {
         this.ctab.molecule.rescale();
@@ -259,7 +264,7 @@ export class Render {
       if (!isAutoScale) {
         if (!this.oldCb) this.oldCb = new Box2Abs();
         this.scrollbar.update();
-        this.options.offset = this.options.offset || new Vec2();
+        this.options.offset = this.options.offset ?? new Vec2();
       } else {
         const sz1 = bb.sz();
         const marg = this.options.autoScaleMargin;
@@ -269,7 +274,7 @@ export class Render {
           throw new Error('View box too small for the given margin');
         }
         let rescale =
-          this.options.rescaleAmount ||
+          this.options.rescaleAmount ??
           Math.max(sz1.x / (csz.x - 2 * marg), sz1.y / (csz.y - 2 * marg));
 
         const isForceDownscale = this.options.downScale && rescale < 1;
@@ -290,11 +295,11 @@ export class Render {
     }
   }
 
-  get monomerCreationRenderState() {
-    return this._monomerCreationRenderState;
+  get monomerCreationState() {
+    return this._monomerCreationState;
   }
 
-  set monomerCreationRenderState(state: MonomerCreationRenderState) {
-    this._monomerCreationRenderState = state;
+  set monomerCreationState(state: MonomerCreationState) {
+    this._monomerCreationState = state;
   }
 }

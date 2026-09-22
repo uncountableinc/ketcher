@@ -1,5 +1,5 @@
 import { MAX_BOND_LENGTH } from '@constants';
-import { test } from '@playwright/test';
+import { test } from '@fixtures';
 import {
   clickInTheMiddleOfTheScreen,
   dragMouseTo,
@@ -9,7 +9,6 @@ import {
   waitForPageInit,
   clickOnCanvas,
 } from '@utils';
-import { resetCurrentTool } from '@utils/canvas/tools/resetCurrentTool';
 import { SelectionToolType } from '@tests/pages/constants/areaSelectionTool/Constants';
 import { RightToolbar } from '@tests/pages/molecules/RightToolbar';
 import { Atom } from '@tests/pages/constants/atoms/atoms';
@@ -43,14 +42,16 @@ test.describe('Drag and drop Atom on canvas', () => {
     const oxygenCoordinates = { x: x + X_DELTA_ONE, y };
 
     await atomToolbar.clickAtom(Atom.Oxygen);
-    await clickOnCanvas(page, oxygenCoordinates.x, oxygenCoordinates.y);
+    await clickOnCanvas(page, oxygenCoordinates.x, oxygenCoordinates.y, {
+      from: 'pageTopLeft',
+    });
 
     await CommonLeftToolbar(page).selectAreaSelectionTool(
       SelectionToolType.Rectangle,
     );
     await page.mouse.move(oxygenCoordinates.x, oxygenCoordinates.y);
     await dragMouseTo(x, y, page);
-    await resetCurrentTool(page);
+    await CommonLeftToolbar(page).selectAreaSelectionTool();
     await takeEditorScreenshot(page);
   });
 
@@ -73,14 +74,16 @@ test.describe('Drag and drop Atom on canvas', () => {
     const nitrogenCoordinates = { x: x + X_DELTA_ONE, y };
 
     await atomToolbar.clickAtom(Atom.Nitrogen);
-    await clickOnCanvas(page, nitrogenCoordinates.x, nitrogenCoordinates.y);
+    await clickOnCanvas(page, nitrogenCoordinates.x, nitrogenCoordinates.y, {
+      from: 'pageTopLeft',
+    });
 
     await CommonLeftToolbar(page).selectAreaSelectionTool(
       SelectionToolType.Rectangle,
     );
     await page.mouse.move(nitrogenCoordinates.x, nitrogenCoordinates.y);
     await dragMouseTo(x, y, page);
-    await resetCurrentTool(page);
+    await CommonLeftToolbar(page).selectAreaSelectionTool();
     await takeEditorScreenshot(page);
   });
 
@@ -101,14 +104,16 @@ test.describe('Drag and drop Atom on canvas', () => {
     const nitrogenCoordinates = { x: x + X_DELTA_ONE, y };
 
     await atomToolbar.clickAtom(Atom.Nitrogen);
-    await clickOnCanvas(page, nitrogenCoordinates.x, nitrogenCoordinates.y);
+    await clickOnCanvas(page, nitrogenCoordinates.x, nitrogenCoordinates.y, {
+      from: 'pageTopLeft',
+    });
 
     await CommonLeftToolbar(page).selectAreaSelectionTool(
       SelectionToolType.Rectangle,
     );
     await page.mouse.move(nitrogenCoordinates.x, nitrogenCoordinates.y);
     await dragMouseTo(x, y, page);
-    await resetCurrentTool(page);
+    await CommonLeftToolbar(page).selectAreaSelectionTool();
     await takeEditorScreenshot(page);
   });
 
@@ -132,14 +137,16 @@ test.describe('Drag and drop Atom on canvas', () => {
     await atomToolbar.clickAtom(Atom.Oxygen);
     await moveMouseToTheMiddleOfTheScreen(page);
     const oxygenCoordinates = { x: x + X_DELTA_TWO, y };
-    await clickOnCanvas(page, oxygenCoordinates.x, oxygenCoordinates.y);
+    await clickOnCanvas(page, oxygenCoordinates.x, oxygenCoordinates.y, {
+      from: 'pageTopLeft',
+    });
 
     await CommonLeftToolbar(page).selectAreaSelectionTool(
       SelectionToolType.Rectangle,
     );
     await page.mouse.move(oxygenCoordinates.x, oxygenCoordinates.y);
     await dragMouseTo(coordinatesWithShift, y, page);
-    await resetCurrentTool(page);
+    await CommonLeftToolbar(page).selectAreaSelectionTool();
     await takeEditorScreenshot(page);
   });
 
@@ -169,14 +176,16 @@ test.describe('Drag and drop Atom on canvas', () => {
     await atomToolbar.clickAtom(Atom.Oxygen);
     await moveMouseToTheMiddleOfTheScreen(page);
     const oxygenCoordinates = { x: x + X_DELTA_TWO, y };
-    await clickOnCanvas(page, oxygenCoordinates.x, oxygenCoordinates.y);
+    await clickOnCanvas(page, oxygenCoordinates.x, oxygenCoordinates.y, {
+      from: 'pageTopLeft',
+    });
 
     await CommonLeftToolbar(page).selectAreaSelectionTool(
       SelectionToolType.Rectangle,
     );
     await page.mouse.move(oxygenCoordinates.x, oxygenCoordinates.y);
     await dragMouseTo(coordinatesWithShift, y, page);
-    await resetCurrentTool(page);
+    await CommonLeftToolbar(page).selectAreaSelectionTool();
     await takeEditorScreenshot(page);
   });
 });

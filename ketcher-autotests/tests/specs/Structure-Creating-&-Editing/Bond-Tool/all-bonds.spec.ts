@@ -1,5 +1,5 @@
 /* eslint-disable no-magic-numbers */
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, Page } from '@fixtures';
 import {
   clickInTheMiddleOfTheScreen,
   dragMouseTo,
@@ -7,7 +7,6 @@ import {
   getCoordinatesTopAtomOfBenzeneRing,
   moveMouseToTheMiddleOfTheScreen,
   takeEditorScreenshot,
-  clickOnTheCanvas,
   openFileAndAddToCanvas,
   clickOnBond,
   takeLeftToolbarScreenshot,
@@ -20,7 +19,6 @@ import {
   clickOnCanvas,
   delay,
 } from '@utils';
-import { getAtomByIndex } from '@utils/canvas/atoms';
 import {
   getBondByIndex,
   getLeftBondByAttributes,
@@ -48,6 +46,9 @@ import { BondTopologyOption } from '@tests/pages/constants/bondProperties/Consta
 import { BondPropertiesDialog } from '@tests/pages/molecules/canvas/BondPropertiesDialog';
 import { StructureLibraryDialog } from '@tests/pages/molecules/canvas/StructureLibraryDialog';
 import { FunctionalGroupsTabItems } from '@tests/pages/constants/structureLibraryDialog/Constants';
+import { AtomsSetting } from '@tests/pages/constants/settingsDialog/Constants';
+import { setSettingsOption } from '@tests/pages/molecules/canvas/SettingsDialog';
+import { getAtomLocator } from '@utils/canvas/atoms/getAtomLocator/getAtomLocator';
 
 const buttonIdToTitle: Record<MicroBondType, string> = {
   [MicroBondType.Single]: 'Single Bond (1)',
@@ -104,12 +105,12 @@ test.describe(`Bond tool:`, () => {
       const drawnBondsWithRing = 7;
       const bondAfterErase = 6;
       await CommonLeftToolbar(page).selectBondTool(bondType);
+      await setSettingsOption(page, AtomsSetting.DisplayCarbonExplicitly);
 
       await clickInTheMiddleOfTheScreen(page);
 
-      point = await getAtomByIndex(page, { label: 'C' }, 0);
-      await clickOnCanvas(page, point.x, point.y, { waitForRenderTimeOut: 0 });
-      await clickOnCanvas(page, point.x, point.y, { waitForRenderTimeOut: 0 });
+      await getAtomLocator(page, { atomLabel: 'C', atomId: 0 }).click();
+      await getAtomLocator(page, { atomLabel: 'C', atomId: 0 }).click();
 
       const countBonds = await page.evaluate(() => {
         return window.ketcher.editor.struct().bonds.size;
@@ -123,8 +124,8 @@ test.describe(`Bond tool:`, () => {
       await clickInTheMiddleOfTheScreen(page);
 
       await CommonLeftToolbar(page).selectBondTool(bondType);
-      point = await getAtomByIndex(page, { label: 'C' }, 0);
-      await clickOnCanvas(page, point.x, point.y, { waitForRenderTimeOut: 0 });
+
+      await getAtomLocator(page, { atomLabel: 'C', atomId: 6 }).click();
 
       const countBondsWithRing = await page.evaluate(() => {
         return window.ketcher.editor.struct().bonds.size;
@@ -134,8 +135,7 @@ test.describe(`Bond tool:`, () => {
 
       await CommonLeftToolbar(page).selectEraseTool();
 
-      point = await getAtomByIndex(page, { label: 'C' }, 0);
-      await clickOnCanvas(page, point.x, point.y);
+      await getAtomLocator(page, { atomLabel: 'C', atomId: 12 }).click();
 
       const sizeAfterErase = await page.evaluate(() => {
         return window.ketcher.editor.struct().bonds.size;
@@ -144,8 +144,8 @@ test.describe(`Bond tool:`, () => {
       expect(sizeAfterErase).toEqual(bondAfterErase);
 
       await CommonLeftToolbar(page).selectBondTool(bondType);
-      point = await getAtomByIndex(page, { label: 'C' }, 0);
-      await clickOnCanvas(page, point.x, point.y);
+
+      await getAtomLocator(page, { atomLabel: 'C', atomId: 6 }).click();
 
       const sizeWithRingAndBond = await page.evaluate(() => {
         return window.ketcher.editor.struct().bonds.size;
@@ -153,6 +153,7 @@ test.describe(`Bond tool:`, () => {
 
       expect(sizeWithRingAndBond).toEqual(drawnBondsWithRing);
       await takeEditorScreenshot(page);
+      await setSettingsOption(page, AtomsSetting.DisplayCarbonExplicitly);
       await CommonTopLeftToolbar(page).clearCanvas();
     });
 
@@ -168,7 +169,7 @@ test.describe(`Bond tool:`, () => {
       await CommonLeftToolbar(page).selectBondTool(bondType);
 
       point = await getBondByIndex(page, { type: BondType.SINGLE }, 0);
-      await clickOnCanvas(page, point.x, point.y);
+      await clickOnCanvas(page, point.x, point.y, { from: 'pageTopLeft' });
 
       await CommonTopLeftToolbar(page).clearCanvas();
 
@@ -179,12 +180,16 @@ test.describe(`Bond tool:`, () => {
       const doubleBond = await getTopBondByAttributes(page, {
         type: BondType.DOUBLE,
       });
-      await clickOnCanvas(page, doubleBond.x, doubleBond.y);
+      await clickOnCanvas(page, doubleBond.x, doubleBond.y, {
+        from: 'pageTopLeft',
+      });
 
       const singleBond = await getTopBondByAttributes(page, {
         type: BondType.SINGLE,
       });
-      await clickOnCanvas(page, singleBond.x, singleBond.y);
+      await clickOnCanvas(page, singleBond.x, singleBond.y, {
+        from: 'pageTopLeft',
+      });
       await takeEditorScreenshot(page);
       await CommonTopLeftToolbar(page).clearCanvas();
     });
@@ -196,6 +201,7 @@ test.describe(`Bond tool:`, () => {
       const chainSizeWithBond = 5;
       const chainSizeWithoutBondAfterUndo = 4;
       const chainSizeAfterMultipleEditing = 6;
+      await setSettingsOption(page, AtomsSetting.DisplayCarbonExplicitly);
       await LeftToolbar(page).chain();
       await moveMouseToTheMiddleOfTheScreen(page);
       point = await getCoordinatesOfTheMiddleOfTheScreen(page);
@@ -203,8 +209,7 @@ test.describe(`Bond tool:`, () => {
 
       await CommonLeftToolbar(page).selectBondTool(bondType);
 
-      point = await getAtomByIndex(page, { label: 'C' }, 0);
-      await clickOnCanvas(page, point.x, point.y);
+      await getAtomLocator(page, { atomLabel: 'C', atomId: 0 }).click();
 
       const chainSize = await page.evaluate(() => {
         return window.ketcher.editor.struct().bonds.size;
@@ -218,11 +223,9 @@ test.describe(`Bond tool:`, () => {
       });
       expect(chainSizeAfterUndo).toEqual(chainSizeWithoutBondAfterUndo);
 
-      point = await getAtomByIndex(page, { label: 'C' }, 1);
-      await clickOnCanvas(page, point.x, point.y);
+      await getAtomLocator(page, { atomLabel: 'C', atomId: 1 }).click();
 
-      point = await getAtomByIndex(page, { label: 'C' }, 3);
-      await clickOnCanvas(page, point.x, point.y);
+      await getAtomLocator(page, { atomLabel: 'C', atomId: 3 }).click();
 
       const editedChain = await page.evaluate(() => {
         return window.ketcher.editor.struct().bonds.size;
@@ -257,6 +260,7 @@ test.describe(`Bond tool:`, () => {
       });
       expect(editedChainRedoTwice).toEqual(chainSizeAfterMultipleEditing);
       await takeEditorScreenshot(page);
+      await setSettingsOption(page, AtomsSetting.DisplayCarbonExplicitly);
       await CommonTopLeftToolbar(page).clearCanvas();
     });
 
@@ -277,7 +281,7 @@ test.describe(`Bond tool:`, () => {
       const fileName = `Molfiles-V2000/saving-and-rendering-${bondTypeName}-bond-(refactored).mol`;
       test(`${bondTypeName}: Save to file`, async () => {
         await CommonLeftToolbar(page).selectBondTool(bondType);
-        await clickOnTheCanvas(page, -200, 0);
+        await clickOnCanvas(page, -200, 0, { from: 'pageCenter' });
         await clickInTheMiddleOfTheScreen(page);
         await CommonTopLeftToolbar(page).saveFile();
         await SaveStructureDialog(page).save();
@@ -286,7 +290,7 @@ test.describe(`Bond tool:`, () => {
       test(`${bondTypeName}: Open and edit`, async () => {
         await openFileAndAddToCanvas(page, fileName);
         await LeftToolbar(page).reactionPlusTool();
-        await clickOnTheCanvas(page, 200, 0);
+        await clickOnCanvas(page, 200, 0, { from: 'pageCenter' });
       });
     });
 
@@ -344,6 +348,7 @@ test.describe(`Bond tool (copy-paste):`, () => {
 
         await clickOnCanvas(page, point.x, point.y, {
           waitForRenderTimeOut: 100,
+          from: 'pageTopLeft',
         });
 
         await copyToClipboardByKeyboard(page);
@@ -373,12 +378,14 @@ test.describe(`Bond tool (copy-paste):`, () => {
 
         await clickOnCanvas(page, point.x, point.y, {
           waitForRenderTimeOut: 100,
+          from: 'pageTopLeft',
         });
         await CommonTopLeftToolbar(page).undo();
 
         await selectRingButton(page, RingButton.Cyclohexane);
         await clickOnCanvas(page, point.x, point.y, {
           waitForRenderTimeOut: 100,
+          from: 'pageTopLeft',
         });
 
         await takeEditorScreenshot(page);
@@ -475,7 +482,7 @@ test.describe('Bond Tool', () => {
     await clickInTheMiddleOfTheScreen(page);
 
     await atomToolbar.clickAtom(Atom.Oxygen);
-    await clickOnTheCanvas(page, point.x, point.y);
+    await clickOnCanvas(page, point.x, point.y, { from: 'pageCenter' });
     await CommonLeftToolbar(page).selectBondTool(MicroBondType.Single);
     await moveOnAtom(page, 'N', 0);
     await page.mouse.down();
@@ -516,7 +523,7 @@ test.describe('Bond Tool', () => {
     await clickInTheMiddleOfTheScreen(page);
 
     await atomToolbar.clickAtom(Atom.Oxygen);
-    await clickOnTheCanvas(page, point1.x, point1.y);
+    await clickOnCanvas(page, point1.x, point1.y, { from: 'pageCenter' });
     await CommonLeftToolbar(page).selectBondTool(MicroBondType.Single);
     await moveOnAtom(page, 'N', 0);
     await page.mouse.down();
@@ -542,10 +549,14 @@ test.describe('Bond Tool', () => {
     await CommonLeftToolbar(page).selectAreaSelectionTool(
       SelectionToolType.Rectangle,
     );
-    const point2 = await getAtomByIndex(page, { label: 'N' }, 0);
-    await page.mouse.move(point2.x, point2.y);
-    const coordinatesWithShift = point2.y + yDelta;
-    await dragMouseTo(point2.x, coordinatesWithShift, page);
+    const point2 = await getAtomLocator(page, { atomLabel: 'N' })
+      .first()
+      .boundingBox();
+    if (point2) {
+      await page.mouse.move(point2.x, point2.y);
+      const coordinatesWithShift = point2.y + yDelta;
+      await dragMouseTo(point2.x, coordinatesWithShift, page);
+    }
     await takeEditorScreenshot(page);
   });
 
@@ -560,7 +571,7 @@ test.describe('Bond Tool', () => {
     await CommonLeftToolbar(page).selectAreaSelectionTool(
       SelectionToolType.Rectangle,
     );
-    await clickOnTheCanvas(page, point.x, point.y);
+    await clickOnCanvas(page, point.x, point.y, { from: 'pageCenter' });
     await dragMouseTo(x + 50, y, page);
     await takeEditorScreenshot(page);
     const point1 = await getBondByIndex(page, { type: BondType.DOUBLE }, 0);

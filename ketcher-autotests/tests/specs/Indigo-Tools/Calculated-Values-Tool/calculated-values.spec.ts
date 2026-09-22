@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable no-magic-numbers */
-import { expect, test } from '@playwright/test';
+import { expect, Page, test } from '@fixtures';
 import { Atom } from '@tests/pages/constants/atoms/atoms';
 import { IndigoFunctionsToolbar } from '@tests/pages/molecules/IndigoFunctionsToolbar';
 import { selectRingButton } from '@tests/pages/molecules/BottomToolbar';
@@ -10,18 +11,22 @@ import {
   dragMouseTo,
   clickInTheMiddleOfTheScreen,
   getCoordinatesOfTheMiddleOfTheScreen,
-  waitForPageInit,
 } from '@utils';
 import { RingButton } from '@tests/pages/constants/ringButton/Constants';
 import { CalculatedValuesDialog } from '@tests/pages/molecules/canvas/CalculatedValuesDialog';
 import { StructureCheckDialog } from '@tests/pages/molecules/canvas/StructureCheckDialog';
 
+let page: Page;
 test.describe('Calculated Values Tools', () => {
-  test.beforeEach(async ({ page }) => {
-    await waitForPageInit(page);
+  test.beforeAll(async ({ initMoleculesCanvas }) => {
+    page = await initMoleculesCanvas();
   });
+  test.afterAll(async ({ closePage }) => {
+    await closePage();
+  });
+  test.beforeEach(async ({ MoleculesCanvas: _ }) => {});
 
-  test('Calculate selected structure', async ({ page }) => {
+  test('Calculate selected structure', async () => {
     /*
     Test case: EPMLSOPKET-1991
     Description: The 'Calculated Values' modal window is opened,
@@ -44,7 +49,7 @@ test.describe('Calculated Values Tools', () => {
     ).toHaveValue('C 83.9 H 16.1');
   });
 
-  test('Empty canvas', async ({ page }) => {
+  test('Empty canvas', async () => {
     /*
     Test case: EPMLSOPKET-1992
     Description: The opened window contains:
@@ -69,7 +74,7 @@ test.describe('Calculated Values Tools', () => {
     ).toBeEmpty();
   });
 
-  test('Calculate all canvas and change Decimal places', async ({ page }) => {
+  test('Calculate all canvas and change Decimal places', async () => {
     /*
     Test case: EPMLSOPKET-1993
     Description:
@@ -118,7 +123,7 @@ test.describe('Calculated Values Tools', () => {
     );
   });
 
-  test('Calculate reaction', async ({ page }) => {
+  test('Calculate reaction', async () => {
     /*
     Test case: EPMLSOPKET-1994
     Description:
@@ -164,7 +169,7 @@ test.describe('Calculated Values Tools', () => {
     );
   });
 
-  test('One structure on canvas (Benzene ring)', async ({ page }) => {
+  test('One structure on canvas (Benzene ring)', async () => {
     /*
     Test case: EPMLSOPKET-1997
     Description:
@@ -215,9 +220,7 @@ test.describe('Calculated Values Tools', () => {
     ).toHaveValue('C 92.3 H 7.7');
   });
 
-  test('Validate the Calculation of exact mass for a part of molecule', async ({
-    page,
-  }) => {
+  test('Validate the Calculation of exact mass for a part of molecule', async () => {
     /*
     Test case: EPMLSOPKET-1999
     Description: Calculated values dialog appears, the exact mass of
@@ -244,9 +247,7 @@ test.describe('Calculated Values Tools', () => {
     ).toHaveValue('C 72.5 H 6.1 O 21.4');
   });
 
-  test('Calculation of exact mass for the reaction components', async ({
-    page,
-  }) => {
+  test('Calculation of exact mass for the reaction components', async () => {
     /*
     Test case: EPMLSOPKET-2001
     Description: Calculation of exact mass for the reaction
@@ -269,7 +270,7 @@ test.describe('Calculated Values Tools', () => {
     ).toHaveValue('[C 92.3 H 7.7] > [C 45.9 H 3.2 Br 50.9]');
   });
 
-  test('Calculation for an inorganic compound', async ({ page }) => {
+  test('Calculation for an inorganic compound', async () => {
     /*
     Test case: EPMLSOPKET-2003
     Description: The calculation for the inorganic compound should be correct.
@@ -299,9 +300,7 @@ test.describe('Calculated Values Tools', () => {
     ).toHaveValue('H 5.9 S 94.1');
   });
 
-  test('Calculations for Rgroup Root Structure with Rgroup Label', async ({
-    page,
-  }) => {
+  test('Calculations for Rgroup Root Structure with Rgroup Label', async () => {
     /*
     Test case: EPMLSOPKET-2004
     Description: If R-group label is included in the selected object the Chemical Formula is present only.
@@ -327,9 +326,7 @@ test.describe('Calculated Values Tools', () => {
     );
   });
 
-  test('Calculations for Rgroup Root Structure without Rgroup Label', async ({
-    page,
-  }) => {
+  test('Calculations for Rgroup Root Structure without Rgroup Label', async () => {
     /*
     Test case: EPMLSOPKET-2004
     Description: If the R-group label is absent in the selected object the calculation is represented
@@ -361,7 +358,7 @@ test.describe('Calculated Values Tools', () => {
     );
   });
 
-  test('Calculations for Rgroup member', async ({ page }) => {
+  test('Calculations for Rgroup member', async () => {
     /*
     Test case: EPMLSOPKET-2005
     Description: Regardless of the method of selection all fields contain
@@ -377,9 +374,7 @@ test.describe('Calculated Values Tools', () => {
     );
   });
 
-  test('Calculations for Rgroup member (select part of structure)', async ({
-    page,
-  }) => {
+  test('Calculations for Rgroup member (select part of structure)', async () => {
     const errorMessage = page.getByTestId('info-modal-body');
 
     /*
@@ -398,9 +393,7 @@ test.describe('Calculated Values Tools', () => {
     );
   });
 
-  test('Calculations for the structure with R-group Attachment points', async ({
-    page,
-  }) => {
+  test('Calculations for the structure with R-group Attachment points', async () => {
     /*
     Test case: EPMLSOPKET-2006
     Description: If the selected object contains the attachment points (or nothing is selected)
@@ -418,9 +411,7 @@ test.describe('Calculated Values Tools', () => {
     );
   });
 
-  test('Calculations for the structure with R-group Attachment points (select part of structure)', async ({
-    page,
-  }) => {
+  test('Calculations for the structure with R-group Attachment points (select part of structure)', async () => {
     /*
     Test case: EPMLSOPKET-2006
     Description: If the Rgroup attachment point is absent in the selected object the calculation is
@@ -442,9 +433,7 @@ test.describe('Calculated Values Tools', () => {
     );
   });
 
-  test('Calculation for structure with S-group - SRU polymer', async ({
-    page,
-  }) => {
+  test('Calculation for structure with S-group - SRU polymer', async () => {
     /*
     Test case: EPMLSOPKET-2007
     Description: Calculation for SRU polymer S-groups should be represented:
@@ -479,9 +468,7 @@ test.describe('Calculated Values Tools', () => {
     );
   });
 
-  test('Calculation for structure with S-group - Multiple group', async ({
-    page,
-  }) => {
+  test('Calculation for structure with S-group - Multiple group', async () => {
     /*
      * Test case: EPMLSOPKET-2008
      * Description: Multiple brackets should be "opened", part of the structure in the
@@ -515,9 +502,7 @@ test.describe('Calculated Values Tools', () => {
     ).toHaveValue('C 84.7 H 15.3');
   });
 
-  test('Calculation for structure with S-group - Superatom (abbreviation)', async ({
-    page,
-  }) => {
+  test('Calculation for structure with S-group - Superatom (abbreviation)', async () => {
     /*
      * Test case: EPMLSOPKET-2010
      * Description: The brackets are ignored and calculation is represented as simple structrure.
@@ -550,9 +535,7 @@ test.describe('Calculated Values Tools', () => {
     ).toHaveValue('C 84.6 H 15.4');
   });
 
-  test('Calculation for structure with S-group - Data S-group', async ({
-    page,
-  }) => {
+  test('Calculation for structure with S-group - Data S-group', async () => {
     /*
      * Test case: EPMLSOPKET-2011
      * Description: The presence of Data S-group is ignored and calculation is represented as simple structure.
@@ -585,9 +568,7 @@ test.describe('Calculated Values Tools', () => {
     ).toHaveValue('C 84.9 H 15.1');
   });
 
-  test('(hetero-adduct)Calculation of exact mass for different types of structures', async ({
-    page,
-  }) => {
+  test('(hetero-adduct)Calculation of exact mass for different types of structures', async () => {
     /*
      * Test case: EPMLSOPKET-1998
      * Description: The presence of Data S-group is ignored and calculation is represented as simple structure.
@@ -617,9 +598,7 @@ test.describe('Calculated Values Tools', () => {
     ).toHaveValue('C 78.3 H 4.4 O 17.4');
   });
 
-  test('(c14napthylbromide)Calculation of exact mass for different types of structures', async ({
-    page,
-  }) => {
+  test('(c14napthylbromide)Calculation of exact mass for different types of structures', async () => {
     /*
      * Test case: EPMLSOPKET-1998
      * Description: The presence of Data S-group is ignored and calculation is represented as simple structure.
@@ -649,7 +628,7 @@ test.describe('Calculated Values Tools', () => {
     ).toHaveValue('C 60.1 H 4.1 Br 35.8');
   });
 
-  test('Calculation for several reaction components', async ({ page }) => {
+  test('Calculation for several reaction components', async () => {
     /*
      * Test case: EPMLSOPKET-2002
      * Description: Reaction components are calculated.
@@ -684,9 +663,7 @@ test.describe('Calculated Values Tools', () => {
     );
   });
 
-  test('Calculation for several reaction components(part of structure)', async ({
-    page,
-  }) => {
+  test('Calculation for several reaction components(part of structure)', async () => {
     /*
      * Test case: EPMLSOPKET-2002
      * Description: Reaction components are calculated.
@@ -720,9 +697,7 @@ test.describe('Calculated Values Tools', () => {
     ).toHaveValue('[O 100.0]+[C 52.1 H 13.1 O 34.7]');
   });
 
-  test('Calculate result for structure with atom and bond properties', async ({
-    page,
-  }) => {
+  test('Calculate result for structure with atom and bond properties', async () => {
     /*
      * Test case: EPMLSOPKET-1995
      * Description: Reaction components are calculated.
@@ -757,11 +732,15 @@ test.describe('Calculated Values Tools', () => {
 });
 
 test.describe('Calculated Values Tools', () => {
-  test.beforeEach(async ({ page }) => {
-    await waitForPageInit(page);
+  test.beforeAll(async ({ initMoleculesCanvas }) => {
+    page = await initMoleculesCanvas();
   });
+  test.afterAll(async ({ closePage }) => {
+    await closePage();
+  });
+  test.beforeEach(async ({ MoleculesCanvas: _ }) => {});
 
-  test('Structure Check window', async ({ page }) => {
+  test('Structure Check window', async () => {
     /*
     Test case: EPMLSOPKET-10089
     Description: The 'Structure Check' modal is opened

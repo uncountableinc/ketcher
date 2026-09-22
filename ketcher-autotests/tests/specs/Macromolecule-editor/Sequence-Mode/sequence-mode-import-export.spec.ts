@@ -1,5 +1,5 @@
 /* eslint-disable no-magic-numbers */
-import { Page, test, expect } from '@playwright/test';
+import { Page, test, expect } from '@fixtures';
 import {
   pasteFromClipboardAndAddToMacromoleculesCanvas,
   takeEditorScreenshot,
@@ -9,7 +9,6 @@ import {
   waitForPageInit,
   clickInTheMiddleOfTheScreen,
 } from '@utils';
-import { zoomWithMouseWheel } from '@utils/macromolecules';
 import { keyboardPressOnCanvas } from '@utils/keyboard/index';
 import {
   PeptideLetterCodeType,
@@ -137,6 +136,7 @@ test.describe('Import/export sequence:', () => {
     await keyboardPressOnCanvas(page, 'Escape');
   });
 
+  //
   test('It is possible to paste from clipboard A, T, C, G, U for RNA open structure', async () => {
     /*
         Test case: https://github.com/epam/ketcher/issues/4422 - Case 3.1 (RNA case)
@@ -152,7 +152,6 @@ test.describe('Import/export sequence:', () => {
       [MacroFileType.Sequence, SequenceMonomerType.RNA],
       'ATCGUatcgu',
     );
-    await zoomWithMouseWheel(page, 300);
     await moveMouseAway(page);
     await takeEditorScreenshot(page, { hideMonomerPreview: true });
   });

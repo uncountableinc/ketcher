@@ -1,4 +1,4 @@
-import { Page, test } from '@playwright/test';
+import { Page, test } from '@fixtures';
 import {
   takeEditorScreenshot,
   waitForPageInit,
@@ -6,7 +6,6 @@ import {
   openFileAndAddToCanvas,
   clickOnCanvas,
 } from '@utils';
-import { getAtomByIndex } from '@utils/canvas/atoms/getAtomByIndex/getAtomByIndex';
 import { ContextMenu } from '@tests/pages/common/ContextMenu';
 import {
   AromaticityOption,
@@ -32,6 +31,7 @@ import {
 } from '@tests/pages/molecules/canvas/SettingsDialog';
 import { RightToolbar } from '@tests/pages/molecules/RightToolbar';
 import { TopRightToolbar } from '@tests/pages/molecules/TopRightToolbar';
+import { getAtomLocator } from '@utils/canvas/atoms/getAtomLocator/getAtomLocator';
 
 async function selectExtendedTableElements(page: Page, element: string) {
   const extendedTableButton = RightToolbar(page).extendedTableButton;
@@ -66,7 +66,7 @@ test.describe('Atom Settings', () => {
     const pointX = 250;
     const pointY = 250;
     await selectExtendedTableElements(page, 'D');
-    await clickOnCanvas(page, pointX, pointY);
+    await clickOnCanvas(page, pointX, pointY, { from: 'pageTopLeft' });
     await selectExtendedTableElements(page, 'T');
     await clickInTheMiddleOfTheScreen(page);
     await takeEditorScreenshot(page);
@@ -104,8 +104,8 @@ test.describe('Atom Settings', () => {
 
     await selectRingButton(page, RingButton.Benzene);
     await clickInTheMiddleOfTheScreen(page);
-
-    const point = await getAtomByIndex(page, { label: 'C' }, 1);
+    await setSettingsOption(page, AtomsSetting.DisplayCarbonExplicitly);
+    const point = getAtomLocator(page, { atomLabel: 'C', atomId: 4 });
 
     await ContextMenu(page, point).click([
       MicroAtomOption.QueryProperties,
@@ -127,7 +127,7 @@ test.describe('Atom Settings', () => {
       QueryAtomOption.RingSize,
       RingSizeOption.Eight,
     ]);
-    await clickOnCanvas(page, pointX, pointY);
+    await clickOnCanvas(page, pointX, pointY, { from: 'pageTopLeft' });
     await takeEditorScreenshot(page);
   });
 });

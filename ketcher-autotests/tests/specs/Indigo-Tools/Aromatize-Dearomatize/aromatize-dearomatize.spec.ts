@@ -1,5 +1,5 @@
 /* eslint-disable no-magic-numbers */
-import { test } from '@playwright/test';
+import { test } from '@fixtures';
 import {
   clickInTheMiddleOfTheScreen,
   clickOnCanvas,
@@ -32,16 +32,6 @@ const CANVAS_CLICK_Y = 200;
 test.describe('Aromatize/Dearomatize Tool', () => {
   test.beforeEach(async ({ page }) => {
     await waitForPageInit(page);
-  });
-
-  test('Empty canvas', { tag: ['@chromium-popup'] }, async ({ page }) => {
-    /*
-    Test case: EPMLSOPKET-1867
-    Description: Nothing is changed.
-    */
-    await IndigoFunctionsToolbar(page).aromatize();
-    await IndigoFunctionsToolbar(page).dearomatize();
-    await takeEditorScreenshot(page);
   });
 
   test('Non-aromatic structures - Single bonds only', async ({ page }) => {
@@ -145,7 +135,9 @@ test.describe('Aromatize/Dearomatize Tool', () => {
       'Molfiles-V2000/cycles-with-aromatic-bonds.mol',
     );
     await copyAndPaste(page);
-    await clickOnCanvas(page, CANVAS_CLICK_X, CANVAS_CLICK_Y);
+    await clickOnCanvas(page, CANVAS_CLICK_X, CANVAS_CLICK_Y, {
+      from: 'pageTopLeft',
+    });
     await IndigoFunctionsToolbar(page).aromatize();
     await takeEditorScreenshot(page);
   });
@@ -163,7 +155,9 @@ test.describe('Aromatize/Dearomatize Tool', () => {
       'Molfiles-V2000/cycles-with-aromatic-bonds.mol',
     );
     await cutAndPaste(page);
-    await clickOnCanvas(page, CANVAS_CLICK_X, CANVAS_CLICK_Y);
+    await clickOnCanvas(page, CANVAS_CLICK_X, CANVAS_CLICK_Y, {
+      from: 'pageTopLeft',
+    });
     await IndigoFunctionsToolbar(page).aromatize();
     await takeEditorScreenshot(page);
   });

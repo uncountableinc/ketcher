@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { StrictMode, useEffect, useState } from 'react';
 import { ButtonsConfig, Editor, InfoModal } from 'ketcher-react';
 import { Ketcher, StructServiceProvider } from 'ketcher-core';
 
 import 'ketcher-react/dist/index.css';
 
 import { getStructServiceProvider } from './utils';
+import { safePostMessage } from './utils/safePostMessage';
 
 const getHiddenButtonsConfig = (): ButtonsConfig => {
   const searchParams = new URLSearchParams(window.location.search);
@@ -37,7 +38,7 @@ const App = () => {
   }
 
   return (
-    <>
+    <StrictMode>
       <div
         style={{ transform: `scale(${EXTERNAL_ZOOM_SCALE})`, height: '100%' }}
       >
@@ -56,13 +57,9 @@ const App = () => {
                 externalZoomScale: EXTERNAL_ZOOM_SCALE,
               }),
             );
-
-            window.parent.postMessage(
-              {
-                eventType: 'init',
-              },
-              '*',
-            );
+            safePostMessage({
+              eventType: 'init',
+            });
             window.scrollTo(0, 0);
           }}
         />
@@ -80,7 +77,7 @@ const App = () => {
           }}
         />
       )}
-    </>
+    </StrictMode>
   );
 };
 

@@ -1,5 +1,5 @@
 /* eslint-disable no-magic-numbers */
-import { test } from '@playwright/test';
+import { test } from '@fixtures';
 import {
   clickInTheMiddleOfTheScreen,
   takeEditorScreenshot,
@@ -19,7 +19,6 @@ import {
   cutAndPaste,
   selectAllStructuresOnCanvas,
 } from '@utils/canvas/selectSelection';
-import { getAtomByIndex } from '@utils/canvas/atoms';
 import {
   FileType,
   verifyFileExport,
@@ -38,7 +37,9 @@ import {
   expandAbbreviation,
   removeAbbreviation,
 } from '@utils/sgroup/helpers';
-let point: { x: number; y: number };
+import { getAtomLocator } from '@utils/canvas/atoms/getAtomLocator/getAtomLocator';
+import { AtomsSetting } from '@tests/pages/constants/settingsDialog/Constants';
+import { setSettingsOption } from '@tests/pages/molecules/canvas/SettingsDialog';
 
 test.describe('Superatom S-Group tool', () => {
   test.beforeEach(async ({ page }) => {
@@ -99,7 +100,9 @@ test.describe('Superatom S-Group tool', () => {
     const CANVAS_CLICK_Y = 380;
     await openFileAndAddToCanvas(page, 'Molfiles-V2000/superatom.mol');
     await LeftToolbar(page).sGroup();
-    await clickOnCanvas(page, CANVAS_CLICK_X, CANVAS_CLICK_Y);
+    await clickOnCanvas(page, CANVAS_CLICK_X, CANVAS_CLICK_Y, {
+      from: 'pageTopLeft',
+    });
     await SGroupPropertiesDialog(page).setNameValue('Test@!#$%12345');
     await SGroupPropertiesDialog(page).apply();
     await takeEditorScreenshot(page);
@@ -200,7 +203,9 @@ test.describe('Superatom S-Group tool', () => {
     const CANVAS_CLICK_Y = 600;
     await openFileAndAddToCanvas(page, 'Molfiles-V2000/superatom.mol');
     await copyAndPaste(page);
-    await clickOnCanvas(page, CANVAS_CLICK_X, CANVAS_CLICK_Y);
+    await clickOnCanvas(page, CANVAS_CLICK_X, CANVAS_CLICK_Y, {
+      from: 'pageTopLeft',
+    });
     await takeEditorScreenshot(page);
   });
 
@@ -239,13 +244,18 @@ test.describe('Superatom S-Group tool', () => {
       Description: User is able to contract/expand/remove abbreviation on structure with Superatom S-group.
     */
     await openFileAndAddToCanvas(page, 'KET/superatom-all-chain.ket');
-
-    point = await getAtomByIndex(page, { label: 'C' }, 3);
-    await contractAbbreviation(page, point);
+    await setSettingsOption(page, AtomsSetting.DisplayCarbonExplicitly);
+    await contractAbbreviation(
+      page,
+      getAtomLocator(page, { atomLabel: 'C', atomId: 3 }),
+    );
     await takeEditorScreenshot(page);
     await expandAbbreviation(page, page.getByText('Test@!#$%12345'));
     await takeEditorScreenshot(page);
-    await removeAbbreviation(page, point);
+    await removeAbbreviation(
+      page,
+      getAtomLocator(page, { atomLabel: 'C', atomId: 3 }),
+    );
     await takeEditorScreenshot(page);
   });
 
@@ -257,14 +267,19 @@ test.describe('Superatom S-Group tool', () => {
       Description: User is able to contract/expand/remove abbreviation on atom with Superatom S-group.
     */
     await openFileAndAddToCanvas(page, 'KET/superatom-one-atom-on-chain.ket');
-
-    point = await getAtomByIndex(page, { label: 'C' }, 3);
-    await contractAbbreviation(page, point);
+    await setSettingsOption(page, AtomsSetting.DisplayCarbonExplicitly);
+    await contractAbbreviation(
+      page,
+      getAtomLocator(page, { atomLabel: 'C', atomId: 3 }),
+    );
     await takeEditorScreenshot(page);
     await expandAbbreviation(page, page.getByText('Test@!#$%12345'));
     await takeEditorScreenshot(page);
 
-    await removeAbbreviation(page, point);
+    await removeAbbreviation(
+      page,
+      getAtomLocator(page, { atomLabel: 'C', atomId: 3 }),
+    );
     await takeEditorScreenshot(page);
   });
 

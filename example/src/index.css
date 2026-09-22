@@ -29,7 +29,7 @@ body {
 .MuiPaper-root.ketcher-dialog {
     align-self: center;
     width: 800px;
-    height: 40rem;
+    height: 650px;
     z-index: 1002;
     max-height: calc(100vh - 4.28571rem);
     max-width: calc(100vw - 4.28571rem);

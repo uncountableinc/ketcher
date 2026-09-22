@@ -1,16 +1,16 @@
+/* eslint-disable max-len */
+/* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable no-magic-numbers */
-import { expect, test, Page } from '@playwright/test';
+import { expect, test, Page } from '@fixtures';
 import {
   takeEditorScreenshot,
   openFileAndAddToCanvas,
   getCoordinatesTopAtomOfBenzeneRing,
   clickOnAtom,
-  clickOnTheCanvas,
   pressButton,
   dragMouseTo,
   moveMouseToTheMiddleOfTheScreen,
   getCoordinatesOfTheMiddleOfTheScreen,
-  waitForPageInit,
   openFileAndAddToCanvasAsNewProject,
   clickOnCanvas,
   RxnFileFormat,
@@ -50,14 +50,17 @@ async function savedFileInfoStartsWithRxn(page: Page, wantedResult = false) {
     : expect(textareaText?.startsWith(expectedSentence)).toBeFalsy();
 }
 
+let page: Page;
 test.describe('Tests for Open and Save RXN file operations', () => {
-  test.beforeEach(async ({ page }) => {
-    await waitForPageInit(page);
+  test.beforeAll(async ({ initMoleculesCanvas }) => {
+    page = await initMoleculesCanvas();
   });
+  test.afterAll(async ({ closePage }) => {
+    await closePage();
+  });
+  test.beforeEach(async ({ MoleculesCanvas: _ }) => {});
 
-  test('Open and Save file - Reaction with atom and bond properties', async ({
-    page,
-  }) => {
+  test('Open and Save file - Reaction with atom and bond properties', async () => {
     /**
      * Test case: EPMLSOPKET-1897
      * Description: Reaction with atom and bond properties
@@ -69,9 +72,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Open and Save file - Reaction from file that contains Rgroup', async ({
-    page,
-  }) => {
+  test('Open and Save file - Reaction from file that contains Rgroup', async () => {
     /**
      * Test case: EPMLSOPKET-1901
      * Description: Reaction from file that contains Rgroup
@@ -86,7 +87,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await RGroupDialog(page).setRGroupLabels(RGroup.R7);
 
     await LeftToolbar(page).selectArrowTool(ArrowType.ArrowFilledBow);
-    await clickOnTheCanvas(page, xOffsetFromCenter, 0);
+    await clickOnCanvas(page, xOffsetFromCenter, 0, { from: 'pageCenter' });
     await CommonTopLeftToolbar(page).saveFile();
     await expect(saveButton).not.toHaveAttribute('disabled', 'disabled');
 
@@ -102,15 +103,13 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await SaveStructureDialog(page).cancel();
     await LeftToolbar(page).selectRGroupTool(RGroupType.RGroupFragment);
     const { x, y } = await getCoordinatesTopAtomOfBenzeneRing(page);
-    await clickOnCanvas(page, x, y);
+    await clickOnCanvas(page, x, y, { from: 'pageTopLeft' });
     await RGroupDialog(page).setRGroupFragment(RGroup.R22);
     await CommonTopLeftToolbar(page).saveFile();
     await expect(saveButton).not.toHaveAttribute('disabled', 'disabled');
   });
 
-  test('Open and Save file - Reaction from file that contains Sgroup', async ({
-    page,
-  }) => {
+  test('Open and Save file - Reaction from file that contains Sgroup', async () => {
     /**
      * Test case: EPMLSOPKET-1903
      * Description: Reaction from file that contains Sgroup
@@ -133,9 +132,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Open and Save file - File without arrow or(and) plus-symbol', async ({
-    page,
-  }) => {
+  test('Open and Save file - File without arrow or(and) plus-symbol', async () => {
     /**
      * Test case: EPMLSOPKET-1905
      * Description: File without arrow or(and) plus-symbol
@@ -156,7 +153,12 @@ test.describe('Tests for Open and Save RXN file operations', () => {
 
     await pressButton(page, 'Cancel');
     await LeftToolbar(page).reactionPlusTool();
-    await clickOnCanvas(page, xCoordinatesWithShiftHalf, yCoordinatesWithShift);
+    await clickOnCanvas(
+      page,
+      xCoordinatesWithShiftHalf,
+      yCoordinatesWithShift,
+      { from: 'pageTopLeft' },
+    );
     const ySecondChain = yCoordinatesWithShift + yDelta50;
     await LeftToolbar(page).chain();
     await page.mouse.move(x, ySecondChain);
@@ -165,7 +167,12 @@ test.describe('Tests for Open and Save RXN file operations', () => {
 
     await pressButton(page, 'Cancel');
     await CommonLeftToolbar(page).selectEraseTool();
-    await clickOnCanvas(page, xCoordinatesWithShiftHalf, yCoordinatesWithShift);
+    await clickOnCanvas(
+      page,
+      xCoordinatesWithShiftHalf,
+      yCoordinatesWithShift,
+      { from: 'pageTopLeft' },
+    );
     await LeftToolbar(page).selectArrowTool(ArrowType.ArrowFilledBow);
     const yArrowStart = y + yDelta20;
     const yArrowEnd = yArrowStart + yDelta20;
@@ -181,9 +188,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await savedFileInfoStartsWithRxn(page, true);
   });
 
-  test('Open and Save file - Structure is not missing when "Paste from clipboard" or "Open from file" if reaction consists of two or more reaction arrows and structures', async ({
-    page,
-  }) => {
+  test('Open and Save file - Structure is not missing when "Paste from clipboard" or "Open from file" if reaction consists of two or more reaction arrows and structures', async () => {
     /**
      * Test case: EPMLSOPKET-8904
      * Description: Structure isn't missing when "Paste from clipboard" or "Open from file" if reaction consists of two or more reaction arrows and structures
@@ -202,7 +207,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     const xOffsetFromCenter = 50;
     await LeftToolbar(page).selectArrowTool(ArrowType.ArrowFilledBow);
     await moveMouseToTheMiddleOfTheScreen(page);
-    await clickOnTheCanvas(page, xOffsetFromCenter, 0);
+    await clickOnCanvas(page, xOffsetFromCenter, 0, { from: 'pageCenter' });
     await takeEditorScreenshot(page);
     await verifyFileExport(
       page,
@@ -229,9 +234,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Open and Save file - Import the structure from the saved RXN 2000/3000 file', async ({
-    page,
-  }) => {
+  test('Open and Save file - Import the structure from the saved RXN 2000/3000 file', async () => {
     /**
      * Test case: EPMLSOPKET-12964
      * Description: Import the structure from the saved RXN 2000/3000 file
@@ -243,9 +246,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Open and Save file - Open the RXN v3000 file with S-Group Properties Type = Multiple group', async ({
-    page,
-  }) => {
+  test('Open and Save file - Open the RXN v3000 file with S-Group Properties Type = Multiple group', async () => {
     /**
      * Test case: EPMLSOPKET-12967 for Open RXN v3000 file with 'S-Group Properties Type = Multiple group rxnV3000Multiple.zip
      * Description: Open the RXN v3000 file with S-Group Properties Type = Multiple group
@@ -257,9 +258,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Open and Save file - Open the RXN v2000 file with S-Group Properties Type = Multiple group', async ({
-    page,
-  }) => {
+  test('Open and Save file - Open the RXN v2000 file with S-Group Properties Type = Multiple group', async () => {
     /**
      * Test case: EPMLSOPKET-12967 for Open RXN v2000 file with 'S-Group Properties Type = Multiple group rxnV2000Multiple.zip
      * Description: Open the RXN v2000 file with S-Group Properties Type = Multiple group
@@ -271,9 +270,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Open and Save file - Reaction from file that contains abbreviation 1/2 - open', async ({
-    page,
-  }) => {
+  test('Open and Save file - Reaction from file that contains abbreviation 1/2 - open', async () => {
     /**
      * Test case: EPMLSOPKET-1899(1)
      * Description: Reaction with abbreviations is opened and saved correctly
@@ -282,9 +279,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Open and Save file - Reaction from file that contains abbreviation 2/2 - save', async ({
-    page,
-  }) => {
+  test('Open and Save file - Reaction from file that contains abbreviation 2/2 - save', async () => {
     /**
      * Test case: EPMLSOPKET-1899(2)
      * Description: Reaction with abbreviations is opened and saved correctly
@@ -303,9 +298,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Open and Save file - Reaction from file that contains Heteroatoms 1/2 - open', async ({
-    page,
-  }) => {
+  test('Open and Save file - Reaction from file that contains Heteroatoms 1/2 - open', async () => {
     /**
      * Test case: EPMLSOPKET-1904(1)
      * Description: Reaction with heteroatoms is opened and saved correctly
@@ -315,9 +308,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Open and Save file - Reaction from file that contains Heteroatoms 2/2 - save', async ({
-    page,
-  }) => {
+  test('Open and Save file - Reaction from file that contains Heteroatoms 2/2 - save', async () => {
     /**
      * Test case: EPMLSOPKET-1904(2)
      * Description: Reaction with heteroatoms is opened and saved correctly
@@ -331,9 +322,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     );
   });
 
-  test('Open and Save file - V3000 rxn file contains Rgroup 1/2 - open', async ({
-    page,
-  }) => {
+  test('Open and Save file - V3000 rxn file contains Rgroup 1/2 - open', async () => {
     /**
      * Test case: EPMLSOPKET-1902(1)
      * Description: Reaction can be opened correctly from rxn V3000 file
@@ -343,9 +332,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Open and Save file - V3000 rxn file contains Rgroup 2/2 - save', async ({
-    page,
-  }) => {
+  test('Open and Save file - V3000 rxn file contains Rgroup 2/2 - save', async () => {
     /**
      * Test case: EPMLSOPKET-1902(2)
      * Description: Reaction can be saved correctly to rxn V3000 file
@@ -359,9 +346,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     );
   });
 
-  test('Validate that unsplit nucleotides connected with phosphates could be saved to rxn2000 file and loaded back', async ({
-    page,
-  }) => {
+  test('Validate that unsplit nucleotides connected with phosphates could be saved to rxn2000 file and loaded back', async () => {
     /*
     Test case: #4382
     Description: Validate that unsplit nucleotides connected with phosphates could be saved to rxn2000 file and loaded back
@@ -390,9 +375,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Validate that unsplit nucleotides connected with peptides could be saved to rxn2000 file and loaded back', async ({
-    page,
-  }) => {
+  test('Validate that unsplit nucleotides connected with peptides could be saved to rxn2000 file and loaded back', async () => {
     /*
     Test case: #4382
     Description: Validate that unsplit nucleotides connected with peptides could be saved to rxn2000 file and loaded back
@@ -421,9 +404,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Validate that unsplit nucleotides connected with other nucleotides could be saved to rxn2000 file and loaded back', async ({
-    page,
-  }) => {
+  test('Validate that unsplit nucleotides connected with other nucleotides could be saved to rxn2000 file and loaded back', async () => {
     /*
     Test case: #4382
     Description: Validate that unsplit nucleotides connected with other nucleotides could be saved to rxn2000 file and loaded back
@@ -452,9 +433,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Validate that unsplit nucleotides connected with chems could be saved to rxn2000 file and loaded back', async ({
-    page,
-  }) => {
+  test('Validate that unsplit nucleotides connected with chems could be saved to rxn2000 file and loaded back', async () => {
     /*
     Test case: #4382
     Description: Validate that unsplit nucleotides connected with chems could be saved to rxn2000 file and loaded back
@@ -482,9 +461,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Validate that unsplit nucleotides connected with bases could be saved to rxn2000 file and loaded back', async ({
-    page,
-  }) => {
+  test('Validate that unsplit nucleotides connected with bases could be saved to rxn2000 file and loaded back', async () => {
     /*
     Test case: #4382
     Description: Validate that unsplit nucleotides connected with bases could be saved to rxn2000 file and loaded back
@@ -513,9 +490,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Validate that unsplit nucleotides connected with sugars could be saved to rxn2000 file and loaded back', async ({
-    page,
-  }) => {
+  test('Validate that unsplit nucleotides connected with sugars could be saved to rxn2000 file and loaded back', async () => {
     /*
     Test case: #4382
     Description: Validate that unsplit nucleotides connected with sugars could be saved to rxn2000 file and loaded back
@@ -544,9 +519,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Validate that simple schema with retrosynthetic arrow could be saved to rxn2000 file and loaded back', async ({
-    page,
-  }) => {
+  test('Validate that simple schema with retrosynthetic arrow could be saved to rxn2000 file and loaded back', async () => {
     /*
     Test case: #2071
     Description: Validate that schema with retrosynthetic arrow could be saved to rxn2000 file and loaded back
@@ -571,9 +544,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Validate that simple schema with retrosynthetic arrow could be saved to rxn3000 file and loaded back', async ({
-    page,
-  }) => {
+  test('Validate that simple schema with retrosynthetic arrow could be saved to rxn3000 file and loaded back', async () => {
     /*
     Test case: Import/Saving files
     Description: Validate that schema with retrosynthetic arrow could be saved to rxn3000 file and loaded back
@@ -598,9 +569,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Validate that the schema with retrosynthetic, angel arrows and plus could be saved to rxn2000 file and loaded back', async ({
-    page,
-  }) => {
+  test('Validate that the schema with retrosynthetic, angel arrows and plus could be saved to rxn2000 file and loaded back', async () => {
     /*
     Test case: #2071
     Description: Validate that schema with retrosynthetic arrow could be saved to rxn2000 file and loaded back
@@ -625,9 +594,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Validate that the schema with retrosynthetic, angel arrows and plus could be saved to rxn3000 file and loaded back', async ({
-    page,
-  }) => {
+  test('Validate that the schema with retrosynthetic, angel arrows and plus could be saved to rxn3000 file and loaded back', async () => {
     /*
     Test case: Import/Saving files
     Description: Validate that schema with retrosynthetic arrow could be saved to rxn3000 file and loaded back
@@ -652,9 +619,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Validate that the schema with vertical retrosynthetic arrow could be saved to rxn2000 file and loaded back', async ({
-    page,
-  }) => {
+  test('Validate that the schema with vertical retrosynthetic arrow could be saved to rxn2000 file and loaded back', async () => {
     /*
     Test case: #2071
     Description: Validate that schema with retrosynthetic arrow could be saved to rxn2000 file and loaded back
@@ -679,9 +644,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Validate that the schema with vertical retrosynthetic arrow could be saved to rxn3000 file and loaded back', async ({
-    page,
-  }) => {
+  test('Validate that the schema with vertical retrosynthetic arrow could be saved to rxn3000 file and loaded back', async () => {
     /*
     Test case: Import/Saving files
     Description: Validate that schema with retrosynthetic arrow could be saved to rxn3000 file and loaded back
@@ -706,9 +669,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Validate that the schema with two retrosynthetic arrows could be saved to rxn2000 file and loaded back', async ({
-    page,
-  }) => {
+  test('Validate that the schema with two retrosynthetic arrows could be saved to rxn2000 file and loaded back', async () => {
     /*
     Test case: #2071
     Description: Validate that schema with retrosynthetic arrow could be saved to rxn2000 file and loaded back
@@ -733,9 +694,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Validate that the schema with two retrosynthetic arrows could be saved to rxn3000 file and loaded back', async ({
-    page,
-  }) => {
+  test('Validate that the schema with two retrosynthetic arrows could be saved to rxn3000 file and loaded back', async () => {
     /*
     Test case: Import/Saving files
     Description: Validate that schema with retrosynthetic arrow could be saved to rxn3000 file and loaded back
@@ -760,9 +719,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Validate that the schema with diagonaly retrosynthetic arrow could be saved to rxn2000 file and loaded back', async ({
-    page,
-  }) => {
+  test('Validate that the schema with diagonaly retrosynthetic arrow could be saved to rxn2000 file and loaded back', async () => {
     /*
     Test case: #2071
     Description: Validate that schema with retrosynthetic arrow could be saved to rxn2000 file and loaded back
@@ -787,9 +744,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Validate that the schema with diagonaly retrosynthetic arrow could be saved to rxn3000 file and loaded back', async ({
-    page,
-  }) => {
+  test('Validate that the schema with diagonaly retrosynthetic arrow could be saved to rxn3000 file and loaded back', async () => {
     /*
     Test case: Import/Saving files
     Description: Validate that schema with retrosynthetic arrow could be saved to rxn3000 file and loaded back
@@ -814,9 +769,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Validate that the schema with reverse retrosynthetic arrow and pluses could be saved to rxn2000 file and loaded back', async ({
-    page,
-  }) => {
+  test('Validate that the schema with reverse retrosynthetic arrow and pluses could be saved to rxn2000 file and loaded back', async () => {
     /*
     Test case: #2071
     Description: Validate that schema with retrosynthetic arrow could be saved to rxn2000 file and loaded back
@@ -841,9 +794,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Validate that the schema with reverse retrosynthetic arrow and pluses could be saved to rxn3000 file and loaded back', async ({
-    page,
-  }) => {
+  test('Validate that the schema with reverse retrosynthetic arrow and pluses could be saved to rxn3000 file and loaded back', async () => {
     /*
 
     Test case: Import/Saving files
@@ -869,9 +820,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('The Bond length setting with px option is applied and it should be save to RXN2000', async ({
-    page,
-  }) => {
+  test('The Bond length setting with px option is applied and it should be save to RXN2000', async () => {
     /*
   Test case: https://github.com/epam/Indigo/issues/2176
   Description: Add new settings for ACS style for convert and layout functions
@@ -890,9 +839,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     );
   });
 
-  test('The Hash spacing setting with px option is applied and it should be save to RXN2000', async ({
-    page,
-  }) => {
+  test('The Hash spacing setting with px option is applied and it should be save to RXN2000', async () => {
     /*
   Test case: https://github.com/epam/Indigo/issues/2176
   Description: Add new settings for ACS style for convert and layout functions
@@ -920,9 +867,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('The Hash spacing setting with px option is applied and it should be save to RXN3000', async ({
-    page,
-  }) => {
+  test('The Hash spacing setting with px option is applied and it should be save to RXN3000', async () => {
     /*
   Test case: https://github.com/epam/Indigo/issues/2176
   Description: Add new settings for ACS style for convert and layout functions
@@ -949,9 +894,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('The Bond length setting with pt option is applied and it should be save to RXN2000', async ({
-    page,
-  }) => {
+  test('The Bond length setting with pt option is applied and it should be save to RXN2000', async () => {
     /*
   Test case: https://github.com/epam/Indigo/issues/2176
   Description: Add new settings for ACS style for convert and layout functions
@@ -976,9 +919,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('The Hash spacing setting with pt option is applied and it should be save to RXN2000', async ({
-    page,
-  }) => {
+  test('The Hash spacing setting with pt option is applied and it should be save to RXN2000', async () => {
     /*
   Test case: https://github.com/epam/Indigo/issues/2176
   Description: Add new settings for ACS style for convert and layout functions
@@ -1005,9 +946,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('The Hash spacing setting with pt option is applied and it should be save to RXN3000', async ({
-    page,
-  }) => {
+  test('The Hash spacing setting with pt option is applied and it should be save to RXN3000', async () => {
     /*
   Test case: https://github.com/epam/Indigo/issues/2176
   Description: Add new settings for ACS style for convert and layout functions
@@ -1034,9 +973,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('The Bond length setting with cm option is applied and it should be save to RXN2000', async ({
-    page,
-  }) => {
+  test('The Bond length setting with cm option is applied and it should be save to RXN2000', async () => {
     /*
   Test case: https://github.com/epam/Indigo/issues/2176
   Description: Add new settings for ACS style for convert and layout functions
@@ -1060,9 +997,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('The Hash spacing setting with cm option is applied and it should be save to RXN2000', async ({
-    page,
-  }) => {
+  test('The Hash spacing setting with cm option is applied and it should be save to RXN2000', async () => {
     /*
   Test case: https://github.com/epam/Indigo/issues/2176
   Description: Add new settings for ACS style for convert and layout functions
@@ -1089,9 +1024,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('The Hash spacing setting with cm option is applied and it should be save to RXN3000', async ({
-    page,
-  }) => {
+  test('The Hash spacing setting with cm option is applied and it should be save to RXN3000', async () => {
     /*
   Test case: https://github.com/epam/Indigo/issues/2176
   Description: Add new settings for ACS style for convert and layout functions
@@ -1118,9 +1051,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('The Bond length setting with inch option is applied and it should be save to RXN2000', async ({
-    page,
-  }) => {
+  test('The Bond length setting with inch option is applied and it should be save to RXN2000', async () => {
     /*
   Test case: https://github.com/epam/Indigo/issues/2176
   Description: Add new settings for ACS style for convert and layout functions
@@ -1139,9 +1070,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     );
   });
 
-  test('The Hash spacing setting with inch option is applied and it should be save to RXN2000', async ({
-    page,
-  }) => {
+  test('The Hash spacing setting with inch option is applied and it should be save to RXN2000', async () => {
     /*
   Test case: https://github.com/epam/Indigo/issues/2176
   Description: Add new settings for ACS style for convert and layout functions
@@ -1168,9 +1097,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('The Hash spacing setting with inch option is applied and it should be save to RXN3000', async ({
-    page,
-  }) => {
+  test('The Hash spacing setting with inch option is applied and it should be save to RXN3000', async () => {
     /*
   Test case: https://github.com/epam/Indigo/issues/2176
   Description: Add new settings for ACS style for convert and layout functions
@@ -1197,9 +1124,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('The Reaction component margin size setting with px option is applied, click on layout and it should be save to RXN2000', async ({
-    page,
-  }) => {
+  test('The Reaction component margin size setting with px option is applied, click on layout and it should be save to RXN2000', async () => {
     /*
   Test case: https://github.com/epam/Indigo/issues/2176
   Description: Add new settings for ACS style for convert and layout functions
@@ -1228,9 +1153,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('The ACS setting is applied, click on layout and it should be save to RXN2000', async ({
-    page,
-  }) => {
+  test('The ACS setting is applied, click on layout and it should be save to RXN2000', async () => {
     /*
   Test case: https://github.com/epam/ketcher/issues/5156
   Description: add new option ACS style and check saving to different format
@@ -1252,9 +1175,7 @@ test.describe('Tests for Open and Save RXN file operations', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('The ACS setting is applied, click on layout and it should be save to RXN3000', async ({
-    page,
-  }) => {
+  test('The ACS setting is applied, click on layout and it should be save to RXN3000', async () => {
     /*
   Test case: https://github.com/epam/ketcher/issues/5156
   Description: add new option ACS style and check saving to different format

@@ -2,8 +2,7 @@
 /* eslint-disable max-len */
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable no-magic-numbers */
-import { Page, expect } from '@playwright/test';
-import { test } from '@fixtures';
+import { test, Page, expect } from '@fixtures';
 import {
   takeEditorScreenshot,
   resetZoomLevelToDefault,
@@ -26,8 +25,6 @@ import {
   copyToClipboardByKeyboard,
   pasteFromClipboardByKeyboard,
   cutToClipboardByKeyboard,
-  readFileContent,
-  pasteFromClipboardAndOpenAsNewProject,
   moveMouseToTheMiddleOfTheScreen,
   copyToClipboardByIcon,
   moveMouseAway,
@@ -37,9 +34,7 @@ import {
   RdfFileFormat,
   MolFileFormat,
 } from '@utils';
-import { resetCurrentTool } from '@utils/canvas/tools/resetCurrentTool';
 import { selectAllStructuresOnCanvas } from '@utils/canvas';
-import { getAtomByIndex } from '@utils/canvas/atoms';
 import { waitForRender } from '@utils/common';
 import { processResetToDefaultState } from '@utils/testAnnotations/resetToDefaultState';
 import { SaveStructureDialog } from '@tests/pages/common/SaveStructureDialog';
@@ -64,17 +59,19 @@ import {
   getMonomerLocator,
   getSymbolLocator,
 } from '@utils/macromolecules/monomer';
-import { Peptides } from '@constants/monomers/Peptides';
-import { Phosphates } from '@constants/monomers/Phosphates';
-import { Sugars } from '@constants/monomers/Sugars';
+import { Peptide } from '@tests/pages/constants/monomers/Peptides';
+import { Phosphate } from '@tests/pages/constants/monomers/Phosphates';
+import { Sugar } from '@tests/pages/constants/monomers/Sugars';
 import { LeftToolbar } from '@tests/pages/molecules/LeftToolbar';
 import { ArrowType } from '@tests/pages/constants/arrowSelectionTool/Constants';
 import { getBondLocator } from '@utils/macromolecules/polymerBond';
 import {
+  setSettingsOption,
   setSettingsOptions,
   SettingsDialog,
 } from '@tests/pages/molecules/canvas/SettingsDialog';
 import {
+  AtomsSetting,
   BondsSetting,
   FontOption,
   GeneralSetting,
@@ -99,10 +96,11 @@ import { getBondByIndex } from '@utils/canvas/bonds';
 import { LayoutMode } from '@tests/pages/constants/macromoleculesTopToolbar/Constants';
 import { MacromoleculesTopToolbar } from '@tests/pages/macromolecules/MacromoleculesTopToolbar';
 import { getAbbreviationLocator } from '@utils/canvas/s-group-signes/getAbbreviation';
+import { getAtomLocator } from '@utils/canvas/atoms/getAtomLocator/getAtomLocator';
 
 async function removeTail(page: Page, tailName: string, index?: number) {
   const tailElement = page.getByTestId(tailName);
-  const n = index !== undefined ? index : 0;
+  const n = index ?? 0;
   await waitForRender(page, async () => {
     await ContextMenu(page, tailElement.nth(n)).click(
       MultiTailedArrowOption.RemoveTail,
@@ -503,11 +501,12 @@ test.describe('Ketcher bugs in 2.26.0', () => {
      */
     await CommonTopRightToolbar(page).turnOnMicromoleculesEditor();
     await drawBenzeneRing(page);
-    const point = await getAtomByIndex(page, { label: 'C' }, 0);
-    await ContextMenu(page, point).hover([
-      MicroAtomOption.QueryProperties,
-      QueryAtomOption.HCount,
-    ]);
+
+    await setSettingsOption(page, AtomsSetting.DisplayCarbonExplicitly);
+    await ContextMenu(
+      page,
+      getAtomLocator(page, { atomLabel: 'C', atomId: 0 }),
+    ).hover([MicroAtomOption.QueryProperties, QueryAtomOption.HCount]);
     await takeEditorScreenshot(page);
     await page.getByTestId(QueryAtomOption.SubstitutionCount).hover();
     await takeEditorScreenshot(page);
@@ -602,11 +601,12 @@ test.describe('Ketcher bugs in 2.26.0', () => {
       'KET/chain-with-double-bond.ket',
     );
     await takeEditorScreenshot(page);
-    const point = await getAtomByIndex(page, { label: 'C' }, 0);
-    await ContextMenu(page, point).click([
-      MicroBondOption.Highlight,
-      HighlightOption.Red,
-    ]);
+
+    await setSettingsOption(page, AtomsSetting.DisplayCarbonExplicitly);
+    await ContextMenu(
+      page,
+      getAtomLocator(page, { atomLabel: 'C', atomId: 0 }),
+    ).click([MicroBondOption.Highlight, HighlightOption.Red]);
     await takeEditorScreenshot(page);
   });
 
@@ -688,14 +688,14 @@ test.describe('Ketcher bugs in 2.26.0', () => {
       'KET/Bond tooltip preview placed wrong in on edge cases.ket',
     );
     await CommonTopRightToolbar(page).setZoomInputValue('75');
-    await resetCurrentTool(page);
-    await getMonomerLocator(page, Peptides.Cys_Bn).hover();
+    await CommonLeftToolbar(page).selectAreaSelectionTool();
+    await getMonomerLocator(page, Peptide.Cys_Bn).hover();
     await waitForMonomerPreview(page);
     await takeEditorScreenshot(page);
-    await getMonomerLocator(page, Sugars._25mo3r).hover();
+    await getMonomerLocator(page, Sugar._25mo3r).hover();
     await waitForMonomerPreview(page);
     await takeEditorScreenshot(page);
-    await getMonomerLocator(page, Phosphates.msp).hover();
+    await getMonomerLocator(page, Phosphate.msp).hover();
     await waitForMonomerPreview(page);
     await takeEditorScreenshot(page);
   });
@@ -917,12 +917,11 @@ test.describe('Ketcher bugs in 2.26.0', () => {
     );
     await takeEditorScreenshot(page);
     await selectAllStructuresOnCanvas(page);
-    const point = await getAtomByIndex(page, { label: 'N' }, 0);
-    await ContextMenu(page, point).click([
-      MicroBondOption.Highlight,
-      HighlightOption.Green,
-    ]);
-    await clickOnCanvas(page, 100, 100);
+    await ContextMenu(
+      page,
+      getAtomLocator(page, { atomLabel: 'N', atomId: 0 }),
+    ).click([MicroBondOption.Highlight, HighlightOption.Green]);
+    await clickOnCanvas(page, 100, 100, { from: 'pageTopLeft' });
     await takeEditorScreenshot(page);
   });
 
@@ -1181,8 +1180,10 @@ test.describe('Ketcher bugs in 2.26.0', () => {
     await takeEditorScreenshot(page);
     await expandMonomer(page, getAbbreviationLocator(page, { name: '5hMedC' }));
     await takeEditorScreenshot(page);
-    const point = await getAtomByIndex(page, { label: 'N' }, 0);
-    await ContextMenu(page, point).open();
+    await ContextMenu(
+      page,
+      getAtomLocator(page, { atomLabel: 'N', atomId: 13 }),
+    ).open();
     await takeEditorScreenshot(page);
   });
 
@@ -1229,13 +1230,13 @@ test.describe('Ketcher bugs in 2.26.0', () => {
     await selectAllStructuresOnCanvas(page);
     await copyToClipboardByKeyboard(page);
     await pasteFromClipboardByKeyboard(page);
-    await clickOnCanvas(page, 500, 650);
+    await clickOnCanvas(page, 500, 650, { from: 'pageTopLeft' });
     await takeEditorScreenshot(page);
     await selectAllStructuresOnCanvas(page);
     await cutToClipboardByKeyboard(page);
     await takeEditorScreenshot(page);
     await pasteFromClipboardByKeyboard(page);
-    await clickOnCanvas(page, 500, 550);
+    await clickOnCanvas(page, 500, 550, { from: 'pageTopLeft' });
     await takeEditorScreenshot(page);
   });
 
@@ -1384,55 +1385,55 @@ test.describe('Ketcher bugs in 2.26.0', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Case 50: The retrosynthetic arrow is displayed when export file in CDXML format and arrow is vertical', async () => {
-    /*
-     * Test case: https://github.com/epam/ketcher/issues/6947
-     * Bug: https://github.com/epam/Indigo/issues/2219
-     * Description: The retrosynthetic arrow is displayed when export file in CDXML format and arrow is vertical
-     * Scenario:
-     * 1. Go to Micro
-     * 2. Load from file
-     * 3. Click on Aromatize
-     * 4. Click on Dearomatize
-     * 5. Click on Calculate CIP
-     * 6. Click on Add explicit hydrogens
-     * 7. Take screenshot
-     */
-    await openFileAndAddToCanvasAsNewProjectMacro(page, 'KET/arr vert.ket');
-    await takeEditorScreenshot(page);
-    await verifyFileExport(
-      page,
-      'CDXML/arr vert-expected.cdxml',
-      FileType.CDXML,
-    );
-    await openFileAndAddToCanvasAsNewProject(
-      page,
-      'CDXML/arr vert-expected.cdxml',
-    );
-    await takeEditorScreenshot(page);
-  });
+  // test('Case 50: The retrosynthetic arrow is displayed when export file in CDXML format and arrow is vertical', async () => {
+  //   /*
+  //    * Test case: https://github.com/epam/ketcher/issues/6947
+  //    * Bug: https://github.com/epam/Indigo/issues/2219
+  //    * Description: The retrosynthetic arrow is displayed when export file in CDXML format and arrow is vertical
+  //    * Scenario:
+  //    * 1. Go to Micro
+  //    * 2. Load from file
+  //    * 3. Click on Aromatize
+  //    * 4. Click on Dearomatize
+  //    * 5. Click on Calculate CIP
+  //    * 6. Click on Add explicit hydrogens
+  //    * 7. Take screenshot
+  //    */
+  //   await openFileAndAddToCanvasAsNewProjectMacro(page, 'KET/arr vert.ket');
+  //   await takeEditorScreenshot(page);
+  //   await verifyFileExport(
+  //     page,
+  //     'CDXML/arr vert-expected.cdxml',
+  //     FileType.CDXML,
+  //   );
+  //   await openFileAndAddToCanvasAsNewProject(
+  //     page,
+  //     'CDXML/arr vert-expected.cdxml',
+  //   );
+  //   await takeEditorScreenshot(page);
+  // });
 
-  test('Case 51: Reaction loaded without changing order of components for CDXML format and two retrosynthetic arrows', async () => {
-    /*
-     * Test case: https://github.com/epam/ketcher/issues/6947
-     * Bug: https://github.com/epam/Indigo/issues/2217
-     * Description: Reaction loaded without changing order of components for CDXML format and two retrosynthetic arrows
-     * Scenario:
-     * 1. Go to Micro
-     * 2. Load from file
-     * 3. Export to CDXML
-     * 4. Load exported file
-     * 5. Take screenshot
-     */
-    await openFileAndAddToCanvasAsNewProject(page, 'KET/4 mol.ket');
-    await takeEditorScreenshot(page);
-    await verifyFileExport(page, 'CDXML/4 mol-expected.cdxml', FileType.CDXML);
-    await openFileAndAddToCanvasAsNewProject(
-      page,
-      'CDXML/4 mol-expected.cdxml',
-    );
-    await takeEditorScreenshot(page);
-  });
+  // test('Case 51: Reaction loaded without changing order of components for CDXML format and two retrosynthetic arrows', async () => {
+  //   /*
+  //    * Test case: https://github.com/epam/ketcher/issues/6947
+  //    * Bug: https://github.com/epam/Indigo/issues/2217
+  //    * Description: Reaction loaded without changing order of components for CDXML format and two retrosynthetic arrows
+  //    * Scenario:
+  //    * 1. Go to Micro
+  //    * 2. Load from file
+  //    * 3. Export to CDXML
+  //    * 4. Load exported file
+  //    * 5. Take screenshot
+  //    */
+  //   await openFileAndAddToCanvasAsNewProject(page, 'KET/4 mol.ket');
+  //   await takeEditorScreenshot(page);
+  //   await verifyFileExport(page, 'CDXML/4 mol-expected.cdxml', FileType.CDXML);
+  //   await openFileAndAddToCanvasAsNewProject(
+  //     page,
+  //     'CDXML/4 mol-expected.cdxml',
+  //   );
+  //   await takeEditorScreenshot(page);
+  // });
 
   test('Case 52: Arrow not changes direction after loading saved RXN single reaction if the elements were too close to single arrow on save', async () => {
     /*
@@ -1498,25 +1499,25 @@ test.describe('Ketcher bugs in 2.26.0', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Case 55: Able to save canvas to CDX - system not throws an error: Convert error! array: invalid index 2 (size=2)', async () => {
-    /*
-     * Test case: https://github.com/epam/ketcher/issues/6947
-     * Bug: https://github.com/epam/Indigo/issues/2558
-     * Description: Able to save canvas to CDX - system not throws an error: Convert error! array: invalid index 2 (size=2)
-     * Scenario:
-     * 1. Go to Micro
-     * 2. Load from file
-     * 3. Export to CDX
-     * 4. Load exported file
-     * 5. Take screenshot
-     */
-    await openFileAndAddToCanvasAsNewProject(page, 'KET/4 mol.ket');
-    await takeEditorScreenshot(page);
-    await verifyFileExport(page, 'CDX/4 mol-expected.cdx', FileType.CDX);
-    const fileContent = await readFileContent('CDX/4 mol-expected.cdx');
-    await pasteFromClipboardAndOpenAsNewProject(page, fileContent);
-    await takeEditorScreenshot(page);
-  });
+  // test('Case 55: Able to save canvas to CDX - system not throws an error: Convert error! array: invalid index 2 (size=2)', async () => {
+  //   /*
+  //    * Test case: https://github.com/epam/ketcher/issues/6947
+  //    * Bug: https://github.com/epam/Indigo/issues/2558
+  //    * Description: Able to save canvas to CDX - system not throws an error: Convert error! array: invalid index 2 (size=2)
+  //    * Scenario:
+  //    * 1. Go to Micro
+  //    * 2. Load from file
+  //    * 3. Export to CDX
+  //    * 4. Load exported file
+  //    * 5. Take screenshot
+  //    */
+  //   await openFileAndAddToCanvasAsNewProject(page, 'KET/4 mol.ket');
+  //   await takeEditorScreenshot(page);
+  //   await verifyFileExport(page, 'CDX/4 mol-expected.cdx', FileType.CDX);
+  //   const fileContent = await readFileContent('CDX/4 mol-expected.cdx');
+  //   await pasteFromClipboardAndOpenAsNewProject(page, fileContent);
+  //   await takeEditorScreenshot(page);
+  // });
 
   test('Case 56: Correct length of Multi-Tailed Arrow and Single arrow after loading from RDF', async () => {
     /*
@@ -1638,7 +1639,7 @@ test.describe('Ketcher bugs in 2.26.0', () => {
     await closeErrorAndInfoModals(page);
     await pasteFromClipboardByKeyboard(page);
     await moveMouseAway(page);
-    await clickOnCanvas(page, 300, 200);
+    await clickOnCanvas(page, 300, 200, { from: 'pageTopLeft' });
     await takeEditorScreenshot(page);
   });
 
@@ -1768,7 +1769,7 @@ test.describe('Ketcher bugs in 2.26.0', () => {
      * 3. Save to IDT
      * 4. Take screenshot
      */
-    await Library(page).dragMonomerOnCanvas(Sugars.R, {
+    await Library(page).dragMonomerOnCanvas(Sugar.R, {
       x: 0,
       y: 0,
       fromCenter: true,

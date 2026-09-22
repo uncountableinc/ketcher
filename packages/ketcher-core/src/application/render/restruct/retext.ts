@@ -173,6 +173,11 @@ class ReText extends ReObject {
             fill: '#000000',
             ...styles,
           });
+        path.node.setAttribute('data-testid', 'text-label');
+        path.node.setAttribute(
+          'data-text-id',
+          restruct.molecule.texts.keyOf(this.item),
+        );
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore: raphael typing issues
         path.translateAbs(shiftX, shiftY + (styles.shiftY || 0));

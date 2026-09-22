@@ -1,5 +1,5 @@
 /* eslint-disable no-magic-numbers */
-import { Page, expect, test } from '@playwright/test';
+import { Page, expect, test } from '@fixtures';
 import {
   takeEditorScreenshot,
   clickInTheMiddleOfTheScreen,
@@ -22,13 +22,13 @@ import {
   selectRedoByKeyboard,
   ZoomInByKeyboard,
   ZoomOutByKeyboard,
+  dragTo,
 } from '@utils';
 import {
   copyAndPaste,
   cutAndPaste,
   selectAllStructuresOnCanvas,
 } from '@utils/canvas/selectSelection';
-import { getAtomByIndex } from '@utils/canvas/atoms';
 import { CommonLeftToolbar } from '@tests/pages/common/CommonLeftToolbar';
 import { SelectionToolType } from '@tests/pages/constants/areaSelectionTool/Constants';
 import { MicroBondType } from '@tests/pages/constants/bondSelectionTool/Constants';
@@ -42,6 +42,7 @@ import { selectRingButton } from '@tests/pages/molecules/BottomToolbar';
 import { RingButton } from '@tests/pages/constants/ringButton/Constants';
 import { setSettingsOption } from '@tests/pages/molecules/canvas/SettingsDialog';
 import {
+  AtomsSetting,
   GeneralSetting,
   ResetToSelectToolOption,
 } from '@tests/pages/constants/settingsDialog/Constants';
@@ -56,6 +57,7 @@ import {
 import { RGroup } from '@tests/pages/constants/rGroupDialog/Constants';
 import { RGroupDialog } from '@tests/pages/molecules/canvas/R-GroupDialog';
 import { AtomPropertiesDialog } from '@tests/pages/molecules/canvas/AtomPropertiesDialog';
+import { getAtomLocator } from '@utils/canvas/atoms/getAtomLocator/getAtomLocator';
 
 const CANVAS_CLICK_X = 300;
 const CANVAS_CLICK_Y = 300;
@@ -502,7 +504,7 @@ test.describe('Undo/Redo Actions', () => {
     await LeftToolbar(page).selectRGroupTool(RGroupType.RGroupLabel);
     // need fix getCoordinatesTopAtomOfBenzeneRing after change canvas design
     const { x, y } = await getCoordinatesTopAtomOfBenzeneRing(page);
-    await clickOnCanvas(page, x, y);
+    await clickOnCanvas(page, x, y, { from: 'pageTopLeft' });
     await RGroupDialog(page).setRGroupLabels(RGroup.R5);
     await screenshotBetweenUndoRedo(page);
     await takeEditorScreenshot(page);
@@ -521,7 +523,7 @@ test.describe('Undo/Redo Actions', () => {
     await LeftToolbar(page).selectRGroupTool(RGroupType.RGroupFragment);
     // need fix getCoordinatesTopAtomOfBenzeneRing after change canvas design
     const { x, y } = await getCoordinatesTopAtomOfBenzeneRing(page);
-    await clickOnCanvas(page, x, y);
+    await clickOnCanvas(page, x, y, { from: 'pageTopLeft' });
     await RGroupDialog(page).setRGroupFragment(RGroup.R8);
     await screenshotBetweenUndoRedo(page);
     await takeEditorScreenshot(page);
@@ -589,7 +591,9 @@ test.describe('Undo/Redo Actions', () => {
       { primary: true, secondary: true },
     );
     await copyAndPaste(page);
-    await clickOnCanvas(page, CANVAS_CLICK_X, CANVAS_CLICK_Y);
+    await clickOnCanvas(page, CANVAS_CLICK_X, CANVAS_CLICK_Y, {
+      from: 'pageTopLeft',
+    });
     await screenshotBetweenUndoRedo(page);
     await takeEditorScreenshot(page);
   });
@@ -606,7 +610,9 @@ test.describe('Undo/Redo Actions', () => {
       { primary: true, secondary: true },
     );
     await cutAndPaste(page);
-    await clickOnCanvas(page, CANVAS_CLICK_X, CANVAS_CLICK_Y);
+    await clickOnCanvas(page, CANVAS_CLICK_X, CANVAS_CLICK_Y, {
+      from: 'pageTopLeft',
+    });
     await screenshotBetweenUndoRedo(page);
     await takeEditorScreenshot(page);
   });
@@ -661,7 +667,7 @@ test.describe('Undo/Redo Actions', () => {
     Test case: EPMLSOPKET-2960
     Description: Undo/Redo action should work correctly
     */
-    const yDelta = 300;
+    // const yDelta = 300;
     await openFileAndAddToCanvas(page, 'KET/simple-chain.ket');
     await selectAllStructuresOnCanvas(page);
     await LeftToolbar(page).sGroup();
@@ -672,11 +678,16 @@ test.describe('Undo/Redo Actions', () => {
       FieldValue: '33',
       PropertyLabelType: PropertyLabelType.Absolute,
     });
+    await setSettingsOption(page, AtomsSetting.DisplayCarbonExplicitly);
     await LeftToolbar(page).chain();
-    const point = await getAtomByIndex(page, { label: 'C' }, 2);
-    await clickOnCanvas(page, point.x, point.y);
-    const coordinatesWithShift = point.y + yDelta;
-    await dragMouseTo(point.x, coordinatesWithShift, page);
+    await dragTo(
+      page,
+      getAtomLocator(page, {
+        atomLabel: 'C',
+        atomId: 2,
+      }),
+      { x: 600, y: 500 },
+    );
     for (let i = 0; i < 2; i++) {
       await CommonTopLeftToolbar(page).undo();
     }
