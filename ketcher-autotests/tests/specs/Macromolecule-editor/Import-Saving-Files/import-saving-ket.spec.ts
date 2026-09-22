@@ -32,12 +32,13 @@ import {
 import { MacroBondType } from '@tests/pages/constants/bondSelectionTool/Constants';
 import { CommonLeftToolbar } from '@tests/pages/common/CommonLeftToolbar';
 import { PasteFromClipboardDialog } from '@tests/pages/common/PasteFromClipboardDialog';
-import { closeErrorMessage } from '@utils/common/helpers';
 import { CommonTopLeftToolbar } from '@tests/pages/common/CommonTopLeftToolbar';
 import { CommonTopRightToolbar } from '@tests/pages/common/CommonTopRightToolbar';
 import { Library } from '@tests/pages/macromolecules/Library';
 import { MacromoleculesTopToolbar } from '@tests/pages/macromolecules/MacromoleculesTopToolbar';
 import { LayoutMode } from '@tests/pages/constants/macromoleculesTopToolbar/Constants';
+import { ErrorMessageDialog } from '@tests/pages/common/ErrorMessageDialog';
+import { OpenStructureDialog } from '@tests/pages/common/OpenStructureDialog';
 
 let page: Page;
 
@@ -236,13 +237,13 @@ test.describe('Import-Saving .ket Files', () => {
     Test case: Import/Saving files
     Description: System does not let uploading corrupted .ket file
     */
-    const addToCanvasButton = PasteFromClipboardDialog(page).addToCanvasButton;
-
     await CommonTopLeftToolbar(page).openFile();
     await openFile(page, 'KET/corrupted-file.ket');
-    await addToCanvasButton.click();
-    await takeEditorScreenshot(page);
-    await closeErrorMessage(page);
+    await PasteFromClipboardDialog(page).addToCanvas();
+    const errorMessage = await ErrorMessageDialog(page).getErrorMessage();
+    expect(errorMessage).toContain('Convert error! Error during file parsing.');
+    await ErrorMessageDialog(page).close();
+    await OpenStructureDialog(page).closeWindow();
   });
 
   test('Validate correct displaying of snake viewed peptide chain loaded from .ket file format', async () => {

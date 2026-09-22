@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { Item, Submenu } from 'react-contexify';
+import { Item, Submenu, Separator } from 'react-contexify';
 import tools from '../../../../action/tools';
 import styles from '../ContextMenu.module.less';
 import useAtomEdit from '../hooks/useAtomEdit';
@@ -7,6 +7,7 @@ import useAtomStereo from '../hooks/useAtomStereo';
 import useBondEdit from '../hooks/useBondEdit';
 import useBondTypeChange from '../hooks/useBondTypeChange';
 import useDelete from '../hooks/useDelete';
+import useCreateMonomer from '../hooks/useCreateMonomer';
 import { formatTitle, getBondNames } from '../utils';
 import Editor from 'src/script/editor';
 import {
@@ -16,7 +17,10 @@ import {
 import { getIconName, Icon } from 'components';
 import { useAppContext } from 'src/hooks';
 import HighlightMenu from 'src/script/ui/action/highlightColors/HighlightColors';
-import { ketcherProvider } from 'ketcher-core';
+import { CREATE_MONOMER_TOOL_NAME, ketcherProvider } from 'ketcher-core';
+import isHidden from '../../../../action/isHidden';
+import { useSelector } from 'react-redux';
+import { optionsSelector } from '../../../../state/options/selectors';
 
 const bondNames = getBondNames(tools);
 
@@ -30,6 +34,7 @@ const SelectionMenuItems: FC<MenuItemsProps<SelectionContextMenuProps>> = (
   const [handleTypeChange, bondTypeChangeDisabled] = useBondTypeChange();
   const [handleAtomStereo, atomStereoDisabled] = useAtomStereo();
   const handleDelete = useDelete();
+  const [handleCreateMonomer, createMonomerDisabled] = useCreateMonomer();
   const highlightBondWithColor = (color: string) => {
     const bondIds = props.propsFromTrigger?.bondIds || [];
     const atomIds = props.propsFromTrigger?.atomIds || [];
@@ -43,6 +48,7 @@ const SelectionMenuItems: FC<MenuItemsProps<SelectionContextMenuProps>> = (
       color: color === '' ? 'transparent' : color,
     });
   };
+  const options = useSelector(optionsSelector);
 
   return (
     <>
@@ -82,6 +88,17 @@ const SelectionMenuItems: FC<MenuItemsProps<SelectionContextMenuProps>> = (
         })}
       </Submenu>
 
+      {!isHidden(options, CREATE_MONOMER_TOOL_NAME) && (
+        <Item
+          {...props}
+          data-testid="Create a monomer-option"
+          onClick={handleCreateMonomer}
+          disabled={createMonomerDisabled}
+        >
+          Create a monomer
+        </Item>
+      )}
+
       <Item
         {...props}
         data-testid="Enhanced stereochemistry...-option"
@@ -91,6 +108,7 @@ const SelectionMenuItems: FC<MenuItemsProps<SelectionContextMenuProps>> = (
         Enhanced stereochemistry...
       </Item>
       <HighlightMenu onHighlight={highlightBondWithColor} />
+      <Separator />
       <Item {...props} data-testid="Delete-option" onClick={handleDelete}>
         Delete
       </Item>

@@ -42,7 +42,6 @@ import Editor from '../../../../editor';
 import { KETCHER_ROOT_NODE_CSS_SELECTOR } from '../../../../../constants';
 import { createPortal } from 'react-dom';
 import AttachmentPoint from './components/AttachmentPoint/AttachmentPoint';
-import assert from 'assert';
 
 const initialWizardState: WizardState = {
   values: {
@@ -241,6 +240,36 @@ const validateAttachmentPoints = (attachmentPoints: AttachmentPointName[]) => {
   return { notifications, problematicAttachmentPoints };
 };
 
+const validateStructure = (editor: Editor) => {
+  const notifications = new Map<WizardNotificationId, WizardNotification>();
+  const isStructureImpure = Editor.isStructureImpure(editor.struct());
+  if (isStructureImpure) {
+    notifications.set('impureStructure', {
+      type: 'error',
+      message: NotificationMessages.impureStructure,
+    });
+  }
+
+  const isMinimalViableStructure = editor.isMinimalViableStructure();
+  if (!isMinimalViableStructure) {
+    notifications.set('notMinimalViableStructure', {
+      type: 'error',
+      message: NotificationMessages.notMinimalViableStructure,
+    });
+    return notifications;
+  }
+
+  const isStructureContinuous = Editor.isStructureContinuous(editor.struct());
+  if (!isStructureContinuous) {
+    notifications.set('incontinuousStructure', {
+      type: 'error',
+      message: NotificationMessages.incontinuousStructure,
+    });
+  }
+
+  return notifications;
+};
+
 const MonomerCreationWizard = () => {
   const { ketcherId } = useAppContext();
   const ketcher = ketcherProvider.getKetcher(ketcherId);
@@ -282,11 +311,9 @@ const MonomerCreationWizard = () => {
   useEffect(() => {
     const attachmentPointClickHandler = (event: Event) => {
       const clickData = (event as CustomEvent<AttachmentPointClickData>).detail;
-      const { atomId, atomLabel, attachmentPointName, position } = clickData;
+      const { attachmentPointName, position } = clickData;
 
       setAttachmentPointEditPopupData({
-        atomId,
-        atomLabel,
         attachmentPointName,
         position,
       });
@@ -350,11 +377,15 @@ const MonomerCreationWizard = () => {
     editor.reassignAttachmentPoint(currentName, newName);
   };
 
-  const handleAttachmentPointAtomChange = (
-    atomId: number,
-    atomLabel: string,
+  const handleLeavingAtomChange = (
+    apName: AttachmentPointName,
+    newLeavingAtomId: number,
   ) => {
-    editor.reassignAttachmentPointAtom(atomId, atomLabel);
+    editor.reassignAttachmentPointLeavingAtom(apName, newLeavingAtomId);
+  };
+
+  const handleAttachmentPointRemove = (name: AttachmentPointName) => {
+    editor.removeAttachmentPoint(name);
   };
 
   const handleAttachmentPointEditPopupClose = () => {
@@ -366,6 +397,14 @@ const MonomerCreationWizard = () => {
     editor.closeMonomerCreationWizard();
     resetWizard();
   };
+
+  const monomerCreationState = useSelector(editorMonomerCreationStateSelector);
+
+  if (!monomerCreationState) {
+    return null;
+  }
+
+  const { assignedAttachmentPoints } = monomerCreationState;
 
   const handleSubmit = () => {
     wizardStateDispatch({ type: 'ResetErrors' });
@@ -382,20 +421,25 @@ const MonomerCreationWizard = () => {
       return;
     }
 
-    assert(editor.monomerCreationState);
-
     const {
       notifications: attachmentPointsNotifications,
       problematicAttachmentPoints,
-    } = validateAttachmentPoints(
-      Array.from(editor.monomerCreationState.assignedAttachmentPoints.keys()),
-    );
+    } = validateAttachmentPoints(Array.from(assignedAttachmentPoints.keys()));
     if (attachmentPointsNotifications.size > 0) {
       wizardStateDispatch({
         type: 'SetNotifications',
         notifications: attachmentPointsNotifications,
       });
       editor.setProblematicAttachmentPoints(problematicAttachmentPoints);
+      return;
+    }
+
+    const structureNotifications = validateStructure(editor);
+    if (structureNotifications.size > 0) {
+      wizardStateDispatch({
+        type: 'SetNotifications',
+        notifications: structureNotifications,
+      });
       return;
     }
 
@@ -409,41 +453,11 @@ const MonomerCreationWizard = () => {
     resetWizard();
   };
 
-  const monomerCreationState = useSelector(editorMonomerCreationStateSelector);
-
-  if (!monomerCreationState) {
-    return null;
-  }
-
-  const { assignedAttachmentPoints } = monomerCreationState;
-  const attachmentPointsData = Array.from(
-    assignedAttachmentPoints.entries(),
-  ).map((entry) => {
-    const [attachmentPointName, [, leavingAtomId]] = entry as [
-      AttachmentPointName,
-      [number, number],
-    ];
-    const atom = editor.struct().atoms.get(leavingAtomId);
-
-    // TODO: Should be assert but it fails due to assignedAttachmentsPoints being stale after closing, investigate
-    if (!atom) {
-      return {
-        name: attachmentPointName,
-        atomLabel: 'H',
-        implicitH: 0,
-      };
-    }
-
-    return {
-      name: attachmentPointName,
-      atomLabel: atom.label,
-      implicitH: atom.implicitH,
-    };
-  });
-
   const ketcherEditorRootElement = document.querySelector(
     KETCHER_ROOT_NODE_CSS_SELECTOR,
   );
+  const displayEditDialog =
+    attachmentPointEditPopupData !== null && ketcherEditorRootElement !== null;
 
   return (
     <div className={styles.monomerCreationWizard}>
@@ -469,14 +483,14 @@ const MonomerCreationWizard = () => {
       </div>
 
       <div className={styles.rightColumn}>
-        <div
-          className={clsx(
-            selectStyles.selectContainer,
-            styles.attributesWindow,
-          )}
-        >
+        <div className={styles.attributesWindow}>
           <p className={styles.attributesTitle}>Attributes</p>
-          <div className={styles.attributesFields}>
+          <div
+            className={clsx(
+              styles.attributesFields,
+              selectStyles.selectContainer,
+            )}
+          >
             <AttributeField
               title="Type"
               control={
@@ -484,6 +498,7 @@ const MonomerCreationWizard = () => {
                   className={styles.input}
                   options={monomerTypeSelectOptions}
                   placeholder="Select monomer type"
+                  data-testid="type-select"
                   value={type}
                   onChange={(value) => handleFieldChange('type', value)}
                   error={errors.type}
@@ -498,6 +513,7 @@ const MonomerCreationWizard = () => {
                   type="text"
                   className={clsx(styles.input, errors.symbol && styles.error)}
                   placeholder="e.g. PEG-2"
+                  data-testid="symbol-input"
                   value={symbol}
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
                     handleFieldChange('symbol', event.target.value)
@@ -514,6 +530,7 @@ const MonomerCreationWizard = () => {
                   className={clsx(styles.input, errors.name && styles.error)}
                   placeholder="e.g. Diethylene Glycol"
                   value={name}
+                  data-testid="name-input"
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
                     handleFieldChange('name', event.target.value)
                   }
@@ -538,47 +555,67 @@ const MonomerCreationWizard = () => {
             />
           </div>
 
-          {attachmentPointsData.length > 0 && (
-            <>
-              <div className={styles.divider} />
+          <div className={styles.divider} />
 
-              <div className={styles.attributesFields}>
-                <p className={styles.attachmentPointsTitle}>
-                  Attachment points
-                </p>
-                <div className={styles.attachmentPoints}>
-                  {attachmentPointsData.map(
-                    ({ name, atomLabel, implicitH }) => (
-                      <AttachmentPoint
-                        name={name}
-                        atomLabel={atomLabel}
-                        implicitH={implicitH}
-                        key={name}
-                      />
-                    ),
-                  )}
-                </div>
+          <div
+            className={clsx(
+              styles.attributesFields,
+              selectStyles.selectContainer,
+            )}
+          >
+            <div className={styles.attachmentPointsHeader}>
+              <p className={styles.attachmentPointsTitle}>Attachment points</p>
+              <span
+                className={styles.attachmentPointInfoIcon}
+                title="To add new attachment points, right-click and mark atoms as leaving groups or connection points."
+              >
+                <Icon name="about" />
+              </span>
+            </div>
+            {assignedAttachmentPoints.size > 0 && (
+              <div className={styles.attachmentPoints}>
+                {Array.from(assignedAttachmentPoints.entries()).map(
+                  ([name, atomPair]) => (
+                    <AttachmentPoint
+                      name={name}
+                      editor={editor}
+                      onNameChange={handleAttachmentPointNameChange}
+                      onLeavingAtomChange={handleLeavingAtomChange}
+                      onRemove={handleAttachmentPointRemove}
+                      key={`${name}-${atomPair[0]}-${atomPair[1]}`}
+                    />
+                  ),
+                )}
               </div>
-            </>
-          )}
+            )}
+          </div>
         </div>
 
-        {ketcherEditorRootElement &&
+        {displayEditDialog &&
           createPortal(
             <AttachmentPointEditPopup
               data={attachmentPointEditPopupData}
               onNameChange={handleAttachmentPointNameChange}
-              onAtomChange={handleAttachmentPointAtomChange}
+              onLeavingAtomChange={handleLeavingAtomChange}
               onClose={handleAttachmentPointEditPopupClose}
+              editor={editor}
             />,
             ketcherEditorRootElement,
           )}
 
         <div className={styles.buttonsContainer}>
-          <button className={styles.buttonDiscard} onClick={handleDiscard}>
+          <button
+            className={styles.buttonDiscard}
+            onClick={handleDiscard}
+            data-testid="discard-button"
+          >
             Discard
           </button>
-          <button className={styles.buttonSubmit} onClick={handleSubmit}>
+          <button
+            className={styles.buttonSubmit}
+            onClick={handleSubmit}
+            data-testid="submit-button"
+          >
             Submit
           </button>
         </div>

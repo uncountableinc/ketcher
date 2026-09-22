@@ -45,11 +45,12 @@ import {
 } from '@utils/files/receiveFileComparisonData';
 import { CalculateVariablesPanel } from '@tests/pages/macromolecules/CalculateVariablesPanel';
 import { OpenPPTXFileDialog } from '@tests/pages/molecules/OpenPPTXFileDialog';
-import { closeErrorAndInfoModals } from '@utils/common/helpers';
 import { SaveStructureDialog } from '@tests/pages/common/SaveStructureDialog';
 import { MacromoleculesFileFormatType } from '@tests/pages/constants/fileFormats/macroFileFormats';
 import { MolecularMassUnit } from '@tests/pages/constants/calculateVariablesPanel/Constants';
 import { getAbbreviationLocator } from '@utils/canvas/s-group-signes/getAbbreviation';
+import { ErrorMessageDialog } from '@tests/pages/common/ErrorMessageDialog';
+import { OpenStructureDialog } from '@tests/pages/common/OpenStructureDialog';
 
 async function connectMonomerToAtom(page: Page) {
   await getMonomerLocator(page, Peptide.A).hover();
@@ -434,7 +435,7 @@ test.describe('Ketcher bugs in 3.6.0', () => {
       goToPeptides: false,
     });
     await selectAllStructuresOnCanvas(page);
-    await CommonLeftToolbar(page).selectEraseTool();
+    await CommonLeftToolbar(page).erase();
     await takeEditorScreenshot(page, {
       hideMonomerPreview: true,
       hideMacromoleculeEditorScrollBars: true,
@@ -652,11 +653,12 @@ test.describe('Ketcher bugs in 3.6.0', () => {
         MacroFileType.HELM,
         helm,
       );
-      await takeEditorScreenshot(page, {
-        hideMonomerPreview: true,
-        hideMacromoleculeEditorScrollBars: true,
-      });
-      await closeErrorAndInfoModals(page);
+      const errorMessage = await ErrorMessageDialog(page).getErrorMessage();
+      expect(errorMessage).toContain(
+        "Convert error! Given string could not be loaded as (query or plain) molecule or reaction, see the error messages: 'SEQUENCE loader: Unexpected symbol ']'.'",
+      );
+      await ErrorMessageDialog(page).close();
+      await OpenStructureDialog(page).closeWindow();
     }
   });
 
@@ -718,11 +720,12 @@ test.describe('Ketcher bugs in 3.6.0', () => {
     await SaveStructureDialog(page).chooseFileFormat(
       MacromoleculesFileFormatType.Sequence3LetterCode,
     );
-    await takeEditorScreenshot(page, {
-      hideMonomerPreview: true,
-      hideMacromoleculeEditorScrollBars: true,
-    });
-    await closeErrorAndInfoModals(page);
+
+    const errorMessage = await ErrorMessageDialog(page).getErrorMessage();
+    expect(errorMessage).toContain(
+      "Convert error! Sequence saver: Can't save micro-molecules to sequence format",
+    );
+    await ErrorMessageDialog(page).close();
   });
 
   test('Case 20: Atom weights in indigo updated according to last IUPAC data', async () => {
@@ -813,7 +816,7 @@ test.describe('Ketcher bugs in 3.6.0', () => {
       hideMonomerPreview: true,
       hideMacromoleculeEditorScrollBars: true,
     });
-    await closeErrorAndInfoModals(page);
+    await SaveStructureDialog(page).cancel();
     await CommonTopLeftToolbar(page).clearCanvas();
     await pasteFromClipboardAndAddToMacromoleculesCanvas(
       page,

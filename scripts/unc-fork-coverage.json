@@ -1,5 +1,5 @@
 {
-  "mergeBase": "e610f5b44a9afc61939d3ba89f2d359bc646fb9a",
+  "mergeBase": "5b49a832e91bb56724f3524af8cc3b2a1b34bb23",
   "forkRef": "master",
   "upstreamTag": "v3.18.0",
   "behaviours": [
@@ -8,7 +8,11 @@
       "summary": "Accept the RS, M and P CIP descriptors Indigo emits.",
       "verdict": "reapply",
       "covered": "jest __tests__/unc-regression/cip-descriptors.test.ts",
-      "commits": ["cda0f264a", "b674564bc", "1d6c9ac5b"],
+      "commits": [
+        "cda0f264a",
+        "b674564bc",
+        "1d6c9ac5b"
+      ],
       "files": [
         "packages/ketcher-core/src/domain/entities/types.ts",
         "packages/ketcher-core/src/domain/serializers/ket/schema.json"
@@ -19,7 +23,12 @@
       "summary": "Draw a contracted abbreviation at its group centre (MAT-77406).",
       "verdict": "reapply",
       "covered": "jest __tests__/unc-regression/contracted-abbreviation-anchor.test.ts",
-      "commits": ["9f488c2d0", "7ac136ed9", "1edf96074", "1fa3d4cb4"],
+      "commits": [
+        "9f488c2d0",
+        "7ac136ed9",
+        "1edf96074",
+        "1fa3d4cb4"
+      ],
       "files": [
         "packages/ketcher-core/src/application/render/restruct/reatom.ts"
       ]
@@ -29,7 +38,10 @@
       "summary": "Report S-group atom membership through the struct.",
       "verdict": "reapply",
       "covered": "jest __tests__/unc-regression/sgroup-atom-membership.test.ts",
-      "commits": ["43ebbcc69", "d168b873d"],
+      "commits": [
+        "43ebbcc69",
+        "d168b873d"
+      ],
       "files": [
         "packages/ketcher-core/src/domain/entities/struct.ts",
         "packages/ketcher-core/src/application/editor/MacromoleculesConverter.ts"
@@ -65,7 +77,9 @@
       "summary": "Keep R-group references through a KET round trip.",
       "verdict": "reapply",
       "covered": "jest __tests__/unc-regression/ket-rgroup-refs.test.ts",
-      "commits": ["270480fe0"],
+      "commits": [
+        "270480fe0"
+      ],
       "files": [
         "packages/ketcher-core/src/domain/serializers/ket/fromKet/moleculeToStruct.ts"
       ]
@@ -75,15 +89,22 @@
       "summary": "Default Indigo to terminal-hetero hydrogen labels, not none.",
       "verdict": "reapply",
       "covered": "jest __tests__/unc-regression/indigo-hydrogen-label-default.test.ts",
-      "commits": ["446e1cf11", "b9a5d436d"],
-      "files": ["packages/ketcher-core/src/infrastructure/services/helpers.ts"]
+      "commits": [
+        "446e1cf11",
+        "b9a5d436d"
+      ],
+      "files": [
+        "packages/ketcher-core/src/infrastructure/services/helpers.ts"
+      ]
     },
     {
       "key": "data-sgroup-bracket-pos",
       "summary": "Thread the render through Data S-group draw (MAT-73031).",
       "verdict": "drop",
       "covered": "jest __tests__/unc-regression/data-sgroup-bracket-pos.test.ts",
-      "commits": ["a4394409c"],
+      "commits": [
+        "a4394409c"
+      ],
       "files": [
         "packages/ketcher-core/src/application/render/restruct/resgroup.ts"
       ]
@@ -93,7 +114,11 @@
       "summary": "Convert every format except KET on the Indigo server.",
       "verdict": "reapply",
       "covered": "jest __tests__/unc-regression/server-format-routing.test.ts",
-      "commits": ["6576cd745", "52fc7376a", "b53ffb290"],
+      "commits": [
+        "6576cd745",
+        "52fc7376a",
+        "b53ffb290"
+      ],
       "files": [
         "packages/ketcher-core/src/application/formatters/formatterFactory.ts"
       ],
@@ -104,7 +129,10 @@
       "summary": "Account for the embedding container CSS scale in pointer maths.",
       "verdict": "reapply",
       "covered": "jest __tests__/unc-regression/external-zoom-scale.test.ts",
-      "commits": ["1ea33be22", "33a078c8b"],
+      "commits": [
+        "1ea33be22",
+        "33a078c8b"
+      ],
       "files": [
         "packages/ketcher-core/src/application/render/coordinateTransformation.ts",
         "packages/ketcher-core/src/application/render/render.types.ts"
@@ -116,7 +144,9 @@
       "summary": "Keep a canvas load off the undo stack.",
       "verdict": "reapply",
       "covered": "jest __tests__/unc-regression/canvas-load-not-undoable.test.ts",
-      "commits": ["c0fde0b1e"],
+      "commits": [
+        "c0fde0b1e"
+      ],
       "files": [
         "packages/ketcher-core/src/application/editor/actions/action.ts",
         "packages/ketcher-core/src/application/editor/operations/CanvasLoad.ts",
@@ -129,7 +159,11 @@
       "summary": "Lowercase S-group connectivity codes on MOL parse.",
       "verdict": "drop",
       "covered": "jest __tests__/unc-regression/sgroup-connectivity-case.test.ts",
-      "commits": ["783bc6497", "493fcc1bd", "3aecd5500"],
+      "commits": [
+        "783bc6497",
+        "493fcc1bd",
+        "3aecd5500"
+      ],
       "files": [
         "packages/ketcher-core/src/domain/serializers/mol/parseSGroup.js",
         "packages/ketcher-core/src/domain/serializers/mol/__tests__/v2000.test.ts",
@@ -139,29 +173,13 @@
       "verdictNote": "drop: measured 9/9 on vanilla v3.18.0, over SRU, GEN and COP s-groups. Upstream lowercases connectivity in per-type post-load hooks; its own v2000.test.ts expected 'EU' for a GEN group at the fork's merge base and expects 'eu' in v3.18.0. The test must vary the s-group type: an SRU-only fixture passes everywhere and proves nothing."
     },
     {
-      "key": "logger-without-ketcher",
-      "summary": "Let the logger read settings before the ketcher global exists.",
-      "verdict": "drop",
-      "covered": "jest __tests__/unc-regression/logger-without-ketcher.test.ts",
-      "commits": ["81d4c7d75"],
-      "files": ["packages/ketcher-core/src/utilities/KetcherLogger.ts"],
-      "verdictNote": "drop: measured 3/3 on vanilla v3.18.0. Upstream replaced the throw with a console.warn."
-    },
-    {
-      "key": "keynorm-unmapped-key",
-      "summary": "Survive a keycode the key-name table does not cover.",
-      "verdict": "drop",
-      "covered": "jest __tests__/unc-regression/keynorm-unmapped-key.test.ts",
-      "commits": ["905baf429"],
-      "files": ["packages/ketcher-core/src/utilities/keynorm.ts"],
-      "verdictNote": "drop: measured 3/4 on vanilla v3.18.0. Upstream rewrote keynorm around event.key with string defaults, so it cannot throw. The fourth test measures that rewritten API, not the guard."
-    },
-    {
       "key": "indigo-stereo-style",
       "summary": "Send render-stereo-style to Indigo image rendering.",
       "verdict": "reapply",
       "covered": "jest __tests__/unc-regression/indigo-stereo-style.test.ts",
-      "commits": ["f2e76d0ce"],
+      "commits": [
+        "f2e76d0ce"
+      ],
       "files": [
         "packages/ketcher-core/src/domain/services/struct/structService.types.ts",
         "packages/ketcher-core/src/infrastructure/services/struct/remoteStructService.ts",
@@ -229,15 +247,24 @@
       "summary": "Persist Indigo transform results on save (MAT-76710).",
       "verdict": "reapply",
       "covered": "playwright tests/specs/unc-regression/indigo-transform-change-event.spec.ts",
-      "commits": ["f22519419"],
-      "files": ["packages/ketcher-react/src/script/ui/state/shared.ts"]
+      "commits": [
+        "f22519419"
+      ],
+      "files": [
+        "packages/ketcher-react/src/script/ui/state/shared.ts"
+      ]
     },
     {
       "key": "sru-user-values",
       "summary": "Do not override user-set SRU values.",
       "verdict": "reapply",
       "covered": "playwright tests/specs/unc-regression/sru-user-values.spec.ts",
-      "commits": ["37c0a4b53", "8c5ee82f0", "241b1d08f", "1a41ba32e"],
+      "commits": [
+        "37c0a4b53",
+        "8c5ee82f0",
+        "241b1d08f",
+        "1a41ba32e"
+      ],
       "files": [
         "packages/ketcher-react/src/script/ui/data/convert/structconv.js"
       ]
@@ -247,7 +274,12 @@
       "summary": "Options state initialisation and the settings dialog.",
       "verdict": "reapply",
       "covered": "playwright tests/specs/unc-regression/settings-state.spec.ts",
-      "commits": ["4e21564a4", "8799f4afc", "6304e0cc4", "5b2e28010"],
+      "commits": [
+        "4e21564a4",
+        "8799f4afc",
+        "6304e0cc4",
+        "5b2e28010"
+      ],
       "files": [
         "packages/ketcher-react/src/script/ui/state/options/index.js",
         "packages/ketcher-react/src/script/ui/state/index.js",
@@ -302,7 +334,10 @@
       "summary": "Portal dropdowns into the element the user can see.",
       "verdict": "reapply",
       "covered": "playwright tests/specs/unc-regression/fullscreen-dropdown-container.spec.ts",
-      "commits": ["3d3b76a6c", "83730d640"],
+      "commits": [
+        "3d3b76a6c",
+        "83730d640"
+      ],
       "files": [
         "packages/ketcher-react/src/script/ui/component/form/Select/Select.tsx",
         "packages/ketcher-react/src/script/ui/views/toolbars/TopToolbar/ZoomControls.tsx"
@@ -313,8 +348,12 @@
       "summary": "Coerce a stored render offset back to a Vec2.",
       "verdict": "reapply",
       "covered": "playwright tests/specs/unc-regression/render-offset-restore.spec.ts",
-      "commits": ["aefcd0a14"],
-      "files": ["packages/ketcher-core/src/application/render/raphaelRender.ts"]
+      "commits": [
+        "aefcd0a14"
+      ],
+      "files": [
+        "packages/ketcher-core/src/application/render/raphaelRender.ts"
+      ]
     },
     {
       "key": "polymer-end-group-cap",
@@ -338,16 +377,25 @@
       "summary": "Fix the undo crash after creating an SRU polymer S-group.",
       "verdict": "reapply",
       "covered": "pre-existing ketcher-autotests/.../SRU-Polymer/sru-polymer-tool.spec.ts",
-      "commits": ["cb5b18637", "9f256ceb8"],
-      "files": ["packages/ketcher-react/src/script/editor/tool/sgroup.ts"]
+      "commits": [
+        "cb5b18637",
+        "9f256ceb8"
+      ],
+      "files": [
+        "packages/ketcher-react/src/script/editor/tool/sgroup.ts"
+      ]
     },
     {
       "key": "context-menu-native",
       "summary": "Stop suppressing the browser context menu in the core editor.",
       "verdict": "reapply",
       "covered": "none: the demo page is entirely the editor, so the suppressed and unsuppressed cases cannot be told apart there; belongs in the host application end-to-end tests",
-      "commits": ["e9873f88a"],
-      "files": ["packages/ketcher-core/src/application/editor/Editor.ts"]
+      "commits": [
+        "e9873f88a"
+      ],
+      "files": [
+        "packages/ketcher-core/src/application/editor/Editor.ts"
+      ]
     },
     {
       "key": "raphael-ts-types",
@@ -383,7 +431,9 @@
       "summary": "Import lodash/fp per function rather than as a whole.",
       "verdict": "reapply",
       "covered": "none: a bundle-shape change with no runtime surface",
-      "commits": ["c62eccb62"],
+      "commits": [
+        "c62eccb62"
+      ],
       "files": [
         "packages/ketcher-core/src/application/editor/actions/atom.ts",
         "packages/ketcher-core/src/application/editor/actions/sgroup.ts",
@@ -445,7 +495,9 @@
       "verdict": "reapply",
       "verdictNote": "reapply: v3.18.0 leaves AtomAttr.execute, Struct.halfBondUpdate, Struct.atomUpdateHalfBonds and BaseMode.onKeyDown unguarded. Carried as patch-package patches against the built bundle in main until this change; building ketcher-core from this source reports every hunk of all three patch files already applied.",
       "covered": "jest __tests__/unc-regression/operation-null-guards.test.ts",
-      "commits": ["1a41ba32e"],
+      "commits": [
+        "1a41ba32e"
+      ],
       "files": [
         "packages/ketcher-core/src/application/editor/operations/atom/AtomAttr.ts",
         "packages/ketcher-core/src/domain/entities/struct.ts",
@@ -458,7 +510,9 @@
       "verdict": "drop",
       "verdictNote": "drop at the v3.16.2 merge: upstream added the identical if (!structBox) return; there, and moved the class to operations/AlignDescriptors.ts, so expect a rename conflict as well.",
       "covered": "jest __tests__/unc-regression/operation-null-guards.test.ts",
-      "commits": ["1a41ba32e"],
+      "commits": [
+        "1a41ba32e"
+      ],
       "files": [
         "packages/ketcher-core/src/application/editor/operations/descriptors.ts"
       ]
@@ -469,7 +523,9 @@
       "verdict": "reapply",
       "verdictNote": "decision at the v3.18.0 merge, not a drop: upstream adds the same guard there and answers the opposite way, returning false so the operation is kept and then throws in execute, which v3.18.0 leaves unguarded. A merge can take either side silently, so the tests assert what the action does with the operation rather than what the predicate returns.",
       "covered": "jest __tests__/unc-regression/operation-null-guards.test.ts",
-      "commits": ["1a41ba32e"],
+      "commits": [
+        "1a41ba32e"
+      ],
       "files": [
         "packages/ketcher-core/src/application/editor/operations/atom/AtomAttr.ts"
       ]

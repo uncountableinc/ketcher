@@ -132,6 +132,7 @@ export const editorSlice: Slice<EditorState> = createSlice({
         theme: DeepPartial<ThemeType>;
         canvas: SVGSVGElement;
         monomersLibraryUpdate?: string | JSON;
+        monomersLibraryReplace?: string | JSON;
         onInit?: (editor: CoreEditor) => void;
       }>,
     ) => {
@@ -139,6 +140,7 @@ export const editorSlice: Slice<EditorState> = createSlice({
         theme: action.payload.theme,
         canvas: action.payload.canvas,
         monomersLibraryUpdate: action.payload.monomersLibraryUpdate,
+        monomersLibraryReplace: action.payload.monomersLibraryReplace,
       });
 
       // TODO: Figure out proper typing here and below
