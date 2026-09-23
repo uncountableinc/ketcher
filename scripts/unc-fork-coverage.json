@@ -483,6 +483,14 @@
       "files": [
         "packages/ketcher-macromolecules/src/state/common/editorSlice.ts"
       ]
+    },
+    {
+      "key": "sgroup-partial-selection-transform",
+      "summary": "Carry an S-group through a flip, rotate or drag only when the whole group is selected, as upstream did before v3.7.0. Carrying it on a partial selection makes the data label's position depend on how the user split the edit.",
+      "verdict": "reapply",
+      "covered": "jest __tests__/unc-regression/sgroup-partial-selection-transform.test.ts",
+      "commits": [],
+      "files": ["packages/ketcher-core/src/application/editor/actions/utils.ts"]
     }
   ]
 }

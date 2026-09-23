@@ -5,37 +5,31 @@ import { RenderOptions } from 'application/render/render.types';
 import { Atom, SGroup, Struct, Vec2 } from 'domain/entities';
 
 /*
- * Upstream behaviour change, inherited at v3.7.0 — not a fork patch.
+ * Fork commit under test: restores the pre-v3.7.0 rule in
+ * getRelSGroupsBySelection.
  *
- * getRelSGroupsBySelection decides which S-groups a flip, rotate or drag
- * carries along with the selected atoms. Its rule changed:
+ * The helper decides which S-groups a flip, rotate or drag carries along with
+ * the selected atoms. Four call sites share it: flip and rotate
+ * (actions/rotate.ts), drag (actions/fragment.ts) and the rotate tool.
  *
- *   v3.6.0  struct.sgroups.filter((_id, sg) =>
- *             !sg.data.attached && !sg.data.absolute &&
- *             difference(sg.atoms, selectedAtoms).length === 0)
- *           -> the group came along only when EVERY member atom was selected.
+ *   v3.6.0  the group came along only when EVERY member atom was selected.
+ *   v3.7.0  any selected member atom dragged the whole group's data label.
  *
- *   v3.7.0  every selected atom contributes each group it belongs to
- *           -> ANY member atom now drags the whole group's data label.
+ * v3.7.0's rule makes the result depend on how the user split the edit.
+ * Dragging two members of a bracket separately moves the data label twice,
+ * where dragging them together moves it once, so the label drifts away from
+ * its bracket with every partial edit. A partial selection reshapes a group's
+ * contents rather than relocating the group, so the label should stay put and
+ * let the bracket geometry redraw from the member positions.
  *
- * So transforming part of a formulation bracket used to leave the bracket
- * label alone and now moves it. Four call sites share the helper: flip and
- * rotate (actions/rotate.ts), drag (actions/fragment.ts) and the rotate tool.
+ * The fork restores the containment rule while keeping v3.7.0's Set return
+ * type, so the four callers are untouched.
  *
- * Measured, not predicted: on upstream v3.6.0 the two partial-selection tests
- * fail and the rest pass, so those two are what separates the versions. The
- * full-selection and exclusion tests assert behaviour both versions share,
- * which is what makes the pair meaningful rather than broadly broken.
- *
- * These tests pin the v3.7.0 rule so a later upgrade cannot change it
- * silently. If we decide the v3.6.0 rule was the right one for formulation
- * brackets, this file is where that decision gets recorded — invert the
- * partial-selection expectations rather than deleting them.
- *
- * Two traps this fixture avoids, both of which make the test prove nothing:
- *   - the label must sit off the flip axis, or flipping it is a no-op;
- *   - the helper returns a Pool on v3.6.0 and a Set on v3.7.0, so read it
- *     with forEach, the way the production callers do, rather than spreading.
+ * Two traps when editing this fixture, both of which make it prove nothing:
+ *   - the S-group label must sit off the flip axis, or flipping it is a no-op
+ *     and the assertion passes on every version;
+ *   - upstream v3.6.0 returns a Pool here and v3.7.0 a Set, so read it with
+ *     forEach the way the production callers do, not by spreading.
  */
 
 const MEMBER_POSITIONS = [
@@ -103,16 +97,27 @@ describe('S-groups carried by a selection', () => {
     expect(carriedSGroupIds(struct, memberIds)).toEqual([sgroupId]);
   });
 
-  it('carries the group when only some member atoms are selected', () => {
-    const { struct, sgroupId, memberIds } = dataSGroupFixture();
+  it('does not carry the group when only some member atoms are selected', () => {
+    const { struct, memberIds } = dataSGroupFixture();
 
-    expect(carriedSGroupIds(struct, memberIds.slice(0, 2))).toEqual([sgroupId]);
+    expect(carriedSGroupIds(struct, memberIds.slice(0, 2))).toEqual([]);
   });
 
-  it('carries the group for a single member atom', () => {
-    const { struct, sgroupId, memberIds } = dataSGroupFixture();
+  it('does not carry the group for a single member atom', () => {
+    const { struct, memberIds } = dataSGroupFixture();
 
-    expect(carriedSGroupIds(struct, [memberIds[0]])).toEqual([sgroupId]);
+    expect(carriedSGroupIds(struct, [memberIds[0]])).toEqual([]);
+  });
+
+  it('carries the group when the selection also holds atoms outside it', () => {
+    const { struct, sgroupId, memberIds } = dataSGroupFixture();
+    const outsideAtomId = struct.atoms.add(
+      new Atom({ label: 'O', pp: OUTSIDE_ATOM_POSITION }),
+    );
+
+    expect(carriedSGroupIds(struct, [...memberIds, outsideAtomId])).toEqual([
+      sgroupId,
+    ]);
   });
 
   it('carries each group once however many of its atoms are selected', () => {
@@ -144,7 +149,7 @@ describe('S-groups carried by a selection', () => {
 });
 
 describe('Flipping part of a formulation bracket', () => {
-  it('moves the bracket label when only some member atoms are flipped', () => {
+  it('leaves the bracket label alone when only some member atoms are flipped', () => {
     const { struct, sgroup, memberIds } = dataSGroupFixture();
     const restruct = restructFor(struct);
 
@@ -155,8 +160,28 @@ describe('Flipping part of a formulation bracket', () => {
       FLIP_CENTER,
     );
 
-    expect(sgroup.pp?.x).toBeCloseTo(FLIPPED_LABEL_X);
+    expect(sgroup.pp?.x).toBeCloseTo(LABEL_POSITION.x);
     expect(sgroup.pp?.y).toBeCloseTo(LABEL_POSITION.y);
+  });
+
+  it('moves the bracket label once however the full selection is split', () => {
+    const { struct, sgroup, memberIds } = dataSGroupFixture();
+    const restruct = restructFor(struct);
+
+    fromFlip(
+      restruct,
+      { atoms: memberIds.slice(0, 2) },
+      'horizontal',
+      FLIP_CENTER,
+    );
+    fromFlip(
+      restruct,
+      { atoms: memberIds.slice(2) },
+      'horizontal',
+      FLIP_CENTER,
+    );
+
+    expect(sgroup.pp?.x).toBeCloseTo(LABEL_POSITION.x);
   });
 
   it('moves the bracket label when every member atom is flipped', () => {
