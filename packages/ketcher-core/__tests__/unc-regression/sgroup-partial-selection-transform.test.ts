@@ -40,6 +40,7 @@ const MEMBER_POSITIONS = [
 ];
 const LABEL_POSITION = new Vec2(0.5, 2);
 const FLIP_CENTER = new Vec2(1.5, 0);
+const SECOND_FLIP_CENTER = new Vec2(4, 0);
 const FLIPPED_LABEL_X = 2 * FLIP_CENTER.x - LABEL_POSITION.x;
 const OUTSIDE_ATOM_POSITION = new Vec2(9, 9);
 
@@ -164,7 +165,12 @@ describe('Flipping part of a formulation bracket', () => {
     expect(sgroup.pp?.y).toBeCloseTo(LABEL_POSITION.y);
   });
 
-  it('moves the bracket label once however the full selection is split', () => {
+  /*
+   * The two halves flip about different axes on purpose. Mirroring twice
+   * about the SAME axis cancels, so that version of this test passed on
+   * upstream v3.7.0 as well and discriminated nothing.
+   */
+  it('leaves the bracket label alone when the group is flipped in halves', () => {
     const { struct, sgroup, memberIds } = dataSGroupFixture();
     const restruct = restructFor(struct);
 
@@ -178,7 +184,7 @@ describe('Flipping part of a formulation bracket', () => {
       restruct,
       { atoms: memberIds.slice(2) },
       'horizontal',
-      FLIP_CENTER,
+      SECOND_FLIP_CENTER,
     );
 
     expect(sgroup.pp?.x).toBeCloseTo(LABEL_POSITION.x);

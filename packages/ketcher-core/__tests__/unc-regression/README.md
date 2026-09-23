@@ -122,35 +122,37 @@ is unreachable. Our patch threaded a render through that call instead.
 Both satisfy the requirement, so on `v3.18.0` the patch is redundant — keep the test,
 drop the commit.
 
-## Upstream behaviour changes we inherited
+## Reverting an upstream behaviour change
 
-Not every test here guards a fork patch. `sgroup-partial-selection-transform.test.ts`
-pins a change that arrived *with* upstream at v3.7.0, so the reapply/drop reading above
-does not apply to it — there is no fork commit to reapply.
+`sgroup-partial-selection-transform.test.ts` guards a fork patch of an unusual shape:
+it restores behaviour upstream changed, rather than adding behaviour upstream lacks.
 
 `getRelSGroupsBySelection` decides which S-groups a flip, rotate or drag carries along
 with the selected atoms. At v3.6.0 a group came along only when every one of its member
 atoms was selected. From v3.7.0 any selected member atom drags the whole group's data
-label. Four call sites share the helper: flip and rotate in `actions/rotate.ts`, drag in
-`actions/fragment.ts`, and the rotate tool.
+label, which makes the result depend on how the user split the edit. Four call sites
+share the helper: flip and rotate in `actions/rotate.ts`, drag in `actions/fragment.ts`,
+and the rotate tool. The fork restores the containment rule while keeping v3.7.0's `Set`
+return type, so the callers are untouched.
 
-| Test file | Fork commits | fork (v3.7.0-unc55) | upstream v3.6.0 | verdict |
+| Test file | Fork commits | fork | vanilla v3.7.0 | verdict |
 | --- | --- | --- | --- | --- |
-| `sgroup-partial-selection-transform.test.ts` | none — upstream change | 10/10 | 7/10 | **decide** |
+| `sgroup-partial-selection-transform.test.ts` | `1262f8bcf1` | 12/12 | 8/12 | **reapply** |
 
-The three that fail on v3.6.0 are the partial-selection cases, and only those. The other
-seven assert behaviour both versions share, which is what makes the pair informative
+The four that fail on vanilla are the partial-selection cases, and only those. The other
+eight assert behaviour both versions share, which is what makes the set informative
 rather than broadly broken.
 
-Verdict **decide** rather than reapply or drop: the test records what v3.7.0 does so a
-later upgrade cannot change it silently, but whether that is the behaviour we want for
-formulation brackets is a product question, not an upgrade one. If we decide v3.6.0 was
-right, invert the partial-selection expectations there rather than deleting them.
+Because upstream owns this function, expect every upstream merge to bring back the
+`any member atom` rule, silently rather than as a conflict. Those four failures are the
+signal to reapply.
 
-Two traps when editing this fixture, both of which make it prove nothing:
+Three traps when editing this fixture, each of which makes it prove nothing:
 
 - the S-group label must sit off the flip axis, or flipping it is a no-op and the
   assertion passes on every version;
+- two flips about the SAME axis cancel, so a split-selection test has to use two
+  different axes or it passes on every version;
 - the helper returns a Pool on v3.6.0 and a `Set` from v3.7.0, so read it with `forEach`
   the way the production callers do, not by spreading it.
 
