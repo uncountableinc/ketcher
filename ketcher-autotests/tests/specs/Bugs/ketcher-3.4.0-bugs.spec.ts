@@ -17,11 +17,9 @@ import {
   clickInTheMiddleOfTheScreen,
   takePageScreenshot,
   clickOnAtom,
-  waitForMonomerPreview,
   MolFileFormat,
   clickOnCanvas,
   openFile,
-  pressButton,
   delay,
 } from '@utils';
 import {
@@ -43,6 +41,7 @@ import { CommonTopRightToolbar } from '@tests/pages/common/CommonTopRightToolbar
 import {
   FileType,
   verifyFileExport,
+  verifySVGExport,
 } from '@utils/files/receiveFileComparisonData';
 import { Library } from '@tests/pages/macromolecules/Library';
 import { ContextMenu } from '@tests/pages/common/ContextMenu';
@@ -53,8 +52,8 @@ import { MacromoleculesFileFormatType } from '@tests/pages/constants/fileFormats
 import {
   COORDINATES_TO_PERFORM_ROTATION,
   rotateToCoordinates,
+  verticalFlip,
 } from '../Structure-Creating-&-Editing/Actions-With-Structures/Rotation/utils';
-import { MoleculesFileFormatType } from '@tests/pages/constants/fileFormats/microFileFormats';
 import { CalculateVariablesPanel } from '@tests/pages/macromolecules/CalculateVariablesPanel';
 import { IndigoFunctionsToolbar } from '@tests/pages/molecules/IndigoFunctionsToolbar';
 import { OpenPPTXFileDialog } from '@tests/pages/molecules/OpenPPTXFileDialog';
@@ -79,6 +78,9 @@ import {
 } from '@tests/pages/constants/structureLibraryDialog/Constants';
 import { MolecularMassUnit } from '@tests/pages/constants/calculateVariablesPanel/Constants';
 import { getAbbreviationLocator } from '@utils/canvas/s-group-signes/getAbbreviation';
+import { MonomerPreviewTooltip } from '@tests/pages/macromolecules/canvas/MonomerPreviewTooltip';
+import { ErrorMessageDialog } from '@tests/pages/common/ErrorMessageDialog';
+import { PasteFromClipboardDialog } from '@tests/pages/common/PasteFromClipboardDialog';
 
 async function openPPTXFileAndValidateStructurePreview(
   page: Page,
@@ -386,31 +388,29 @@ test.describe('Ketcher bugs in 3.4.0', () => {
     await SaveStructureDialog(page).cancel();
   });
 
-  test.fail(
-    'Case 12: DNA/RNA sequences should NOT accept * symbols',
-    async () => {
-      // This test fails because of https://github.com/epam/Indigo/issues/3210
-      /*
-       * Test case: https://github.com/epam/ketcher/issues/7243
-       * Bug: https://github.com/epam/ketcher/issues/4358
-       * Description: DNA/RNA sequences should NOT accept * symbols.
-       * Error message should appear: "*" symbol is not allowed for DNA sequence.
-       * Scenario:
-       * 1. Open Macro mode
-       * 2. Load by Paste from Clipboard as FASTA - RNA/DNA
-       */
-      await pasteFromClipboardAndAddToMacromoleculesCanvas(
-        page,
-        MacroFileType.FASTA,
-        'AAAA*AAAA',
-        true,
-      );
-      await takeEditorScreenshot(page, {
-        hideMonomerPreview: true,
-        hideMacromoleculeEditorScrollBars: true,
-      });
-    },
-  );
+  test('Case 12: DNA/RNA sequences should NOT accept * symbols', async () => {
+    /*
+     * Test case: https://github.com/epam/ketcher/issues/7243
+     * Bug: https://github.com/epam/ketcher/issues/4358
+     * Description: DNA/RNA sequences should NOT accept * symbols.
+     * Error message should appear: "*" symbol is not allowed for DNA sequence.
+     * Scenario:
+     * 1. Open Macro mode
+     * 2. Load by Paste from Clipboard as FASTA - RNA/DNA
+     */
+    await pasteFromClipboardAndAddToMacromoleculesCanvas(
+      page,
+      MacroFileType.FASTA,
+      'AAAA*AAAA',
+      true,
+    );
+    const errorMessage = await ErrorMessageDialog(page).getErrorMessage();
+    expect(errorMessage).toContain(
+      "Convert error! Given string could not be loaded as (query or plain) molecule or reaction, see the error messages: 'SEQUENCE loader: Invalid symbols in the sequence: *'",
+    );
+    await ErrorMessageDialog(page).close();
+    await PasteFromClipboardDialog(page).closeWindow();
+  });
 
   test('Case 13: System not replaces "Salts and Solvents" molecules with CH4 while loading if no mouse move and some other molecules present on the canvas', async () => {
     /*
@@ -495,7 +495,7 @@ test.describe('Ketcher bugs in 3.4.0', () => {
     await takeEditorScreenshot(page);
     const point = getAbbreviationLocator(page, { name: 'X' });
     await ContextMenu(page, point).open();
-    await waitForMonomerPreview(page);
+    await MonomerPreviewTooltip(page).waitForBecomeVisible();
     await takeEditorScreenshot(page);
   });
 
@@ -543,11 +543,7 @@ test.describe('Ketcher bugs in 3.4.0', () => {
     await takeEditorScreenshot(page);
     await rotateToCoordinates(page, COORDINATES_TO_PERFORM_ROTATION);
     await takeEditorScreenshot(page);
-    await CommonTopLeftToolbar(page).saveFile();
-    await SaveStructureDialog(page).chooseFileFormat(
-      MoleculesFileFormatType.SVGDocument,
-    );
-    await takeEditorScreenshot(page);
+    await verifySVGExport(page);
   });
 
   test('Case 19: Unipositive ions default value is shown in mM for double-stranded sequence selection', async () => {
@@ -570,8 +566,10 @@ test.describe('Ketcher bugs in 3.4.0', () => {
       'RNA1{[dR](A)P.[dR](A)P.[dR](A)P.[dR](A)P.[dR](A)P.[dR](A)P.[dR](A)P.[dR](A)P.[dR](A)P.[dR](A)P.[dR](A)P.[dR](A)P.[dR](A)}|RNA2{[dR](T)P.[dR](T)P.[dR](T)P.[dR](T)P.[dR](T)P.[dR](T)P.[dR](T)P.[dR](T)P.[dR](T)P.[dR](T)P.[dR](T)P.[dR](T)P.[dR](T)}$RNA1,RNA2,38:pair-2:pair|RNA1,RNA2,35:pair-5:pair|RNA1,RNA2,32:pair-8:pair|RNA1,RNA2,29:pair-11:pair|RNA1,RNA2,26:pair-14:pair|RNA1,RNA2,23:pair-17:pair|RNA1,RNA2,20:pair-20:pair|RNA1,RNA2,17:pair-23:pair|RNA1,RNA2,14:pair-26:pair|RNA1,RNA2,11:pair-29:pair|RNA1,RNA2,8:pair-32:pair|RNA1,RNA2,5:pair-35:pair|RNA1,RNA2,2:pair-38:pair$$$V2.0',
     );
     await MacromoleculesTopToolbar(page).calculateProperties();
-    await takePageScreenshot(page);
-    await MacromoleculesTopToolbar(page).calculateProperties();
+    expect(
+      await CalculateVariablesPanel(page).getUnipositiveIonsValue(),
+    ).toEqual('140');
+    await CalculateVariablesPanel(page).closeWindow();
   });
 
   test('Case 20: Alt+C hotkey open the “Calculate Properties” window', async () => {
@@ -583,10 +581,10 @@ test.describe('Ketcher bugs in 3.4.0', () => {
      * 1. Go to Macro
      * 2. Open the "Calculate Properties" window by Alt+C hotkey
      */
-    await takePageScreenshot(page);
+    await takeEditorScreenshot(page);
     await page.keyboard.press('Alt+C');
     await delay(1);
-    await takePageScreenshot(page);
+    await takeEditorScreenshot(page);
   });
 
   test('Case 21: Tooltip displayed for the “Calculate Properties” button in main toolbar', async () => {
@@ -730,7 +728,7 @@ test.describe('Ketcher bugs in 3.4.0', () => {
     await getMonomerLocator(page, {
       monomerAlias: 'F1',
     }).hover();
-    await waitForMonomerPreview(page);
+    await MonomerPreviewTooltip(page).waitForBecomeVisible();
     await takeEditorScreenshot(page);
   });
 
@@ -1101,12 +1099,8 @@ test.describe('Ketcher bugs in 3.4.0', () => {
     await expandMonomer(page, getAbbreviationLocator(page, { name: 'Edc' }));
     await clickInTheMiddleOfTheScreen(page);
     await selectAllStructuresOnCanvas(page);
-    await pressButton(page, 'Vertical Flip (Alt+V)');
-    await CommonTopLeftToolbar(page).saveFile();
-    await SaveStructureDialog(page).chooseFileFormat(
-      MoleculesFileFormatType.SVGDocument,
-    );
-    await takeEditorScreenshot(page);
+    await verticalFlip(page);
+    await verifySVGExport(page);
   });
 
   test('Case 42: System not ignores carrige return in text blocks in loaded CDX', async () => {

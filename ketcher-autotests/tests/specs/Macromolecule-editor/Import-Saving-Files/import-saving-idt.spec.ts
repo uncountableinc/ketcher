@@ -18,7 +18,7 @@ import {
   pasteFromClipboardByKeyboard,
   resetZoomLevelToDefault,
   takeEditorScreenshot,
-  takePolymerEditorScreenshot,
+  takeElementScreenshot,
   waitForPageInit,
 } from '@utils';
 import { selectAllStructuresOnCanvas } from '@utils/canvas/selectSelection';
@@ -27,10 +27,7 @@ import {
   FileType,
   verifyFileExport,
 } from '@utils/files/receiveFileComparisonData';
-import {
-  waitForMonomerPreview,
-  zoomWithMouseWheel,
-} from '@utils/macromolecules';
+import { zoomWithMouseWheel } from '@utils/macromolecules';
 import {
   getMonomerLocator,
   getSymbolLocator,
@@ -63,6 +60,7 @@ import { SequenceSymbolOption } from '@tests/pages/constants/contextMenu/Constan
 import { LayoutMode } from '@tests/pages/constants/macromoleculesTopToolbar/Constants';
 import { MacromoleculesTopToolbar } from '@tests/pages/macromolecules/MacromoleculesTopToolbar';
 import { ErrorMessageDialog } from '@tests/pages/common/ErrorMessageDialog';
+import { MonomerPreviewTooltip } from '@tests/pages/macromolecules/canvas/MonomerPreviewTooltip';
 
 let page: Page;
 
@@ -170,7 +168,12 @@ test.describe('Import-Saving .idt Files', () => {
     await SaveStructureDialog(page).chooseFileFormat(
       MacromoleculesFileFormatType.IDT,
     );
-    await takeEditorScreenshot(page);
+    const convertErrorMessage = await ErrorMessageDialog(
+      page,
+    ).getErrorMessage();
+    const expectedErrorMessage =
+      'Convert error! Sequence saver: Cannot save molecule in IDT format - expected sugar but found AminoAcid monomer 1Nal.';
+    expect(convertErrorMessage).toEqual(expectedErrorMessage);
   });
 
   test('Check import of .ket file and save in .idt format', async () => {
@@ -203,8 +206,8 @@ test.describe('Import-Saving .idt Files', () => {
     await Library(page).switchToRNATab();
     await Library(page).openRNASection(RNASection.Phosphates);
     await Library(page).hoverMonomer(Phosphate.P);
-    await waitForMonomerPreview(page);
-    await takePolymerEditorScreenshot(page);
+    await MonomerPreviewTooltip(page).waitForBecomeVisible();
+    await takeElementScreenshot(page, MonomerPreviewTooltip(page).window);
   });
 
   const rnaNucleotides = [
@@ -228,8 +231,8 @@ test.describe('Import-Saving .idt Files', () => {
       await Library(page).switchToRNATab();
       await Library(page).openRNASection(RNASection.Nucleotides);
       await Library(page).hoverMonomer(monomer);
-      await waitForMonomerPreview(page);
-      await takePolymerEditorScreenshot(page);
+      await MonomerPreviewTooltip(page).waitForBecomeVisible();
+      await takeElementScreenshot(page, MonomerPreviewTooltip(page).window);
     });
   }
 
@@ -251,8 +254,8 @@ test.describe('Import-Saving .idt Files', () => {
 
       await Library(page).switchToRNATab();
       await Library(page).hoverMonomer(monomer);
-      await waitForMonomerPreview(page);
-      await takePolymerEditorScreenshot(page);
+      await MonomerPreviewTooltip(page).waitForBecomeVisible();
+      await takeElementScreenshot(page, MonomerPreviewTooltip(page).window);
     });
   }
 
@@ -550,7 +553,7 @@ test.describe('Import-Saving .idt Files', () => {
     const bondLine = page.locator('g[pointer-events="stroke"]').first();
     await CommonLeftToolbar(page).selectBondTool(MacroBondType.Single);
     await bondLine.hover();
-    await waitForMonomerPreview(page);
+    await MonomerPreviewTooltip(page).waitForBecomeVisible();
     await takeEditorScreenshot(page);
   });
 
@@ -611,9 +614,12 @@ test.describe('Import-Saving .idt Files', () => {
     await SaveStructureDialog(page).chooseFileFormat(
       MacromoleculesFileFormatType.IDT,
     );
-    await takeEditorScreenshot(page, {
-      hideMacromoleculeEditorScrollBars: true,
-    });
+    const convertErrorMessage = await ErrorMessageDialog(
+      page,
+    ).getErrorMessage();
+    const expectedErrorMessage =
+      'Convert error! Sequence saver: IDT alias for group sugar:5formD base:form5C phosphate:cm not found.';
+    expect(convertErrorMessage).toEqual(expectedErrorMessage);
   });
 
   test('Verify that if * is specified, Phosphorothioate (sP) is included in nucleotide if not it is (P)', async () => {
@@ -794,13 +800,13 @@ test.describe('Import-Saving .idt Files', () => {
       `/52MOErA/*/i2MOErC/*/i2MOErG/*/i2MOErC/*/i2MOErG/*/iMe-dC2/*G*A*/iMe-dC2/*T*A*T*A*/iMe-dC2/*G*/i2MOErC/*/i2MOErG/*/i2MOErC/*/i2MOErC/*/32MOErT/`,
     );
     await getMonomerLocator(page, Chem.iMe_dC2).nth(1).hover();
-    await waitForMonomerPreview(page);
+    await MonomerPreviewTooltip(page).waitForBecomeVisible();
     await takeEditorScreenshot(page);
     await MacromoleculesTopToolbar(page).selectLayoutModeTool(
       LayoutMode.Sequence,
     );
     await getSymbolLocator(page, { symbolAlias: '?' }).nth(1).hover();
-    await waitForMonomerPreview(page);
+    await MonomerPreviewTooltip(page).waitForBecomeVisible();
     await takeEditorScreenshot(page);
   });
 
@@ -816,7 +822,7 @@ test.describe('Import-Saving .idt Files', () => {
     );
     await CommonLeftToolbar(page).selectBondTool(MacroBondType.Single);
     await getMonomerLocator(page, Chem.iMe_dC2).nth(1).hover();
-    await waitForMonomerPreview(page);
+    await MonomerPreviewTooltip(page).waitForBecomeVisible();
     await takeEditorScreenshot(page);
   });
 
@@ -848,7 +854,7 @@ test.describe('Import-Saving .idt Files', () => {
     );
     await CommonLeftToolbar(page).selectBondTool(MacroBondType.Single);
     await getMonomerLocator(page, Chem.iMe_dC2).hover();
-    await waitForMonomerPreview(page);
+    await MonomerPreviewTooltip(page).waitForBecomeVisible();
     await takeEditorScreenshot(page);
   });
 
@@ -881,7 +887,7 @@ test.describe('Import-Saving .idt Files', () => {
     );
     await CommonLeftToolbar(page).selectBondTool(MacroBondType.Single);
     await getMonomerLocator(page, Chem.iMe_dC2).hover();
-    await waitForMonomerPreview(page);
+    await MonomerPreviewTooltip(page).waitForBecomeVisible();
     await takeEditorScreenshot(page);
   });
 
@@ -1077,9 +1083,12 @@ test.describe('Import-Saving .idt Files', () => {
       );
       await CommonTopLeftToolbar(page).saveFile();
       await SaveStructureDialog(page).chooseFileFormat(format.testId);
-      await takeEditorScreenshot(page, {
-        hideMacromoleculeEditorScrollBars: true,
-      });
+      const convertErrorMessage = await ErrorMessageDialog(
+        page,
+      ).getErrorMessage();
+      const expectedErrorMessage =
+        'Convert error! Error during sequence type recognition(RNA, DNA or Peptide)';
+      expect(convertErrorMessage).toEqual(expectedErrorMessage);
     });
   }
 

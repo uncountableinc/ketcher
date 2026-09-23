@@ -84,12 +84,10 @@ function request(
   if (data && method === 'GET') requestUrl = parametrizeUrl(url, data);
   let response: any = fetch(requestUrl, {
     method,
-    headers: Object.assign(
-      {
-        Accept: 'application/json',
-      },
-      headers,
-    ),
+    headers: {
+      Accept: 'application/json',
+      ...(headers || {}),
+    },
     body: method !== 'GET' ? data : undefined,
     credentials: 'same-origin',
   });
@@ -100,7 +98,9 @@ function request(
     response = response.then((response) =>
       response
         .json()
-        .then((res) => (response.ok ? res : Promise.reject(res.error))),
+        .then((res) =>
+          response.ok ? res : Promise.reject(new Error(res.error)),
+        ),
     );
   }
 
@@ -119,8 +119,12 @@ function indigoCall(
     options,
     responseHandler?: (promise: Promise<any>) => Promise<any>,
   ) {
-    const body = Object.assign({}, data);
-    body.options = Object.assign(body.options || {}, defaultOptions, options);
+    const body = { ...(data || {}) };
+    body.options = {
+      ...(body.options || {}),
+      ...(defaultOptions || {}),
+      ...(options || {}),
+    };
     return request(
       method,
       baseUrl + url,
@@ -196,7 +200,7 @@ export class RemoteStructService implements StructService {
       return this.defaultOptions;
     }
     if (!this.ketcherId) {
-      throw Error('ketcherId is missed when options getting');
+      throw new Error('ketcherId is missed when options getting');
     }
 
     return pickStandardServerOptions(this.ketcherId, options);
@@ -247,6 +251,9 @@ export class RemoteStructService implements StructService {
         options?.['reaction-component-margin-size'],
       'image-resolution': options?.['image-resolution'],
       'molfile-saving-mode': options?.['molfile-saving-mode'],
+      'monomer-library-saving-mode': options?.['monomer-library-saving-mode'],
+      'molfile-saving-skip-date': options?.['molfile-saving-skip-date'],
+      'output-content-type': options?.['output-content-type'],
       'sequence-type': options?.['sequence-type'],
     };
 
@@ -397,7 +404,8 @@ export class RemoteStructService implements StructService {
         pollDeferred(
           status.bind(null, { id: data.upload_id }),
           (response: any) => {
-            if (response.state === 'FAILURE') throw response;
+            if (response.state === 'FAILURE')
+              throw new Error(JSON.stringify(response));
             return response.state === 'SUCCESS';
           },
           500,
@@ -440,6 +448,7 @@ export class RemoteStructService implements StructService {
         'render-stereo-bond-width': options?.['render-stereo-bond-width'],
         'render-stereo-bond-width-unit':
           options?.['render-stereo-bond-width-unit'],
+        'render-stereo-style': options?.['render-stereo-style'],
         'render-hash-spacing': options?.['render-hash-spacing'],
         'render-hash-spacing-unit': options?.['render-hash-spacing-unit'],
         'render-output-sheet-width': options?.['render-output-sheet-width'],

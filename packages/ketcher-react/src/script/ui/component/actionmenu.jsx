@@ -24,7 +24,7 @@ import { Icon } from 'components';
 
 function isMenuOpened(currentNode) {
   const parentNode = hiddenAncestor(currentNode);
-  return parentNode && parentNode.classList.contains('opened');
+  return parentNode?.classList.contains('opened');
 }
 
 export function showMenuOrButton(action, item, status, props) {
@@ -134,12 +134,20 @@ function renderActiveMenuItem(item, props) {
 function ActionMenu({ name, menu, className, role, ...props }) {
   const visibleMenu = menu.reduce((items, item) => {
     const status = props.status[item];
-    if (!status || !status.hidden) {
+    if (!status?.hidden) {
       items.push(item);
     }
 
     return items;
   }, []);
+
+  const handleMenuItemClick = (event) => openHandle(event, props.onOpen);
+  const handleMenuItemKeyDown = (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      openHandle(event, props.onOpen);
+    }
+  };
 
   return (
     <menu
@@ -154,7 +162,10 @@ function ActionMenu({ name, menu, className, role, ...props }) {
           className={clsx(props.status[item], {
             opened: item.id === props.opened,
           })}
-          onClick={(ev) => openHandle(ev, props.onOpen)}
+          onClick={handleMenuItemClick}
+          onKeyDown={handleMenuItemKeyDown}
+          role="menuitem"
+          tabIndex={0}
         >
           {showMenuOrButton(action, item, props.status[item], props)}
           {item.menu && props.opened && renderActiveMenuItem(item, props)}
@@ -188,7 +199,7 @@ function openHandle(event, onOpen) {
   const hiddenEl = hiddenAncestor(event.currentTarget);
   const isSelected = event.currentTarget?.classList.contains('selected');
 
-  onOpen(hiddenEl && hiddenEl.id, isSelected);
+  onOpen(hiddenEl?.id, isSelected);
   event.stopPropagation();
 }
 

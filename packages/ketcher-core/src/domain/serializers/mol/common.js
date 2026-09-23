@@ -109,13 +109,10 @@ function prepareSruForSaving(sgroup, mol) {
     }
   }, sgroup);
   if (xBonds.length !== 0 && xBonds.length !== 2) {
-    // TODO fix this eslint error
-    // eslint-disable-next-line no-throw-literal
-    throw {
-      id: sgroup.id,
-      'error-type': 'cross-bond-number',
-      message: 'Unsupported cross-bonds number',
-    };
+    const error = new Error('Unsupported cross-bonds number');
+    error.id = sgroup.id;
+    error['error-type'] = 'cross-bond-number';
+    throw error;
   }
   sgroup.bonds = xBonds;
 }
@@ -413,14 +410,13 @@ function bracketsToMolfile(mol, sg, idstr) {
     n,
   );
   const lines = [];
-  for (let i = 0; i < brackets.length; ++i) {
-    const bracket = brackets[i];
+  for (const bracket of brackets) {
     const a0 = bracket.c.addScaled(bracket.n, -0.5 * bracket.h).yComplement();
     const a1 = bracket.c.addScaled(bracket.n, 0.5 * bracket.h).yComplement();
     let line = 'M  SDI ' + idstr + utils.paddedNum(4, 3);
     const coord = [a0.x, a0.y, a1.x, a1.y];
-    for (let j = 0; j < coord.length; ++j) {
-      line += utils.paddedNum(coord[j], 10, 4);
+    for (const coordValue of coord) {
+      line += utils.paddedNum(coordValue, 10, 4);
     }
     lines.push(line);
   }

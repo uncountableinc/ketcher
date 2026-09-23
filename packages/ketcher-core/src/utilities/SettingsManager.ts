@@ -47,7 +47,8 @@ interface SavedOptions {
 }
 
 export class SettingsManager {
-  static _disableCustomQuery?: boolean;
+  private static disableCustomQueryValue?: boolean;
+  private static persistMonomerLibraryUpdatesValue = true;
 
   static getSettings(): SavedSettings {
     try {
@@ -142,11 +143,11 @@ export class SettingsManager {
   }
 
   static get disableCustomQuery() {
-    return this._disableCustomQuery;
+    return this.disableCustomQueryValue;
   }
 
   static set disableCustomQuery(disableCustomQuery: boolean | undefined) {
-    this._disableCustomQuery = disableCustomQuery;
+    this.disableCustomQueryValue = disableCustomQuery;
   }
 
   static get ignoreChiralFlag() {
@@ -183,5 +184,13 @@ export class SettingsManager {
       updates.push(newUpdate);
       this.monomerLibraryUpdates = updates;
     }
+  }
+
+  static get persistMonomerLibraryUpdates(): boolean {
+    return this.persistMonomerLibraryUpdatesValue;
+  }
+
+  static set persistMonomerLibraryUpdates(value: boolean | undefined) {
+    this.persistMonomerLibraryUpdatesValue = value ?? true;
   }
 }

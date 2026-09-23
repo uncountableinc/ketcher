@@ -304,7 +304,7 @@ class ReBond extends ReObject {
     return rect.attr(options.selectionStyle);
   }
 
-  private isPlateShouldBeHidden = (
+  private readonly isPlateShouldBeHidden = (
     restruct: ReStruct,
     options: RenderOptions,
   ) => {
@@ -519,6 +519,11 @@ class ReBond extends ReObject {
     bondPathElement.setAttribute('data-bondstereo', bond.stereo);
     bondPathElement.setAttribute('data-fromatomid', bond.begin);
     bondPathElement.setAttribute('data-toatomid', bond.end);
+    bondPathElement.setAttribute('data-topology', bond.topology);
+    bondPathElement.setAttribute(
+      'data-reacting-center',
+      bond.reactingCenterStatus,
+    );
 
     const beginSGroupId = struct.getGroupIdFromAtomId(bond.begin);
     const endSGroupId = struct.getGroupIdFromAtomId(bond.end);

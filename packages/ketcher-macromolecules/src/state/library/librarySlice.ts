@@ -378,8 +378,7 @@ export const selectFilteredMonomers = createSelector(
           const textBetweenSlashes = parts[1];
 
           const matchesIdtBase =
-            idtBase &&
-            idtBase.length === textBetweenSlashes.length &&
+            idtBase?.length === textBetweenSlashes.length &&
             Array.from(idtBase).every(
               (char, index) => char === textBetweenSlashes[index],
             );
@@ -405,7 +404,7 @@ export const selectFilteredMonomers = createSelector(
         if (searchFilter.startsWith('/') && searchFilter.length > 1) {
           const aliasRest = searchFilter.slice(1);
           return (
-            (idtBase && idtBase.startsWith(aliasRest)) ||
+            idtBase?.startsWith(aliasRest) ||
             (idtModifications &&
               idtModifications
                 .split(' ')
@@ -415,27 +414,19 @@ export const selectFilteredMonomers = createSelector(
 
         if (searchFilter.endsWith('/') && searchFilter.length > 1) {
           const aliasRest = searchFilter.slice(0, -1);
-          const aliasLastSymbol = searchFilter[searchFilter.length - 2];
 
           return (
-            (idtBase &&
-              idtBase.endsWith(aliasRest) &&
-              idtBase[idtBase.length - 1] === aliasLastSymbol) ||
+            idtBase?.endsWith(aliasRest) ||
             (idtModifications &&
               idtModifications
                 .split(' ')
-                .some(
-                  (mod) =>
-                    mod.endsWith(aliasRest) &&
-                    mod[mod.length - 1] === aliasLastSymbol,
-                ))
+                .some((mod) => mod.endsWith(aliasRest)))
           );
         }
 
         const matchesIdtBase =
-          idtBase &&
-          idtBase.startsWith(searchAfterSlash) &&
-          idtBase.endsWith(searchBeforeSlash);
+          idtBase?.startsWith(searchAfterSlash) &&
+          idtBase?.endsWith(searchBeforeSlash);
         const matchesIdtModifications = idtModifications
           ? idtModifications
               .split(' ')
@@ -540,9 +531,8 @@ export const selectMonomerGroups = (monomers: MonomerItemType[]) => {
 
   const sortedPreparedData = Object.entries(preparedData).reduce(
     (result, [code, monomers]) => {
-      const sortedMonomers = monomers.sort((a, b) =>
-        a.label.localeCompare(b.label),
-      );
+      const sortedMonomers = [...monomers];
+      sortedMonomers.sort((a, b) => a.label.localeCompare(b.label));
       const baseIndex = sortedMonomers.findIndex(
         (monomer) => monomer.label === code,
       );
@@ -558,27 +548,28 @@ export const selectMonomerGroups = (monomers: MonomerItemType[]) => {
 
   // generate list of monomer groups
   const preparedGroups: Group[] = [];
-  return Object.keys(sortedPreparedData)
-    .sort((a, b) => a.localeCompare(b))
-    .reduce((result, code) => {
-      const group: Group = {
-        groupTitle:
-          code === NoNaturalAnalogueGroupCode
-            ? NoNaturalAnalogueGroupTitle
-            : code,
-        groupItems: [],
-      };
-      sortedPreparedData[code].forEach((item: MonomerItemType) => {
-        group.groupItems.push({
-          ...item,
-          props: { ...item.props },
-        });
+  const sortedGroupCodes = Object.keys(sortedPreparedData);
+  sortedGroupCodes.sort((a, b) => a.localeCompare(b));
+
+  return sortedGroupCodes.reduce((result, code) => {
+    const group: Group = {
+      groupTitle:
+        code === NoNaturalAnalogueGroupCode
+          ? NoNaturalAnalogueGroupTitle
+          : code,
+      groupItems: [],
+    };
+    sortedPreparedData[code].forEach((item: MonomerItemType) => {
+      group.groupItems.push({
+        ...item,
+        props: { ...item.props },
       });
-      if (group.groupItems.length) {
-        result.push(group);
-      }
-      return result;
-    }, preparedGroups);
+    });
+    if (group.groupItems.length) {
+      result.push(group);
+    }
+    return result;
+  }, preparedGroups);
 };
 
 export const selectCurrentTabIndex = (state) => state.library.selectedTabIndex;

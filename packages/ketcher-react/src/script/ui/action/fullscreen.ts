@@ -15,23 +15,31 @@
  ***************************************************************************/
 
 import isHidden from './isHidden';
-import {
-  KETCHER_ROOT_NODE_CSS_SELECTOR,
-  ketcherIdCssSelector,
-} from 'src/constants';
+import { getFullscreenElement } from '../../../utils';
+import { ketcherIdCssSelector } from 'src/constants';
 
 const requestFullscreen = (element: HTMLElement) => {
-  (element.requestFullscreen && element.requestFullscreen()) ||
-    (element.msRequestFullscreen && element.msRequestFullscreen()) ||
-    (element.mozRequestFullScreen && element.mozRequestFullScreen()) ||
-    (element.webkitRequestFullscreen && element.webkitRequestFullscreen());
+  if (element.requestFullscreen) {
+    element.requestFullscreen();
+  } else if (element.msRequestFullscreen) {
+    element.msRequestFullscreen();
+  } else if (element.mozRequestFullScreen) {
+    element.mozRequestFullScreen();
+  } else if (element.webkitRequestFullscreen) {
+    element.webkitRequestFullscreen();
+  }
 };
 
 const exitFullscreen = () => {
-  (document.exitFullscreen && document.exitFullscreen()) ||
-    (document.msExitFullscreen && document.msExitFullscreen()) ||
-    (document.mozCancelFullScreen && document.mozCancelFullScreen()) ||
-    (document.webkitExitFullscreen && document.webkitExitFullscreen());
+  if (document.exitFullscreen) {
+    document.exitFullscreen();
+  } else if (document.msExitFullscreen) {
+    document.msExitFullscreen();
+  } else if (document.mozCancelFullScreen) {
+    document.mozCancelFullScreen();
+  } else if (document.webkitExitFullscreen) {
+    document.webkitExitFullscreen();
+  }
 };
 
 const getIfFullScreen = () => {
@@ -44,10 +52,9 @@ const getIfFullScreen = () => {
 };
 
 const toggleFullscreen = (ketcherId: string) => {
-  const fullscreenElement: HTMLElement =
-    document.querySelector(ketcherIdCssSelector(ketcherId)) ||
-    document.querySelector(KETCHER_ROOT_NODE_CSS_SELECTOR) ||
-    document.documentElement;
+  const fullscreenElement =
+    document.querySelector<HTMLElement>(ketcherIdCssSelector(ketcherId)) ??
+    getFullscreenElement();
   getIfFullScreen() ? exitFullscreen() : requestFullscreen(fullscreenElement);
 };
 

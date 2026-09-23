@@ -7,7 +7,6 @@ import {
   takeEditorScreenshot,
   resetZoomLevelToDefault,
   pasteFromClipboardAndAddToCanvas,
-  pressButton,
   clickInTheMiddleOfTheScreen,
   enableViewOnlyModeBySetOptions,
   disableViewOnlyModeBySetOptions,
@@ -18,7 +17,6 @@ import {
   takeLeftToolbarScreenshot,
   keyboardTypeOnCanvas,
   openFileAndAddToCanvasAsNewProjectMacro,
-  waitForMonomerPreview,
   dragMouseTo,
   openFileAndAddToCanvasMacro,
   clickOnCanvas,
@@ -40,14 +38,16 @@ import { processResetToDefaultState } from '@utils/testAnnotations/resetToDefaul
 import { SaveStructureDialog } from '@tests/pages/common/SaveStructureDialog';
 import { MoleculesFileFormatType } from '@tests/pages/constants/fileFormats/microFileFormats';
 import {
+  BottomToolbar,
   drawBenzeneRing,
-  selectRingButton,
 } from '@tests/pages/molecules/BottomToolbar';
 import { TopRightToolbar } from '@tests/pages/molecules/TopRightToolbar';
 import { IndigoFunctionsToolbar } from '@tests/pages/molecules/IndigoFunctionsToolbar';
 import {
   FileType,
   verifyFileExport,
+  verifyPNGExport,
+  verifySVGExport,
 } from '@utils/files/receiveFileComparisonData';
 import { RingButton } from '@tests/pages/constants/ringButton/Constants';
 import { CommonTopRightToolbar } from '@tests/pages/common/CommonTopRightToolbar';
@@ -66,6 +66,7 @@ import { LeftToolbar } from '@tests/pages/molecules/LeftToolbar';
 import { ArrowType } from '@tests/pages/constants/arrowSelectionTool/Constants';
 import { getBondLocator } from '@utils/macromolecules/polymerBond';
 import {
+  setACSSettings,
   setSettingsOption,
   setSettingsOptions,
   SettingsDialog,
@@ -100,7 +101,8 @@ import { getAtomLocator } from '@utils/canvas/atoms/getAtomLocator/getAtomLocato
 import { MicroBondDataIds } from '@tests/pages/constants/bondSelectionTool/Constants';
 import { ErrorMessageDialog } from '@tests/pages/common/ErrorMessageDialog';
 import { OpenStructureDialog } from '@tests/pages/common/OpenStructureDialog';
-import { ConnectionPointsDialog } from '@tests/pages/macromolecules/canvas/ConnectionPointsDialog';
+import { AttachmentPointsDialog } from '@tests/pages/macromolecules/canvas/AttachmentPointsDialog';
+import { MonomerPreviewTooltip } from '@tests/pages/macromolecules/canvas/MonomerPreviewTooltip';
 
 async function removeTail(page: Page, tailName: string, index?: number) {
   const tailElement = page.getByTestId(tailName);
@@ -175,12 +177,7 @@ test.describe('Ketcher bugs in 2.26.0', () => {
       { option: BondsSetting.BondThickness, value: '2.6' },
     ]);
     await takeEditorScreenshot(page);
-    await CommonTopLeftToolbar(page).saveFile();
-    await SaveStructureDialog(page).chooseFileFormat(
-      MoleculesFileFormatType.SVGDocument,
-    );
-    await takeEditorScreenshot(page);
-    await SaveStructureDialog(page).cancel();
+    await verifySVGExport(page);
   });
 
   test('Case 3: The 3D View allow manipulation of the structure in "View Only" mode but button Apply disabled', async () => {
@@ -195,13 +192,15 @@ test.describe('Ketcher bugs in 2.26.0', () => {
      * 4. Attempt to manipulate the structure using the 3D Viewer and press Apply button.
      */
     const applyButton = MiewDialog(page).applyButton;
-    await selectRingButton(page, RingButton.Benzene);
+    await BottomToolbar(page).clickRing(RingButton.Benzene);
     await clickInTheMiddleOfTheScreen(page);
     await enableViewOnlyModeBySetOptions(page);
-    await IndigoFunctionsToolbar(page).ThreeDViewer();
+    await IndigoFunctionsToolbar(page).threeDViewer({
+      waitForApplyButtonIsEnabled: false,
+    });
     await expect(applyButton).toBeDisabled();
     await takeEditorScreenshot(page);
-    await MiewDialog(page).closeByX();
+    await MiewDialog(page).closeWindow();
     await disableViewOnlyModeBySetOptions(page);
   });
 
@@ -220,10 +219,7 @@ test.describe('Ketcher bugs in 2.26.0', () => {
       'KET/equilibrium-arrows.ket',
     );
     await takeEditorScreenshot(page);
-    await TopRightToolbar(page).Settings();
-    await SettingsDialog(page).setACSSettings();
-    await SettingsDialog(page).apply();
-    await pressButton(page, 'OK');
+    await setACSSettings(page);
     await takeEditorScreenshot(page);
   });
 
@@ -535,12 +531,7 @@ test.describe('Ketcher bugs in 2.26.0', () => {
     await SettingsDialog(page).setOptionValue(BondsSetting.BondLength, '50');
     await SettingsDialog(page).setOptionValue(BondsSetting.BondSpacing, '50');
     await SettingsDialog(page).apply();
-    await CommonTopLeftToolbar(page).saveFile();
-    await SaveStructureDialog(page).chooseFileFormat(
-      MoleculesFileFormatType.SVGDocument,
-    );
-    await takeEditorScreenshot(page);
-    await SaveStructureDialog(page).cancel();
+    await verifySVGExport(page);
   });
 
   test('Case 18: Single up bond is being painted over correctly', async () => {
@@ -697,13 +688,13 @@ test.describe('Ketcher bugs in 2.26.0', () => {
     await CommonTopRightToolbar(page).setZoomInputValue('75');
     await CommonLeftToolbar(page).selectAreaSelectionTool();
     await getMonomerLocator(page, Peptide.Cys_Bn).hover();
-    await waitForMonomerPreview(page);
+    await MonomerPreviewTooltip(page).waitForBecomeVisible();
     await takeEditorScreenshot(page);
     await getMonomerLocator(page, Sugar._25mo3r).hover();
-    await waitForMonomerPreview(page);
+    await MonomerPreviewTooltip(page).waitForBecomeVisible();
     await takeEditorScreenshot(page);
     await getMonomerLocator(page, Phosphate.msp).hover();
-    await waitForMonomerPreview(page);
+    await MonomerPreviewTooltip(page).waitForBecomeVisible();
     await takeEditorScreenshot(page);
   });
 
@@ -742,42 +733,42 @@ test.describe('Ketcher bugs in 2.26.0', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Case 26: Edit Connection points dialog cant cause invalid connection between monomers', async ({
+  test('Case 26: Edit Attachment Points dialog cant cause invalid connection between monomers', async ({
     FlexCanvas: _,
   }) => {
     /*
      * Test case: https://github.com/epam/ketcher/issues/6947
      * Bug: https://github.com/epam/ketcher/issues/5205
-     * Description: Edit Connection points dialog cant cause invalid connection between monomers
+     * Description: Edit Attachment Points dialog cant cause invalid connection between monomers
      * Scenario:
      * 1. Go to Macro mode
      * 2. Load from file
-     * 3. Open Edit Connection points dialog
+     * 3. Open Edit Attachment Points dialog
      * 4. Click on ALREADY selected connection points
      * 5. Press Reconnect button
-     * 6. Open Edit Connection points dialog again
+     * 6. Open Edit Attachment Points dialog again
      * 7. Take screenshot
      */
     const bondLine = getBondLocator(page, {});
     await openFileAndAddToCanvasMacro(page, 'KET/two-nucleotides.ket');
     await ContextMenu(page, bondLine).click(
-      MacroBondOption.EditConnectionPoints,
+      MacroBondOption.EditAttachmentPoints,
     );
     await takeEditorScreenshot(page, {
       hideMonomerPreview: true,
     });
-    await ConnectionPointsDialog(page).selectAttachmentPoints({
+    await AttachmentPointsDialog(page).selectAttachmentPoints({
       leftMonomer: AttachmentPoint.R2,
       rightMonomer: AttachmentPoint.R1,
     });
-    await ConnectionPointsDialog(page).reconnect();
+    await AttachmentPointsDialog(page).reconnect();
     await ContextMenu(page, bondLine).click(
-      MacroBondOption.EditConnectionPoints,
+      MacroBondOption.EditAttachmentPoints,
     );
     await takeEditorScreenshot(page, {
       hideMonomerPreview: true,
     });
-    await ConnectionPointsDialog(page).reconnect();
+    await AttachmentPointsDialog(page).reconnect();
   });
 
   test('Case 27: Atom/Bond selection not remains on the canvas after clear canvas', async ({
@@ -995,10 +986,7 @@ test.describe('Ketcher bugs in 2.26.0', () => {
       'KET/error with cat and arr.ket',
     );
     await takeEditorScreenshot(page);
-    await TopRightToolbar(page).Settings({ waitForFontListLoad: true });
-    await SettingsDialog(page).setACSSettings();
-    await SettingsDialog(page).apply();
-    await pressButton(page, 'OK');
+    await setACSSettings(page);
     await takeEditorScreenshot(page);
   });
 
@@ -1266,10 +1254,7 @@ test.describe('Ketcher bugs in 2.26.0', () => {
       'KET/The diagonal bond in the molecule is displayed incorrect with ACS style.ket',
     );
     await takeEditorScreenshot(page);
-    await TopRightToolbar(page).Settings({ waitForFontListLoad: true });
-    await SettingsDialog(page).setACSSettings();
-    await SettingsDialog(page).apply();
-    await pressButton(page, 'OK');
+    await setACSSettings(page);
     await takeEditorScreenshot(page);
   });
 
@@ -1314,12 +1299,7 @@ test.describe('Ketcher bugs in 2.26.0', () => {
     await SettingsDialog(page).setOptionValue(GeneralSetting.AtomColoring);
     await SettingsDialog(page).apply();
     await takeEditorScreenshot(page);
-    await CommonTopLeftToolbar(page).saveFile();
-    await SaveStructureDialog(page).chooseFileFormat(
-      MoleculesFileFormatType.SVGDocument,
-    );
-    await takeEditorScreenshot(page);
-    await SaveStructureDialog(page).cancel();
+    await verifySVGExport(page);
   });
 
   test('Case 47: "Unordered_map::at: key not found" error is not displayed after adding of specific reactions from the RDF file', async () => {
@@ -1618,10 +1598,7 @@ test.describe('Ketcher bugs in 2.26.0', () => {
       'KET/The reaction with reaction mapping tool is displayed incorrect.ket',
     );
     await takeEditorScreenshot(page);
-    await TopRightToolbar(page).Settings();
-    await SettingsDialog(page).setACSSettings();
-    await SettingsDialog(page).apply();
-    await pressButton(page, 'OK');
+    await setACSSettings(page);
     await takeEditorScreenshot(page);
   });
 
@@ -1745,12 +1722,7 @@ test.describe('Ketcher bugs in 2.26.0', () => {
     await TopRightToolbar(page).Settings();
     await SettingsDialog(page).setOptionValue(GeneralSetting.SubFontSize, '30');
     await SettingsDialog(page).apply();
-    await CommonTopLeftToolbar(page).saveFile();
-    await SaveStructureDialog(page).chooseFileFormat(
-      MoleculesFileFormatType.PNGImage,
-    );
-    await takeEditorScreenshot(page);
-    await SaveStructureDialog(page).cancel();
+    await verifyPNGExport(page);
   });
 
   test('Case 65: System should throw an error in case of wrong IUBcode', async ({

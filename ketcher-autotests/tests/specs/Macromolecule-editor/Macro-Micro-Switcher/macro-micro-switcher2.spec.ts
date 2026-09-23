@@ -4,8 +4,7 @@
 Tests below moved here from macro-micro-switcher since they are designed to be executed in isolated environment 
 and can't be executed in "clear canvas way"
 */
-import { waitForMonomerPreview } from '@utils/macromolecules';
-import { test, Page } from '@fixtures';
+import { test, Page, expect } from '@fixtures';
 import {
   openFileAndAddToCanvas,
   openFileAndAddToCanvasMacro,
@@ -24,12 +23,10 @@ import {
   copyToClipboardByKeyboard,
   takePageScreenshot,
   takeTopToolbarScreenshot,
-  selectSequenceTypeMode,
   MacroFileType,
   MolFileFormat,
   dragMouseTo,
   Arrows,
-  Pluses,
 } from '@utils';
 import {
   copyAndPaste,
@@ -38,6 +35,7 @@ import {
 import {
   FileType,
   verifyFileExport,
+  verifySVGExport,
 } from '@utils/files/receiveFileComparisonData';
 import { CommonTopRightToolbar } from '@tests/pages/common/CommonTopRightToolbar';
 import { Peptide } from '@tests/pages/constants/monomers/Peptides';
@@ -58,13 +56,12 @@ import { SaveStructureDialog } from '@tests/pages/common/SaveStructureDialog';
 import { CommonTopLeftToolbar } from '@tests/pages/common/CommonTopLeftToolbar';
 import { LeftToolbar } from '@tests/pages/molecules/LeftToolbar';
 import { ArrowType } from '@tests/pages/constants/arrowSelectionTool/Constants';
-import { selectRingButton } from '@tests/pages/molecules/BottomToolbar';
 import { RingButton } from '@tests/pages/constants/ringButton/Constants';
 import { Library } from '@tests/pages/macromolecules/Library';
 import {
   COORDINATES_TO_PERFORM_ROTATION,
-  performHorizontalFlip,
-  performVerticalFlip,
+  horizontalFlipByKeyboard,
+  verticalFlipByKeyboard,
   rotateToCoordinates,
 } from '@tests/specs/Structure-Creating-&-Editing/Actions-With-Structures/Rotation/utils';
 import {
@@ -73,6 +70,8 @@ import {
 } from '@utils/canvas/arrow-signes/getArrow';
 import { MacromoleculesTopToolbar } from '@tests/pages/macromolecules/MacromoleculesTopToolbar';
 import { LayoutMode } from '@tests/pages/constants/macromoleculesTopToolbar/Constants';
+import { MonomerPreviewTooltip } from '@tests/pages/macromolecules/canvas/MonomerPreviewTooltip';
+import { BottomToolbar } from '@tests/pages/molecules/BottomToolbar';
 
 export async function doubleClickOnAtom(page: Page, atomText: string) {
   const atomLocator = page
@@ -280,7 +279,7 @@ test.describe('Macro-Micro-Switcher2', () => {
     await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
     await CommonLeftToolbar(page).selectBondTool(MacroBondType.Single);
     await getMonomerLocator(page, Chem.F1).hover();
-    await waitForMonomerPreview(page);
+    await MonomerPreviewTooltip(page).waitForBecomeVisible();
     await takeEditorScreenshot(page);
   });
 
@@ -356,7 +355,7 @@ test.describe('Macro-Micro-Switcher2', () => {
       Test case: https://github.com/epam/ketcher/issues/5854
       Description: The "Copy to Clipboard" icon appears in the export window in molecules mode
       */
-    await selectRingButton(page, RingButton.Benzene);
+    await BottomToolbar(page).clickRing(RingButton.Benzene);
     await clickInTheMiddleOfTheScreen(page);
     await CommonTopLeftToolbar(page).saveFile();
     await SaveStructureDialog(page).chooseFileFormat(
@@ -373,7 +372,7 @@ test.describe('Macro-Micro-Switcher2', () => {
       Test case: https://github.com/epam/ketcher/issues/5854
       Description: The "Copy to Clipboard" icon appears in the export window in macromolecules mode
       */
-    await selectRingButton(page, RingButton.Benzene);
+    await BottomToolbar(page).clickRing(RingButton.Benzene);
     await clickInTheMiddleOfTheScreen(page);
     await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
     await CommonTopLeftToolbar(page).saveFile();
@@ -381,7 +380,7 @@ test.describe('Macro-Micro-Switcher2', () => {
       MacromoleculesFileFormatType.Ket,
     );
     await moveMouseToTheMiddleOfTheScreen(page);
-    await takeEditorScreenshot(page);
+    expect(SaveStructureDialog(page).copyToClipboardButton).toBeVisible();
   });
 
   test('Verify that the "Copy to Clipboard" icon disappears after clicking on the preview section and appears when hovering again', async ({
@@ -391,7 +390,7 @@ test.describe('Macro-Micro-Switcher2', () => {
       Test case: https://github.com/epam/ketcher/issues/5854
       Description: The "Copy to Clipboard" icon disappears after clicking on the preview section and appears when hovering again
       */
-    await selectRingButton(page, RingButton.Benzene);
+    await BottomToolbar(page).clickRing(RingButton.Benzene);
     await clickInTheMiddleOfTheScreen(page);
     await CommonTopLeftToolbar(page).saveFile();
     await SaveStructureDialog(page).chooseFileFormat(
@@ -413,7 +412,7 @@ test.describe('Macro-Micro-Switcher2', () => {
       Test case: https://github.com/epam/ketcher/issues/5854
       Description: Clicking on the "Copy to Clipboard" icon copies all exportable information to the clipboard
       */
-    await selectRingButton(page, RingButton.Benzene);
+    await BottomToolbar(page).clickRing(RingButton.Benzene);
     await clickInTheMiddleOfTheScreen(page);
     await CommonTopLeftToolbar(page).saveFile();
     await SaveStructureDialog(page).chooseFileFormat(
@@ -546,11 +545,7 @@ test.describe('Macro-Micro-Switcher2', () => {
       page,
       'KET/single-atom-properties.ket',
     );
-    await CommonTopLeftToolbar(page).saveFile();
-    await SaveStructureDialog(page).chooseFileFormat(
-      MoleculesFileFormatType.SVGDocument,
-    );
-    await takeEditorScreenshot(page);
+    await verifySVGExport(page);
   });
 
   test('Verify that single atom properties are correctly displayed in different zoom levels in macromolecules mode', async ({
@@ -836,7 +831,7 @@ test.describe('Macro-Micro-Switcher2', () => {
       enableFlexMode: false,
       goToPeptides: false,
     });
-    await selectSequenceTypeMode(page, 'PEPTIDE');
+    await MacromoleculesTopToolbar(page).peptides();
     await takePageScreenshot(page);
   });
 
@@ -856,8 +851,8 @@ test.describe('Macro-Micro-Switcher2', () => {
       enableFlexMode: false,
       goToPeptides: false,
     });
-    await selectSequenceTypeMode(page, 'PEPTIDE');
-    await selectSequenceTypeMode(page, 'RNA');
+    await MacromoleculesTopToolbar(page).peptides();
+    await MacromoleculesTopToolbar(page).rna();
     await takePageScreenshot(page);
   });
 
@@ -876,7 +871,7 @@ test.describe('Macro-Micro-Switcher2', () => {
       enableFlexMode: false,
       goToPeptides: false,
     });
-    await selectSequenceTypeMode(page, 'DNA');
+    await MacromoleculesTopToolbar(page).dna();
     await takePageScreenshot(page);
   });
 
@@ -896,9 +891,9 @@ test.describe('Macro-Micro-Switcher2', () => {
       enableFlexMode: false,
       goToPeptides: false,
     });
-    await selectSequenceTypeMode(page, 'DNA');
+    await MacromoleculesTopToolbar(page).dna();
     await takePageScreenshot(page);
-    await selectSequenceTypeMode(page, 'RNA');
+    await MacromoleculesTopToolbar(page).rna();
     await takePageScreenshot(page);
   });
 
@@ -1136,7 +1131,7 @@ test.describe('Macro-Micro-Switcher2', () => {
     await takeEditorScreenshot(page);
     await CommonTopRightToolbar(page).setZoomInputValue('50');
     await selectAllStructuresOnCanvas(page);
-    await performVerticalFlip(page);
+    await verticalFlipByKeyboard(page);
     await takeEditorScreenshot(page);
     await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
     await takeEditorScreenshot(page, {
@@ -1162,7 +1157,7 @@ test.describe('Macro-Micro-Switcher2', () => {
     await takeEditorScreenshot(page);
     await CommonTopRightToolbar(page).setZoomInputValue('50');
     await selectAllStructuresOnCanvas(page);
-    await performHorizontalFlip(page);
+    await horizontalFlipByKeyboard(page);
     await takeEditorScreenshot(page);
     await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
     await takeEditorScreenshot(page, {
@@ -1235,17 +1230,27 @@ test.describe('Macro-Micro-Switcher2', () => {
     await openFileAndAddToCanvasAsNewProject(page, 'KET/all-arrows.ket');
     await takeEditorScreenshot(page);
     await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
-    await getArrowLocator(page, Arrows.OpenAngle).hover();
+    await getArrowLocator(page, { arrowType: Arrows.OpenAngle }).hover({
+      force: true,
+    });
     await dragMouseTo(200, 200, page);
-    await getArrowLocator(page, Arrows.FilledBow).hover();
+    await getArrowLocator(page, { arrowType: Arrows.FilledBow }).hover({
+      force: true,
+    });
     await dragMouseTo(200, 300, page);
-    await getArrowLocator(page, Arrows.BothEndsFilledTriangle).hover();
+    await getArrowLocator(page, {
+      arrowType: Arrows.BothEndsFilledTriangle,
+    }).hover({ force: true });
     await dragMouseTo(200, 350, page);
-    await getArrowLocator(page, Arrows.UnbalancedOpenHalfAngle).hover();
+    await getArrowLocator(page, {
+      arrowType: Arrows.UnbalancedOpenHalfAngle,
+    }).hover({ force: true });
     await dragMouseTo(200, 400, page);
-    await getArrowLocator(page, Arrows.EllipticalArcFilledTriangle).hover();
+    await getArrowLocator(page, {
+      arrowType: Arrows.EllipticalArcFilledTriangle,
+    }).hover({ force: true });
     await dragMouseTo(200, 450, page);
-    await getPlusLocator(page, Pluses.Plus).hover();
+    await getPlusLocator(page).hover({ force: true });
     await dragMouseTo(200, 500, page);
     await takeEditorScreenshot(page, {
       hideMonomerPreview: true,
@@ -1327,14 +1332,7 @@ test.describe('Macro-Micro-Switcher2', () => {
     await openFileAndAddToCanvasAsNewProject(page, 'KET/all-arrows.ket');
     await takeEditorScreenshot(page);
     await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
-    await CommonTopLeftToolbar(page).saveFile();
-    await SaveStructureDialog(page).chooseFileFormat(
-      MoleculesFileFormatType.SVGDocument,
-    );
-    await takeEditorScreenshot(page, {
-      hideMonomerPreview: true,
-      hideMacromoleculeEditorScrollBars: true,
-    });
+    await verifySVGExport(page);
   });
 
   test('Case 51: Verify that resized and rotated arrows and pluses can be exported to SVG from macromolecules mode without distortion', async ({
@@ -1352,14 +1350,7 @@ test.describe('Macro-Micro-Switcher2', () => {
     await openFileAndAddToCanvasAsNewProject(page, 'KET/resized-arrows.ket');
     await takeEditorScreenshot(page);
     await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
-    await CommonTopLeftToolbar(page).saveFile();
-    await SaveStructureDialog(page).chooseFileFormat(
-      MoleculesFileFormatType.SVGDocument,
-    );
-    await takeEditorScreenshot(page, {
-      hideMonomerPreview: true,
-      hideMacromoleculeEditorScrollBars: true,
-    });
+    await verifySVGExport(page);
   });
 
   test('Case 52: Verify that arrows and pluses saved in Macro mode can be imported from KET into micromolecules mode', async ({
@@ -1397,17 +1388,27 @@ test.describe('Macro-Micro-Switcher2', () => {
     await openFileAndAddToCanvasAsNewProject(page, 'KET/all-arrows.ket');
     await takeEditorScreenshot(page);
     await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
-    await getArrowLocator(page, Arrows.OpenAngle).hover();
+    await getArrowLocator(page, { arrowType: Arrows.OpenAngle }).hover({
+      force: true,
+    });
     await dragMouseTo(200, 200, page);
-    await getArrowLocator(page, Arrows.FilledBow).hover();
+    await getArrowLocator(page, { arrowType: Arrows.FilledBow }).hover({
+      force: true,
+    });
     await dragMouseTo(200, 300, page);
-    await getArrowLocator(page, Arrows.BothEndsFilledTriangle).hover();
+    await getArrowLocator(page, {
+      arrowType: Arrows.BothEndsFilledTriangle,
+    }).hover({ force: true });
     await dragMouseTo(200, 350, page);
-    await getArrowLocator(page, Arrows.UnbalancedOpenHalfAngle).hover();
+    await getArrowLocator(page, {
+      arrowType: Arrows.UnbalancedOpenHalfAngle,
+    }).hover({ force: true });
     await dragMouseTo(200, 400, page);
-    await getArrowLocator(page, Arrows.EllipticalArcFilledBow).hover();
+    await getArrowLocator(page, {
+      arrowType: Arrows.EllipticalArcFilledBow,
+    }).hover({ force: true });
     await dragMouseTo(200, 450, page);
-    await getPlusLocator(page, Pluses.Plus).hover();
+    await getPlusLocator(page).hover({ force: true });
     await dragMouseTo(200, 500, page);
     await takeEditorScreenshot(page, {
       hideMonomerPreview: true,

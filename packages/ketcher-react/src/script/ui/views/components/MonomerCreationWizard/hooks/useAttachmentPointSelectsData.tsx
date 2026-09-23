@@ -72,7 +72,7 @@ export const useAttachmentPointSelectsData = (
 
       return {
         value: atomId.toString(),
-        label: '',
+        label,
         children,
       };
     });

@@ -20,17 +20,11 @@ import {
 } from '@utils';
 import { selectRectangleArea } from '@utils/canvas/tools/helpers';
 import { waitForMonomerPreviewMicro } from '@utils/common/loaders/previewWaiters';
-import { waitForMonomerPreview } from '@utils/macromolecules';
 import {
   getMonomerLocator,
   AttachmentPoint,
 } from '@utils/macromolecules/monomer';
-import {
-  bondTwoMonomersPointToPoint,
-  pressCancelAtSelectConnectionPointDialog,
-  selectLeftConnectionPointAtSelectConnectionPointDialog,
-  selectRightConnectionPointAtSelectConnectionPointDialog,
-} from '@utils/macromolecules/polymerBond';
+import { bondTwoMonomersPointToPoint } from '@utils/macromolecules/polymerBond';
 import { Phosphate } from '@tests/pages/constants/monomers/Phosphates';
 import { Base } from '@tests/pages/constants/monomers/Bases';
 import { CommonLeftToolbar } from '@tests/pages/common/CommonLeftToolbar';
@@ -45,6 +39,8 @@ import { pageReload } from '@utils/common/helpers';
 import { KETCHER_CANVAS } from '@tests/pages/constants/canvas/Constants';
 import { MacromoleculesTopToolbar } from '@tests/pages/macromolecules/MacromoleculesTopToolbar';
 import { LayoutMode } from '@tests/pages/constants/macromoleculesTopToolbar/Constants';
+import { AttachmentPointsDialog } from '@tests/pages/macromolecules/canvas/AttachmentPointsDialog';
+import { MonomerPreviewTooltip } from '@tests/pages/macromolecules/canvas/MonomerPreviewTooltip';
 
 test.describe('Common connection rules: ', () => {
   let page: Page;
@@ -400,17 +396,17 @@ test.describe('Common connection rules: ', () => {
       Phosphate.Test_6_Ph,
     );
     // Case 8-9
-    await page.getByTitle('expand window').click();
+    await AttachmentPointsDialog(page).expandWindow();
     await takeEditorScreenshot(page, {
       hideMonomerPreview: true,
     });
     // Case 10
-    await page.getByTitle('expand window').click();
+    await AttachmentPointsDialog(page).expandWindow();
     await takeEditorScreenshot(page, {
       hideMonomerPreview: true,
     });
 
-    await pressCancelAtSelectConnectionPointDialog(page);
+    await AttachmentPointsDialog(page).cancel();
   });
 
   // test(`Check that preview window of micro structure not shows pieces of macro structures and vice versa`, async () => {
@@ -466,7 +462,7 @@ test.describe('Common connection rules: ', () => {
     );
 
     await hoverMouseOverMonomer(page, Peptide.C);
-    await waitForMonomerPreview(page);
+    await MonomerPreviewTooltip(page).waitForBecomeVisible();
     await takeEditorScreenshot(page);
   });
 
@@ -495,7 +491,7 @@ test.describe('Common connection rules: ', () => {
 
     await takeElementScreenshot(
       page,
-      page.getByTestId('monomer-preview-micro'),
+      MonomerPreviewTooltip(page).monomerPreviewTooltipPicture,
     );
     await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
   });
@@ -518,33 +514,28 @@ test.describe('Common connection rules: ', () => {
       Phosphate.Test_6_Ph,
     );
 
-    const connectionPoints = [
+    const attachmentPoints = [
       AttachmentPoint.R1,
       AttachmentPoint.R2,
       AttachmentPoint.R3,
       AttachmentPoint.R4,
       AttachmentPoint.R5,
-      'R6',
+      AttachmentPoint.R6,
     ];
 
-    for (const connectionPoint of connectionPoints) {
-      await selectLeftConnectionPointAtSelectConnectionPointDialog(
-        page,
-        connectionPoint,
-      );
+    for (const attachmentPoint of attachmentPoints) {
+      await AttachmentPointsDialog(page).selectAttachmentPoints({
+        leftMonomer: attachmentPoint,
+        rightMonomer: attachmentPoint,
+      });
       //         await takeEditorScreenshot(page, {
       //     hideMonomerPreview: true,
       //   });
-
-      await selectRightConnectionPointAtSelectConnectionPointDialog(
-        page,
-        connectionPoint,
-      );
       //         await takeEditorScreenshot(page, {
       //     hideMonomerPreview: true,
       //   });
     }
 
-    await pressCancelAtSelectConnectionPointDialog(page);
+    await AttachmentPointsDialog(page).cancel();
   });
 });

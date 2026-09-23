@@ -178,18 +178,10 @@ function convertMimeTypeToOutputFormat(
 }
 
 function mapCalculatedPropertyName(property: CalculateProps) {
-  let mappedProperty: CalculateProps | undefined;
-  switch (property) {
-    case 'gross-formula': {
-      mappedProperty = 'gross';
-      break;
-    }
-    default:
-      mappedProperty = property;
-      break;
+  if (property === 'gross-formula') {
+    return 'gross';
   }
-
-  return mappedProperty;
+  return property;
 }
 
 function mapWarningGroup(property: string) {
@@ -229,7 +221,7 @@ const messageTypeToEventMapping: {
 
 class IndigoService implements StructService {
   private readonly defaultOptions: StructServiceOptions;
-  private worker: Worker;
+  private readonly worker: Worker;
   private readonly EE: EventEmitter = new EventEmitter();
   private ketcherId: string | null = null;
 
@@ -364,6 +356,8 @@ class IndigoService implements StructService {
         'image-resolution': options?.['image-resolution'],
         'input-format': inputFormat,
         'molfile-saving-mode': options?.['molfile-saving-mode'],
+        'monomer-library-saving-mode': options?.['monomer-library-saving-mode'],
+        'molfile-saving-skip-date': options?.['molfile-saving-skip-date'],
         'sequence-type': options?.['sequence-type'],
         'output-content-type': options?.['output-content-type'],
         monomerLibrary,
@@ -787,6 +781,7 @@ class IndigoService implements StructService {
         'render-stereo-bond-width': restOptions['render-stereo-bond-width'],
         'render-stereo-bond-width-unit':
           restOptions['render-stereo-bond-width-unit'],
+        'render-stereo-style': restOptions['render-stereo-style'],
         'render-hash-spacing': restOptions['render-hash-spacing'],
         'render-hash-spacing-unit': restOptions['render-hash-spacing-unit'],
         'render-output-sheet-width': restOptions['render-output-sheet-width'],

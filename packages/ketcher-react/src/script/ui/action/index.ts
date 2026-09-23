@@ -105,8 +105,7 @@ const config: Record<string, UiAction> = {
         editor.undo();
       },
     },
-    disabled: (editor) =>
-      editor.isMonomerCreationWizardActive || editor.historySize().undo === 0,
+    disabled: (editor) => editor.historySize().undo === 0,
     hidden: (options) => isHidden(options, 'undo'),
   },
   redo: {
@@ -118,8 +117,7 @@ const config: Record<string, UiAction> = {
         editor.redo();
       },
     },
-    disabled: (editor) =>
-      editor.isMonomerCreationWizardActive || editor.historySize().redo === 0,
+    disabled: (editor) => editor.historySize().redo === 0,
     hidden: (options) => isHidden(options, 'redo'),
   },
   cut: {
@@ -201,10 +199,7 @@ const config: Record<string, UiAction> = {
         }
       },
     },
-    selected: ({ actions }) =>
-      actions && // TMP
-      actions.active &&
-      actions.active.tool === 'paste',
+    selected: ({ actions }) => actions?.active?.tool === 'paste',
     hidden: (options) => isHidden(options, 'paste'),
   },
   settings: {

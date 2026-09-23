@@ -29,9 +29,9 @@ import { SnakeLayoutCellWidth } from 'domain/constants';
 import { MoleculeSnakeLayoutNode } from 'domain/entities/snake-layout-model/MoleculeSnakeLayoutNode';
 
 export class SnakeLayoutModel {
-  private nodes: ITwoStrandedSnakeLayoutNode[] = [];
+  private readonly nodes: ITwoStrandedSnakeLayoutNode[] = [];
   public chains: SnakeLayoutModelChain[] = [];
-  private monomerToTwoStrandedSnakeLayoutNode: Map<
+  private readonly monomerToTwoStrandedSnakeLayoutNode: Map<
     BaseMonomer,
     ITwoStrandedSnakeLayoutNode
   > = new Map();
@@ -232,22 +232,20 @@ export class SnakeLayoutModel {
               ) {
                 currentTwoStrandedSnakeLayoutNode.antisenseNode =
                   currentNodeBeforeHydrogenConnectionToBase;
+              } else if (currentTwoStrandedSnakeLayoutNodeIndex < 0) {
+                this.nodes.unshift({
+                  antisenseNode: currentNodeBeforeHydrogenConnectionToBase,
+                  chain: lastTwoStrandedNodeWithHydrogenBond.chain,
+                });
               } else {
-                if (currentTwoStrandedSnakeLayoutNodeIndex < 0) {
-                  this.nodes.unshift({
+                this.nodes.splice(
+                  currentTwoStrandedSnakeLayoutNodeIndex + 1,
+                  0,
+                  {
                     antisenseNode: currentNodeBeforeHydrogenConnectionToBase,
                     chain: lastTwoStrandedNodeWithHydrogenBond.chain,
-                  });
-                } else {
-                  this.nodes.splice(
-                    currentTwoStrandedSnakeLayoutNodeIndex + 1,
-                    0,
-                    {
-                      antisenseNode: currentNodeBeforeHydrogenConnectionToBase,
-                      chain: lastTwoStrandedNodeWithHydrogenBond.chain,
-                    },
-                  );
-                }
+                  },
+                );
               }
             }
 

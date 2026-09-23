@@ -38,8 +38,8 @@ const parseFile = (file): Promise<string> =>
       }
       resolve('');
     };
-    reader.onerror = function (err) {
-      reject(err);
+    reader.onerror = function () {
+      reject(new Error(reader.error?.message || 'Failed to read file'));
     };
   });
 
@@ -79,7 +79,7 @@ export const FileInputForm = ({ printToTerminal }: FileInputProps) => {
           sx={{ marginTop: '10px', lineHeight: '1.3' }}
           fullWidth
         >
-          Select file
+          Select file{/* no space before hidden input */}
           <input
             hidden
             type="file"

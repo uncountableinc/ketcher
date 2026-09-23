@@ -107,7 +107,7 @@ export async function openFileAndAddToCanvas(
 export async function openFileAndAddToCanvasMacro(
   page: Page,
   filename: string,
-  structureFormat: StructureFormat = MacroFileType.Ket,
+  structureFormat: StructureFormat = MacroFileType.KetFormat,
   errorMessageExpected = false,
 ) {
   await CommonTopLeftToolbar(page).openFile();
@@ -121,7 +121,7 @@ export async function openFileAndAddToCanvasMacro(
 export async function openFileAndAddToCanvasAsNewProjectMacro(
   page: Page,
   filename: string,
-  structureFormat: StructureFormat = MacroFileType.Ket,
+  structureFormat: StructureFormat = MacroFileType.KetFormat,
   errorMessageExpected = false,
 ) {
   await CommonTopLeftToolbar(page).openFile();
@@ -210,7 +210,7 @@ async function setupStructureFormatComboboxes(
   page: Page,
   structureFormat: StructureFormat,
 ) {
-  let structureType: MacroFileType = MacroFileType.Ket;
+  let structureType: MacroFileType = MacroFileType.KetFormat;
   let sequenceOrFastaType: SequenceMonomerType = SequenceMonomerType.RNA;
   let peptideType: PeptideLetterCodeType = PeptideLetterCodeType.oneLetterCode;
 
@@ -228,7 +228,7 @@ async function setupStructureFormatComboboxes(
   } else {
     structureType = structureFormat;
   }
-  if (structureFormat !== MacroFileType.Ket) {
+  if (structureFormat !== MacroFileType.KetFormat) {
     await PasteFromClipboardDialog(page).selectContentType(structureType);
   }
 
@@ -253,7 +253,7 @@ async function setupStructureFormatComboboxes(
  *  Usage examples:
  *  1. pasteFromClipboardAndAddToMacromoleculesCanvas(
  *    page,
- *    MacroFileType.Ket,
+ *    MacroFileType.KetFormat,
  *    'Some KET content',
  *  );
  *
@@ -371,12 +371,9 @@ export async function openPasteFromClipboard(
   page: Page,
   fillStructure: string,
 ) {
-  const openStructureTextarea =
-    PasteFromClipboardDialog(page).openStructureTextarea;
-
   await CommonTopLeftToolbar(page).openFile();
   await OpenStructureDialog(page).pasteFromClipboard();
-  await openStructureTextarea.fill(fillStructure);
+  await PasteFromClipboardDialog(page).fillTextArea(fillStructure);
   // The 'Add to Canvas' button step is removed.
   // If you need to use this function in another context and include the button press, you can do so separately.
   // await waitForLoad(page);

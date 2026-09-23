@@ -67,7 +67,7 @@ const MonomerConnection = ({
   secondMonomer,
   polymerBond,
   isReconnectionDialog,
-}: MonomerConnectionProps): React.ReactElement => {
+}: Readonly<MonomerConnectionProps>): React.ReactElement => {
   const editor = useAppSelector(selectEditor);
   const initialFirstMonomerAttachmentPointRef = useRef(
     polymerBond?.firstMonomerAttachmentPoint,
@@ -149,8 +149,8 @@ const MonomerConnection = ({
     <StyledModal
       title={
         isReconnectionDialog
-          ? 'Edit Connection Points'
-          : 'Select connection points'
+          ? 'Edit Attachment Points'
+          : 'Select Attachment Points'
       }
       isOpen={isModalOpen}
       onClose={cancelBondCreationAndClose}
@@ -226,7 +226,7 @@ function AttachmentPointSelectionPanel({
   onSelectAttachmentPoint,
   expanded = false,
   position,
-}: AttachmentPointSelectionPanelProps): React.ReactElement {
+}: Readonly<AttachmentPointSelectionPanelProps>): React.ReactElement {
   const [bonds, setBonds] = useState(monomer.attachmentPointsToBonds);
   const [connectedAttachmentPoints, setConnectedAttachmentPoints] = useState(
     () => getConnectedAttachmentPoints(bonds),

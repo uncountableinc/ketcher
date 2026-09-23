@@ -7,7 +7,6 @@ import {
   takeEditorScreenshot,
   addSingleMonomerToCanvas,
   openFileAndAddToCanvasMacro,
-  pressButton,
   openFileAndAddToCanvasAsNewProject,
   openFileAndAddToCanvasAsNewProjectMacro,
   moveMouseAway,
@@ -35,7 +34,6 @@ import {
   getBondLocator,
 } from '@utils/macromolecules/polymerBond';
 import { MacroBondType } from '@tests/pages/constants/bondSelectionTool/Constants';
-import { waitForMonomerPreview } from '@utils/macromolecules';
 import { SequenceMonomerType } from '@tests/pages/constants/monomers/Constants';
 import { CommonLeftToolbar } from '@tests/pages/common/CommonLeftToolbar';
 import { CommonTopLeftToolbar } from '@tests/pages/common/CommonTopLeftToolbar';
@@ -45,7 +43,8 @@ import { MacroBondOption } from '@tests/pages/constants/contextMenu/Constants';
 import { ContextMenu } from '@tests/pages/common/ContextMenu';
 import { MacromoleculesTopToolbar } from '@tests/pages/macromolecules/MacromoleculesTopToolbar';
 import { LayoutMode } from '@tests/pages/constants/macromoleculesTopToolbar/Constants';
-import { ConnectionPointsDialog } from '@tests/pages/macromolecules/canvas/ConnectionPointsDialog';
+import { AttachmentPointsDialog } from '@tests/pages/macromolecules/canvas/AttachmentPointsDialog';
+import { MonomerPreviewTooltip } from '@tests/pages/macromolecules/canvas/MonomerPreviewTooltip';
 
 let page: Page;
 
@@ -270,20 +269,20 @@ test('Check in full-screen mode it is possible to add a bond between a CHEM mono
     y,
   });
   await connectMonomersWithBonds(page, ['A6OH', 'Test-6-Ch']);
-  await ConnectionPointsDialog(page).selectAttachmentPoints({
+  await AttachmentPointsDialog(page).selectAttachmentPoints({
     leftMonomer: AttachmentPoint.R2,
     rightMonomer: AttachmentPoint.R1,
   });
-  await ConnectionPointsDialog(page).connect();
+  await AttachmentPointsDialog(page).connect();
   await takeEditorScreenshot(page, {
     hideMonomerPreview: true,
   });
 });
 
-test('Verify that the context menu with the "Edit Connection Points..." option appears when the user right-clicks on a bond', async () => {
+test('Verify that the context menu with the "Edit Attachment Points..." option appears when the user right-clicks on a bond', async () => {
   /* 
     Test case: #4905
-    Description: Context menu with the "Edit Connection Points..." option appears when the user right-clicks on a bond.
+    Description: Context menu with the "Edit Attachment Points..." option appears when the user right-clicks on a bond.
     */
   const bondLine = getBondLocator(page, {});
   await openFileAndAddToCanvasMacro(page, 'KET/two-peptides-connected.ket');
@@ -293,14 +292,14 @@ test('Verify that the context menu with the "Edit Connection Points..." option a
   });
 });
 
-test('Verify that clicking on the "Edit Connection Points..." option opens the dialog', async () => {
+test('Verify that clicking on the "Edit Attachment Points..." option opens the dialog', async () => {
   /* 
     Test case: #4905
-    Description: Clicking on the "Edit Connection Points..." option opens the dialog.
+    Description: Clicking on the "Edit Attachment Points..." option opens the dialog.
     */
   const bondLine = getBondLocator(page, {});
   await openFileAndAddToCanvasMacro(page, 'KET/two-peptides-connected.ket');
-  await ContextMenu(page, bondLine).click(MacroBondOption.EditConnectionPoints);
+  await ContextMenu(page, bondLine).click(MacroBondOption.EditAttachmentPoints);
   await takeEditorScreenshot(page, {
     hideMonomerPreview: true,
   });
@@ -313,11 +312,11 @@ test('Verify that the user can interact with teal and white attachment points in
     */
   const bondLine = getBondLocator(page, {});
   await openFileAndAddToCanvasMacro(page, 'KET/two-peptides-connected.ket');
-  await ContextMenu(page, bondLine).click(MacroBondOption.EditConnectionPoints);
+  await ContextMenu(page, bondLine).click(MacroBondOption.EditAttachmentPoints);
   await takeEditorScreenshot(page, {
     hideMonomerPreview: true,
   });
-  await ConnectionPointsDialog(page).selectAttachmentPoints({
+  await AttachmentPointsDialog(page).selectAttachmentPoints({
     leftMonomer: AttachmentPoint.R1,
     rightMonomer: AttachmentPoint.R2,
   });
@@ -333,7 +332,7 @@ test('Verify that if there are no available (white) connection points on both mo
     */
   const bondLine = getBondLocator(page, {});
   await openFileAndAddToCanvasMacro(page, 'KET/two-connected-bases.ket');
-  await ContextMenu(page, bondLine).click(MacroBondOption.EditConnectionPoints);
+  await ContextMenu(page, bondLine).click(MacroBondOption.EditAttachmentPoints);
   await takeEditorScreenshot(page, {
     hideMonomerPreview: true,
   });
@@ -347,15 +346,15 @@ test('Verify that clicking "Reconnect" with different attachment points chosen r
     */
   const bondLine = getBondLocator(page, {});
   await openFileAndAddToCanvasMacro(page, 'KET/two-peptides-connected.ket');
-  await ContextMenu(page, bondLine).click(MacroBondOption.EditConnectionPoints);
+  await ContextMenu(page, bondLine).click(MacroBondOption.EditAttachmentPoints);
   await takeEditorScreenshot(page, {
     hideMonomerPreview: true,
   });
-  await ConnectionPointsDialog(page).selectAttachmentPoints({
+  await AttachmentPointsDialog(page).selectAttachmentPoints({
     leftMonomer: AttachmentPoint.R1,
     rightMonomer: AttachmentPoint.R2,
   });
-  await ConnectionPointsDialog(page).reconnect();
+  await AttachmentPointsDialog(page).reconnect();
   await CommonLeftToolbar(page).selectBondTool(MacroBondType.Single);
   await bondLine.hover({ force: true });
   await takeEditorScreenshot(page, {
@@ -370,8 +369,8 @@ test('Verify that clicking "Reconnect" without changing the attachment points re
     */
   const bondLine = getBondLocator(page, {});
   await openFileAndAddToCanvasMacro(page, 'KET/two-peptides-connected.ket');
-  await ContextMenu(page, bondLine).click(MacroBondOption.EditConnectionPoints);
-  await ConnectionPointsDialog(page).reconnect();
+  await ContextMenu(page, bondLine).click(MacroBondOption.EditAttachmentPoints);
+  await AttachmentPointsDialog(page).reconnect();
   await CommonLeftToolbar(page).selectBondTool(MacroBondType.Single);
   await bondLine.hover({ force: true });
   await takeEditorScreenshot(page, {
@@ -388,15 +387,15 @@ test('Verify that clicking "Cancel" in the dialog results in no change to the bo
     */
   const bondLine = getBondLocator(page, {});
   await openFileAndAddToCanvasMacro(page, 'KET/two-peptides-connected.ket');
-  await ContextMenu(page, bondLine).click(MacroBondOption.EditConnectionPoints);
-  await ConnectionPointsDialog(page).selectAttachmentPoints({
+  await ContextMenu(page, bondLine).click(MacroBondOption.EditAttachmentPoints);
+  await AttachmentPointsDialog(page).selectAttachmentPoints({
     leftMonomer: AttachmentPoint.R1,
     rightMonomer: AttachmentPoint.R2,
   });
   await takeEditorScreenshot(page, {
     hideMonomerPreview: true,
   });
-  await ConnectionPointsDialog(page).cancel();
+  await AttachmentPointsDialog(page).cancel();
   await CommonLeftToolbar(page).selectBondTool(MacroBondType.Single);
   await bondLine.hover({ force: true });
   await takeEditorScreenshot(page, {
@@ -413,15 +412,15 @@ test('Verify that closing the dialog without clicking "Reconnect" or "Cancel" do
     */
   const bondLine = getBondLocator(page, {});
   await openFileAndAddToCanvasMacro(page, 'KET/two-peptides-connected.ket');
-  await ContextMenu(page, bondLine).click(MacroBondOption.EditConnectionPoints);
-  await ConnectionPointsDialog(page).selectAttachmentPoints({
+  await ContextMenu(page, bondLine).click(MacroBondOption.EditAttachmentPoints);
+  await AttachmentPointsDialog(page).selectAttachmentPoints({
     leftMonomer: AttachmentPoint.R1,
     rightMonomer: AttachmentPoint.R2,
   });
   await takeEditorScreenshot(page, {
     hideMonomerPreview: true,
   });
-  await ConnectionPointsDialog(page).close();
+  await AttachmentPointsDialog(page).close();
   await CommonLeftToolbar(page).selectBondTool(MacroBondType.Single);
   await bondLine.hover({ force: true });
   await takeEditorScreenshot(page, {
@@ -429,19 +428,19 @@ test('Verify that closing the dialog without clicking "Reconnect" or "Cancel" do
   });
 });
 
-test('Verify that changes made in the "Edit Connection Points" dialog can be undone and redone', async () => {
+test('Verify that changes made in the "Edit Attachment Points" dialog can be undone and redone', async () => {
   /* 
     Test case: #4905
-    Description: Changes made in the "Edit Connection Points" dialog can be undone and redone.
+    Description: Changes made in the "Edit Attachment Points" dialog can be undone and redone.
     */
   const bondLine = getBondLocator(page, {});
   await openFileAndAddToCanvasMacro(page, 'KET/two-peptides-connected.ket');
-  await ContextMenu(page, bondLine).click(MacroBondOption.EditConnectionPoints);
-  await ConnectionPointsDialog(page).selectAttachmentPoints({
+  await ContextMenu(page, bondLine).click(MacroBondOption.EditAttachmentPoints);
+  await AttachmentPointsDialog(page).selectAttachmentPoints({
     leftMonomer: AttachmentPoint.R1,
     rightMonomer: AttachmentPoint.R2,
   });
-  await ConnectionPointsDialog(page).reconnect();
+  await AttachmentPointsDialog(page).reconnect();
   await CommonLeftToolbar(page).selectBondTool(MacroBondType.Single);
   await bondLine.hover({ force: true });
   await takeEditorScreenshot(page, {
@@ -461,19 +460,19 @@ test('Verify that changes made in the "Edit Connection Points" dialog can be und
   });
 });
 
-test('Verify that changes made in the "Edit Connection Points" dialog are saved when the structure is saved to a KET file and can be loaded', async () => {
+test('Verify that changes made in the "Edit Attachment Points" dialog are saved when the structure is saved to a KET file and can be loaded', async () => {
   /* 
     Test case: #4905
-    Description: Changes made in the "Edit Connection Points" dialog are saved when the structure is saved to a KET file and can be loaded.
+    Description: Changes made in the "Edit Attachment Points" dialog are saved when the structure is saved to a KET file and can be loaded.
     */
   const bondLine = getBondLocator(page, {});
   await openFileAndAddToCanvasMacro(page, 'KET/two-peptides-connected.ket');
-  await ContextMenu(page, bondLine).click(MacroBondOption.EditConnectionPoints);
-  await ConnectionPointsDialog(page).selectAttachmentPoints({
+  await ContextMenu(page, bondLine).click(MacroBondOption.EditAttachmentPoints);
+  await AttachmentPointsDialog(page).selectAttachmentPoints({
     leftMonomer: AttachmentPoint.R1,
     rightMonomer: AttachmentPoint.R2,
   });
-  await ConnectionPointsDialog(page).reconnect();
+  await AttachmentPointsDialog(page).reconnect();
   await verifyFileExport(
     page,
     'KET/two-peptides-connected-expected.ket',
@@ -487,19 +486,19 @@ test('Verify that changes made in the "Edit Connection Points" dialog are saved 
   });
 });
 
-test('Verify that changes made in the "Edit Connection Points" dialog are saved when the structure is saved to a Mol V3000 file and can be loaded', async () => {
+test('Verify that changes made in the "Edit Attachment Points" dialog are saved when the structure is saved to a Mol V3000 file and can be loaded', async () => {
   /* 
     Test case: #4905
-    Description: Changes made in the "Edit Connection Points" dialog are saved when the structure is saved to a Mol V3000 file and can be loaded.
+    Description: Changes made in the "Edit Attachment Points" dialog are saved when the structure is saved to a Mol V3000 file and can be loaded.
     */
   const bondLine = getBondLocator(page, {});
   await openFileAndAddToCanvasMacro(page, 'KET/two-peptides-connected.ket');
-  await ContextMenu(page, bondLine).click(MacroBondOption.EditConnectionPoints);
-  await ConnectionPointsDialog(page).selectAttachmentPoints({
+  await ContextMenu(page, bondLine).click(MacroBondOption.EditAttachmentPoints);
+  await AttachmentPointsDialog(page).selectAttachmentPoints({
     leftMonomer: AttachmentPoint.R1,
     rightMonomer: AttachmentPoint.R2,
   });
-  await ConnectionPointsDialog(page).reconnect();
+  await AttachmentPointsDialog(page).reconnect();
 
   await verifyFileExport(
     page,
@@ -515,19 +514,19 @@ test('Verify that changes made in the "Edit Connection Points" dialog are saved 
   });
 });
 
-test('Verify that changes made in the "Edit Connection Points" dialog are saved when the structure is saved to a Sequence file and can be loaded', async () => {
+test('Verify that changes made in the "Edit Attachment Points" dialog are saved when the structure is saved to a Sequence file and can be loaded', async () => {
   /* 
     Test case: #4905
-    Description: Changes made in the "Edit Connection Points" dialog are saved when the structure is saved to a Sequence file and can be loaded.
+    Description: Changes made in the "Edit Attachment Points" dialog are saved when the structure is saved to a Sequence file and can be loaded.
     */
   const bondLine = getBondLocator(page, {});
   await openFileAndAddToCanvasMacro(page, 'KET/two-peptides-connected.ket');
-  await ContextMenu(page, bondLine).click(MacroBondOption.EditConnectionPoints);
-  await ConnectionPointsDialog(page).selectAttachmentPoints({
+  await ContextMenu(page, bondLine).click(MacroBondOption.EditAttachmentPoints);
+  await AttachmentPointsDialog(page).selectAttachmentPoints({
     leftMonomer: AttachmentPoint.R1,
     rightMonomer: AttachmentPoint.R2,
   });
-  await ConnectionPointsDialog(page).reconnect();
+  await AttachmentPointsDialog(page).reconnect();
   await verifyFileExport(
     page,
     'Sequence/two-peptides-connected-expected.seq',
@@ -546,19 +545,19 @@ test('Verify that changes made in the "Edit Connection Points" dialog are saved 
   });
 });
 
-test('Verify that changes made in the "Edit Connection Points" dialog are saved when the structure is saved to a FASTA file and can be loaded', async () => {
+test('Verify that changes made in the "Edit Attachment Points" dialog are saved when the structure is saved to a FASTA file and can be loaded', async () => {
   /* 
     Test case: #4905
-    Description: Changes made in the "Edit Connection Points" dialog are saved when the structure is saved to a FASTA file and can be loaded.
+    Description: Changes made in the "Edit Attachment Points" dialog are saved when the structure is saved to a FASTA file and can be loaded.
     */
   const bondLine = getBondLocator(page, {});
   await openFileAndAddToCanvasMacro(page, 'KET/two-peptides-connected.ket');
-  await ContextMenu(page, bondLine).click(MacroBondOption.EditConnectionPoints);
-  await ConnectionPointsDialog(page).selectAttachmentPoints({
+  await ContextMenu(page, bondLine).click(MacroBondOption.EditAttachmentPoints);
+  await AttachmentPointsDialog(page).selectAttachmentPoints({
     leftMonomer: AttachmentPoint.R1,
     rightMonomer: AttachmentPoint.R2,
   });
-  await ConnectionPointsDialog(page).reconnect();
+  await AttachmentPointsDialog(page).reconnect();
   await verifyFileExport(
     page,
     'FASTA/two-peptides-connected-expected.fasta',
@@ -577,10 +576,10 @@ test('Verify that changes made in the "Edit Connection Points" dialog are saved 
   });
 });
 
-test('Verify that changes made in the "Edit Connection Points" dialog are saved when the structure is saved to a IDT file and can be loaded', async () => {
+test('Verify that changes made in the "Edit Attachment Points" dialog are saved when the structure is saved to a IDT file and can be loaded', async () => {
   /* 
     Test case: #4905
-    Description: Changes made in the "Edit Connection Points" dialog are saved when the structure is saved to a IDT file and can be loaded.
+    Description: Changes made in the "Edit Attachment Points" dialog are saved when the structure is saved to a IDT file and can be loaded.
     */
   const bondLine = getBondLocator(page, {}).nth(1);
   await Library(page).dragMonomerOnCanvas(Preset.MOE_A_P, {
@@ -588,12 +587,12 @@ test('Verify that changes made in the "Edit Connection Points" dialog are saved 
     y: 0,
     fromCenter: true,
   });
-  await ContextMenu(page, bondLine).click(MacroBondOption.EditConnectionPoints);
-  await ConnectionPointsDialog(page).selectAttachmentPoints({
+  await ContextMenu(page, bondLine).click(MacroBondOption.EditAttachmentPoints);
+  await AttachmentPointsDialog(page).selectAttachmentPoints({
     leftMonomer: AttachmentPoint.R1,
     rightMonomer: AttachmentPoint.R2,
   });
-  await ConnectionPointsDialog(page).reconnect();
+  await AttachmentPointsDialog(page).reconnect();
   await verifyFileExport(page, 'IDT/moe-idt-expected.idt', FileType.IDT);
   await openFileAndAddToCanvasAsNewProject(page, 'IDT/moe-idt-expected.idt');
   await CommonLeftToolbar(page).selectBondTool(MacroBondType.Single);
@@ -610,12 +609,12 @@ test('Verify changing connection points of a side chain bond', async () => {
     */
   const bondLine = getBondLocator(page, {});
   await openFileAndAddToCanvasMacro(page, 'KET/side-chain-peptide-chem.ket');
-  await ContextMenu(page, bondLine).click(MacroBondOption.EditConnectionPoints);
-  await ConnectionPointsDialog(page).selectAttachmentPoints({
+  await ContextMenu(page, bondLine).click(MacroBondOption.EditAttachmentPoints);
+  await AttachmentPointsDialog(page).selectAttachmentPoints({
     leftMonomer: AttachmentPoint.R1,
     rightMonomer: AttachmentPoint.R1,
   });
-  await ConnectionPointsDialog(page).reconnect();
+  await AttachmentPointsDialog(page).reconnect();
   await CommonLeftToolbar(page).selectBondTool(MacroBondType.Single);
   await bondLine.hover({ force: true });
   await takeEditorScreenshot(page, {
@@ -630,12 +629,12 @@ test('Verify editing of a cyclic structure', async () => {
     */
   const bondLine = getBondLocator(page, {}).nth(2);
   await openFileAndAddToCanvasMacro(page, 'KET/cyclic-three-chems-chain.ket');
-  await ContextMenu(page, bondLine).click(MacroBondOption.EditConnectionPoints);
-  await ConnectionPointsDialog(page).selectAttachmentPoints({
+  await ContextMenu(page, bondLine).click(MacroBondOption.EditAttachmentPoints);
+  await AttachmentPointsDialog(page).selectAttachmentPoints({
     leftMonomer: AttachmentPoint.R3,
     rightMonomer: AttachmentPoint.R3,
   });
-  await ConnectionPointsDialog(page).reconnect();
+  await AttachmentPointsDialog(page).reconnect();
   await CommonLeftToolbar(page).selectBondTool(MacroBondType.Single);
   await bondLine.hover({ force: true });
   await takeEditorScreenshot(page, {
@@ -650,12 +649,12 @@ test('Verify correct display and changing of connection points in the dialog for
     */
   const bondLine = getBondLocator(page, {});
   await openFileAndAddToCanvasMacro(page, 'KET/two-nucleotides-connected.ket');
-  await ContextMenu(page, bondLine).click(MacroBondOption.EditConnectionPoints);
-  await ConnectionPointsDialog(page).selectAttachmentPoints({
+  await ContextMenu(page, bondLine).click(MacroBondOption.EditAttachmentPoints);
+  await AttachmentPointsDialog(page).selectAttachmentPoints({
     leftMonomer: AttachmentPoint.R1,
     rightMonomer: AttachmentPoint.R2,
   });
-  await ConnectionPointsDialog(page).reconnect();
+  await AttachmentPointsDialog(page).reconnect();
   await CommonLeftToolbar(page).selectBondTool(MacroBondType.Single);
   await bondLine.hover({ force: true });
   await takeEditorScreenshot(page, {
@@ -687,7 +686,7 @@ test('Edit long bonds connections by Edit attachment point menu', async () => {
     1. Load ket file with five peptides
     2. Connect first monomer and fifth monomer by R1 and R3
     3. Right click on Long bond
-    4. Click on Edit Connection Points
+    4. Click on Edit Attachment Points
     5. Click on R3 and R2
     6. Click on Reconnect
     7. Take screenshot
@@ -706,14 +705,14 @@ test('Edit long bonds connections by Edit attachment point menu', async () => {
     AttachmentPoint.R3,
   );
   await ContextMenu(page, { x: 517, y: 364 }).click(
-    MacroBondOption.EditConnectionPoints,
+    MacroBondOption.EditAttachmentPoints,
   );
-  await ConnectionPointsDialog(page).selectAttachmentPoints({
+  await AttachmentPointsDialog(page).selectAttachmentPoints({
     leftMonomer: AttachmentPoint.R3,
     rightMonomer: AttachmentPoint.R2,
   });
   await takeEditorScreenshot(page);
-  await ConnectionPointsDialog(page).reconnect();
+  await AttachmentPointsDialog(page).reconnect();
   await takeEditorScreenshot(page, {
     hideMonomerPreview: true,
   });
@@ -1053,8 +1052,7 @@ test('Check the existance of magnetic area for snapping to an angle or closest r
     [410, 270],
     [410, 380],
   ];
-  for (let i = 0; i < coords.length; i++) {
-    const [x, y] = coords[i];
+  for (const [x, y] of coords) {
     await page.mouse.move(x, y, { steps: 10 });
     await takeEditorScreenshot(page, {
       hideMonomerPreview: true,
@@ -1089,8 +1087,7 @@ test('Check that magnetic areas (radial rays) exist only for monomers connected 
     [410, 270],
     [410, 380],
   ];
-  for (let i = 0; i < coords.length; i++) {
-    const [x, y] = coords[i];
+  for (const [x, y] of coords) {
     await page.mouse.move(x, y, { steps: 10 });
     await takeEditorScreenshot(page, {
       hideMonomerPreview: true,
@@ -1126,8 +1123,7 @@ test('Check that If the user holds down CRTL (⌘/Command for MacOS) while movin
     [410, 280],
     [410, 380],
   ];
-  for (let i = 0; i < coords.length; i++) {
-    const [x, y] = coords[i];
+  for (const [x, y] of coords) {
     await page.mouse.move(x, y);
     await takeEditorScreenshot(page);
   }
@@ -1157,8 +1153,7 @@ test('Check that for snake mode, snapping should only happen at 4 radial lines (
     [100, 150],
     [300, 100],
   ];
-  for (let i = 0; i < coords.length; i++) {
-    const [x, y] = coords[i];
+  for (const [x, y] of coords) {
     await page.mouse.move(x, y, { steps: 20 });
     await takeEditorScreenshot(page, {
       hideMonomerPreview: true,
@@ -1194,8 +1189,7 @@ test('Check the existance of magnetic area for snapping to an angle or closest r
     [410, 280],
     [410, 380],
   ];
-  for (let i = 0; i < coords.length; i++) {
-    const [x, y] = coords[i];
+  for (const [x, y] of coords) {
     await page.mouse.move(x, y, { steps: 20 });
     await takeEditorScreenshot(page, {
       hideMonomerPreview: true,
@@ -1578,12 +1572,12 @@ const ambiguousMonomers: KETPath[] = [
   */
 ];
 
-test.describe('Verify "Select/Edit Connection Points" dialogues for ambiguous monomers', () => {
+test.describe('Verify "Select/Edit Attachment Points" dialogues for ambiguous monomers', () => {
   for (const ambiguousMonomer of ambiguousMonomers) {
     test(`${ambiguousMonomer.testDescription}`, async () => {
       /* 
       Test case: #5627
-      Description: Verify "Select/Edit Connection Points" dialogues for ambiguous monomers
+      Description: Verify "Select/Edit Attachment Points" dialogues for ambiguous monomers
       Case: 
       1. Load ket file with two pairs of alternatives and mixtures (with wheights and without)
       2. Hover over first connection
@@ -1596,15 +1590,15 @@ test.describe('Verify "Select/Edit Connection Points" dialogues for ambiguous mo
       await moveMouseAway(page);
       const bondLine = getBondLocator(page, {});
       await bondLine.hover({ force: true });
-      await waitForMonomerPreview(page);
+      await MonomerPreviewTooltip(page).waitForBecomeVisible();
       await takeEditorScreenshot(page);
       await ContextMenu(page, bondLine).click(
-        MacroBondOption.EditConnectionPoints,
+        MacroBondOption.EditAttachmentPoints,
       );
       await takeEditorScreenshot(page, {
         hideMacromoleculeEditorScrollBars: true,
       });
-      await pressButton(page, 'Cancel');
+      await AttachmentPointsDialog(page).cancel();
     });
   }
 });

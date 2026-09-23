@@ -54,11 +54,14 @@ const MonomerItem = ({
 
   const isDisabled =
     useDisabledForSequenceMode(item as MonomerItemType, groupName) || disabled;
-  const colorCode = isAmbiguousMonomerLibraryItem(item)
-    ? ''
-    : item.props.MonomerType === MONOMER_TYPES.CHEM
-    ? item.props.MonomerType
-    : item.props.MonomerNaturalAnalogCode;
+  let colorCode = '';
+
+  if (!isAmbiguousMonomerLibraryItem(item)) {
+    colorCode =
+      item.props.MonomerType === MONOMER_TYPES.CHEM
+        ? item.props.MonomerType
+        : item.props.MonomerNaturalAnalogCode;
+  }
 
   const monomerKey: string = getMonomerUniqueKey(item);
   const monomerItem = isAmbiguousMonomerLibraryItem(item)
@@ -69,6 +72,17 @@ const MonomerItem = ({
     (event: MouseEvent) => {
       event.stopPropagation();
       dispatch(toggleMonomerFavorites(item));
+    },
+    [dispatch, item],
+  );
+
+  const handleFavoriteKeyDown = useCallback(
+    (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        event.stopPropagation();
+        dispatch(toggleMonomerFavorites(item));
+      }
     },
     [dispatch, item],
   );
@@ -127,6 +141,25 @@ const MonomerItem = ({
       }}
       {...(!isDisabled ? { onClick } : {})}
       ref={cardRef}
+      data-idtalias-base={monomerItem?.props.idtAliases?.base ?? undefined}
+      data-idtalias-modifications-endpoint5={
+        monomerItem?.props.idtAliases?.modifications?.endpoint5 ?? undefined
+      }
+      data-idtalias-modifications-endpoint3={
+        monomerItem?.props.idtAliases?.modifications?.endpoint3 ?? undefined
+      }
+      data-idtalias-modifications-internal={
+        monomerItem?.props.idtAliases?.modifications?.internal ?? undefined
+      }
+      data-axolabs={monomerItem?.props.aliasAxoLabs ?? undefined}
+      data-helm={monomerItem?.props.aliasHELM ?? undefined}
+      data-modificationtype={
+        monomerItem?.props.modificationTypes
+          ? Array.isArray(monomerItem?.props.modificationTypes)
+            ? monomerItem?.props.modificationTypes.join(', ')
+            : monomerItem?.props.modificationTypes
+          : undefined
+      }
     >
       <CardTitle>{item.label}</CardTitle>
       {!isDisabled && (
@@ -148,7 +181,11 @@ const MonomerItem = ({
           )}
           <div
             onClick={addFavorite}
+            onKeyDown={handleFavoriteKeyDown}
             className={`star ${item.favorite ? 'visible' : ''}`}
+            role="button"
+            tabIndex={0}
+            aria-label="Toggle favorite"
           >
             {FavoriteStarSymbol}
           </div>
