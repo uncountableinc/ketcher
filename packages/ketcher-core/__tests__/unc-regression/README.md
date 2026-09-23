@@ -165,7 +165,7 @@ Three traps when editing this fixture, each of which makes it prove nothing:
 
 ## Browser-only, in `ketcher-autotests/tests/specs/unc-regression/`
 
-Twenty-two Playwright tests, all run against the standalone demo build and passing.
+Twenty-five Playwright tests, all run against the standalone demo build and passing.
 Start the demo first, then run them:
 
 ```bash
@@ -185,6 +185,7 @@ npx playwright test tests/specs/unc-regression/ --project=chromium
 | `editor-instance.spec.ts` | `c32453d96` / `36c00e15a`, `6a59f2ba2` |
 | `fullscreen-dropdown-container.spec.ts` | `3d3b76a6c`, `83730d640` |
 | `render-offset-restore.spec.ts` | `aefcd0a14` |
+| `platform-structure-tools.spec.ts` | none — pins the ketcher APIs the platform's Bodie structure tools call |
 
 `fixtures.ts` holds the shared KET fixtures.
 The specs build their structures through `ketcher.setMolecule` rather than reading
