@@ -95,9 +95,10 @@ class Portal extends Component<Props> {
   }
 
   private removeElementFromDOM() {
-    document
-      .querySelector(KETCHER_ROOT_NODE_CSS_SELECTOR)
-      ?.removeChild(this.element);
+    // Remove from the node that actually holds the element. A second embedded
+    // editor puts another `.Ketcher-root` in the document, and the selector
+    // above can resolve to that one, whose child the element never was.
+    this.element.remove();
     this.isElementInDom = false;
   }
 
