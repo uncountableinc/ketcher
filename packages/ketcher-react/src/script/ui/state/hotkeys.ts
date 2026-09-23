@@ -104,7 +104,11 @@ function keyHandle(dispatch, getState, hotKeys, event) {
 
   const { editor } = state;
 
-  if (editor.isMonomerCreationWizardActive) {
+  // TODO: It is done to intercept hotkeys when editing inputs in monomer creation wizard
+  // It targets plain inputs only, ideally it has to be incorporated with ClipArea functionality
+  // Ideally x2 – create a common event interception layer for both micro and macro editors
+  const isInput = event.target.nodeName === 'INPUT';
+  if (isInput) {
     return;
   }
 
@@ -120,8 +124,8 @@ function keyHandle(dispatch, getState, hotKeys, event) {
 
   if (key && key.length === 1 && !hoveredItem) {
     const currentlyPressedKeys = selectAbbreviationLookupValue(state);
-    const isShortcutKey = shortcutKeys.includes(key?.toLowerCase());
-    const isTheSameKey = key === currentlyPressedKeys;
+    const isShortcutKey = shortcutKeys.includes(key.toLowerCase());
+    const isTheSameKey = key.toLowerCase() === currentlyPressedKeys;
     const isAbbreviationLookupShown =
       (!isTheSameKey || !isShortcutKey) && currentlyPressedKeys;
     if (isAbbreviationLookupShown) {
@@ -144,7 +148,7 @@ function keyHandle(dispatch, getState, hotKeys, event) {
     }
   }
 
-  if (key && key.length === 1 && key.match('/')) {
+  if (key === 'Slash') {
     const hotkeyDialogTypes = {
       atoms: actions['atom-props'].action,
       bonds: actions['bond-props'].action,

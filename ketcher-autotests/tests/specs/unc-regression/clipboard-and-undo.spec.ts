@@ -55,7 +55,7 @@ test.describe('clipboard and undo', () => {
     await setMolecule(page, PLAIN_CHAIN_KET);
     const before = await atomCount(page);
 
-    await CommonLeftToolbar(page).selectEraseTool();
+    await CommonLeftToolbar(page).erase();
     await clickOnAtom(page, 'C', 0);
     const afterErase = await atomCount(page);
     await selectUndoByKeyboard(page);
@@ -76,7 +76,7 @@ test.describe('clipboard and undo', () => {
       sgroups: await sgroupCount(page),
     };
 
-    await CommonLeftToolbar(page).selectEraseTool();
+    await CommonLeftToolbar(page).erase();
     await clickOnAtom(page, 'C', 0);
     await selectUndoByKeyboard(page);
 

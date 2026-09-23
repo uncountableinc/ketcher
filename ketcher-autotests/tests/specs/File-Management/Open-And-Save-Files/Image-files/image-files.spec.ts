@@ -31,11 +31,7 @@ import {
   selectAllStructuresOnCanvas,
 } from '@utils/canvas/selectSelection';
 import { CommonTopLeftToolbar } from '@tests/pages/common/CommonTopLeftToolbar';
-import {
-  clearLocalStorage,
-  closeErrorAndInfoModals,
-  pageReloadMicro,
-} from '@utils/common/helpers';
+import { clearLocalStorage, pageReloadMicro } from '@utils/common/helpers';
 import {
   FileType,
   verifyFileExport,
@@ -57,6 +53,8 @@ import { CalculatedValuesDialog } from '@tests/pages/molecules/canvas/Calculated
 import { StructureCheckDialog } from '@tests/pages/molecules/canvas/StructureCheckDialog';
 import { StructureLibraryDialog } from '@tests/pages/molecules/canvas/StructureLibraryDialog';
 import { TemplateLibraryTab } from '@tests/pages/constants/structureLibraryDialog/Constants';
+import { ErrorMessageDialog } from '@tests/pages/common/ErrorMessageDialog';
+import { OpenStructureDialog } from '@tests/pages/common/OpenStructureDialog';
 
 test.describe('Image files', () => {
   let page: Page;
@@ -69,7 +67,6 @@ test.describe('Image files', () => {
   });
 
   test.afterEach(async ({ context: _ }) => {
-    await closeErrorAndInfoModals(page);
     await CommonTopLeftToolbar(page).clearCanvas();
     await resetZoomLevelToDefault(page);
   });
@@ -363,8 +360,13 @@ test.describe('Image files', () => {
        */
       await CommonTopLeftToolbar(page).openFile();
       await openFile(page, `KET/${fileName}.ket`);
-      await PasteFromClipboardDialog(page).addToCanvasButton.click();
-      await takeEditorScreenshot(page);
+      await PasteFromClipboardDialog(page).addToCanvas({
+        errorMessageExpected: true,
+      });
+      const errorMessage = await ErrorMessageDialog(page).getErrorMessage();
+      expect(errorMessage).toContain('Cannot deserialize input JSON.');
+      await ErrorMessageDialog(page).close();
+      await OpenStructureDialog(page).closeWindow();
     });
   }
 
@@ -389,12 +391,15 @@ test.describe('Image files', () => {
        * Test case: #4911
        * Description: Error message is displayed - "Cannot deserialize input JSON."
        */
-      const addToCanvasButton =
-        PasteFromClipboardDialog(page).addToCanvasButton;
       await CommonTopLeftToolbar(page).openFile();
       await openFile(page, `KET/${file}`);
-      await addToCanvasButton.click();
-      await takeEditorScreenshot(page);
+      await PasteFromClipboardDialog(page).addToCanvas({
+        errorMessageExpected: true,
+      });
+      const errorMessage = await ErrorMessageDialog(page).getErrorMessage();
+      expect(errorMessage).toContain('Cannot deserialize input JSON.');
+      await ErrorMessageDialog(page).close();
+      await OpenStructureDialog(page).closeWindow();
     });
   }
 
@@ -403,11 +408,15 @@ test.describe('Image files', () => {
      * Test case: #4911
      * Description: Error message is displayed - "Cannot deserialize input JSON."
      */
-    const addToCanvasButton = PasteFromClipboardDialog(page).addToCanvasButton;
     await CommonTopLeftToolbar(page).openFile();
     await openFile(page, `KET/image-png-159-symbols.ket`);
-    await addToCanvasButton.click();
-    await takeEditorScreenshot(page);
+    await PasteFromClipboardDialog(page).addToCanvas({
+      errorMessageExpected: true,
+    });
+    const errorMessage = await ErrorMessageDialog(page).getErrorMessage();
+    expect(errorMessage).toContain('Cannot deserialize input JSON.');
+    await ErrorMessageDialog(page).close();
+    await OpenStructureDialog(page).closeWindow();
   });
 
   test('Verify adding SVG and PNG images with the canvas zoomed to 400%. After placing the images, zoom out to 20% and then press the 100% zoom button', async () => {
@@ -608,7 +617,7 @@ test.describe('Image files', () => {
     await openImageAndAddToCanvas(page, 'Images/image-svg.svg');
     await openImageAndAddToCanvas(page, 'Images/image-png.png', 200, 200);
     await takeEditorScreenshot(page);
-    await CommonLeftToolbar(page).selectEraseTool();
+    await CommonLeftToolbar(page).erase();
     await clickOnCanvas(page, 200, 200, { from: 'pageTopLeft' });
     await clickInTheMiddleOfTheScreen(page);
     await takeEditorScreenshot(page);
@@ -801,7 +810,9 @@ test.describe('Image files', () => {
        * Description: Error message is displayed - "Unsupported image type"
        */
       await openImageAndAddToCanvas(page, `Images/${fileName}`);
-      await takeEditorScreenshot(page);
+      const errorMessage = await ErrorMessageDialog(page).getErrorMessage();
+      expect(errorMessage).toContain('Unsupported image type');
+      await ErrorMessageDialog(page).close();
     });
   }
 
@@ -811,7 +822,9 @@ test.describe('Image files', () => {
      * Description: Error message is displayed - "Image should be at least 16x16 pixels"
      */
     await openImageAndAddToCanvas(page, 'Images/image-png-15px.png');
-    await takeEditorScreenshot(page);
+    const errorMessage = await ErrorMessageDialog(page).getErrorMessage();
+    expect(errorMessage).toContain('Image should be at least 16x16 pixels');
+    await ErrorMessageDialog(page).close();
   });
 
   test('Verify that images of formats (PNG, SVG) can be selected using "Rectangle Selection" in "Add Image" mode', async () => {
@@ -1139,7 +1152,7 @@ test.describe('Image files', () => {
     await openImageAndAddToCanvas(page, 'Images/image-svg.svg');
     await openImageAndAddToCanvas(page, 'Images/image-png.png', 200, 200);
     await takeEditorScreenshot(page);
-    await CommonLeftToolbar(page).selectEraseTool();
+    await CommonLeftToolbar(page).erase();
     await clickOnCanvas(page, 200, 200, { from: 'pageTopLeft' });
     await takeEditorScreenshot(page);
     await verifyFileExport(
@@ -1165,7 +1178,7 @@ test.describe('Image files', () => {
     await selectRingButton(page, RingButton.Benzene);
     await clickOnCanvas(page, 200, 500, { from: 'pageTopLeft' });
     await takeEditorScreenshot(page);
-    await CommonLeftToolbar(page).selectEraseTool();
+    await CommonLeftToolbar(page).erase();
     await clickOnCanvas(page, 200, 200, { from: 'pageTopLeft' });
     await takeEditorScreenshot(page);
     await verifyFileExport(
@@ -1191,7 +1204,7 @@ test.describe('Image files', () => {
     await selectRingButton(page, RingButton.Benzene);
     await clickOnCanvas(page, 200, 500, { from: 'pageTopLeft' });
     await takeEditorScreenshot(page);
-    await CommonLeftToolbar(page).selectEraseTool();
+    await CommonLeftToolbar(page).erase();
     await clickOnCanvas(page, 200, 200, { from: 'pageTopLeft' });
     await takeEditorScreenshot(page);
     await verifyFileExport(
@@ -2146,8 +2159,13 @@ test.describe('Image files', () => {
      */
     await CommonTopLeftToolbar(page).openFile();
     await openFile(page, `CDXML/image-png-169-symbols.cdxml`);
-    await PasteFromClipboardDialog(page).addToCanvasButton.click();
-    await takeEditorScreenshot(page);
+    await PasteFromClipboardDialog(page).addToCanvas({
+      errorMessageExpected: true,
+    });
+    const errorMessage = await ErrorMessageDialog(page).getErrorMessage();
+    expect(errorMessage).toContain('Cannot deserialize input JSON.');
+    await ErrorMessageDialog(page).close();
+    await OpenStructureDialog(page).closeWindow();
   });
 
   test('Verify that images of allowed formats (PNG) can be zoomed in/out (20, 400, 100) before/after adding to Canvas from CDX file', async () => {
@@ -2530,7 +2548,7 @@ test.describe('Image files', () => {
     await pasteFromClipboardAndOpenAsNewProject(page, fileContent);
     await takeEditorScreenshot(page);
     await clickInTheMiddleOfTheScreen(page);
-    await CommonLeftToolbar(page).selectEraseTool();
+    await CommonLeftToolbar(page).erase();
     await takeEditorScreenshot(page);
   });
 
@@ -2545,7 +2563,7 @@ test.describe('Image files', () => {
     );
     await takeEditorScreenshot(page);
     await clickInTheMiddleOfTheScreen(page);
-    await CommonLeftToolbar(page).selectEraseTool();
+    await CommonLeftToolbar(page).erase();
     await takeEditorScreenshot(page);
   });
 
@@ -2732,7 +2750,7 @@ test.describe('Image files', () => {
     await clickOnCanvas(page, 200, 200, { from: 'pageTopLeft' });
     await takeEditorScreenshot(page);
     await page.mouse.move(200, 200);
-    await CommonLeftToolbar(page).selectEraseTool();
+    await CommonLeftToolbar(page).erase();
     await clickOnCanvas(page, 200, 200, { from: 'pageTopLeft' });
     await takeEditorScreenshot(page);
 
@@ -2922,7 +2940,7 @@ test.describe('Image files', () => {
     await clickOnCanvas(page, 200, 200, { from: 'pageTopLeft' });
     await takeEditorScreenshot(page);
     await page.mouse.move(200, 200);
-    await CommonLeftToolbar(page).selectEraseTool();
+    await CommonLeftToolbar(page).erase();
     await clickOnCanvas(page, 200, 200, { from: 'pageTopLeft' });
     await takeEditorScreenshot(page);
 
@@ -3233,7 +3251,7 @@ test.describe('Image files', () => {
     );
     await clickInTheMiddleOfTheScreen(page);
     await takeEditorScreenshot(page);
-    await CommonLeftToolbar(page).selectEraseTool();
+    await CommonLeftToolbar(page).erase();
     await clickInTheMiddleOfTheScreen(page);
     await takeEditorScreenshot(page);
 
@@ -3262,7 +3280,7 @@ test.describe('Image files', () => {
     );
     await clickInTheMiddleOfTheScreen(page);
     await takeEditorScreenshot(page);
-    await CommonLeftToolbar(page).selectEraseTool();
+    await CommonLeftToolbar(page).erase();
     await clickInTheMiddleOfTheScreen(page);
     await takeEditorScreenshot(page);
 

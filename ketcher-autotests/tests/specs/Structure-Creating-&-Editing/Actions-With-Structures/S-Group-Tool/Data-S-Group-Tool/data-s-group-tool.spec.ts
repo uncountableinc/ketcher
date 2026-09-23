@@ -1,11 +1,10 @@
 /* eslint-disable max-len */
 /* eslint-disable no-magic-numbers */
-import { Page, test, expect } from '@fixtures';
+import { test, expect } from '@fixtures';
 import {
   clickInTheMiddleOfTheScreen,
   takeEditorScreenshot,
   openFileAndAddToCanvas,
-  pressButton,
   moveMouseToTheMiddleOfTheScreen,
   BondType,
   clickOnBond,
@@ -52,20 +51,6 @@ const RESET_TOOL_Y = 100;
 const RESET_TOOL_DELAY_SECONDS = 0.2;
 const CANVAS_CLICK_X = 600;
 const CANVAS_CLICK_Y = 600;
-
-async function editSGroupProperties(
-  page: Page,
-  text: string,
-  context: string,
-  testValue: string,
-) {
-  await page.getByText(text).dblclick();
-  await page.getByTestId('s-group-type-input-span').click();
-  await page.getByRole('option', { name: context }).click();
-  await page.getByLabel('Repeat count').click();
-  await page.getByLabel('Repeat count').fill(testValue);
-  await pressButton(page, 'Apply');
-}
 
 test.describe('Data S-Group tool', () => {
   test.beforeEach(async ({ page }) => {
@@ -189,7 +174,12 @@ test.describe('Data S-Group tool', () => {
       Description: User is able to edit the Data S-group.
     */
     await openFileAndAddToCanvas(page, 'KET/chain-with-name-and-value.ket');
-    await editSGroupProperties(page, '33', 'Multiple group', '1');
+    await selectAllStructuresOnCanvas(page);
+    await LeftToolbar(page).sGroup();
+    await SGroupPropertiesDialog(page).setOptions({
+      Type: TypeOption.MultipleGroup,
+      RepeatCount: '1',
+    });
     await takeEditorScreenshot(page);
   });
 
@@ -393,7 +383,7 @@ test.describe('Data S-Group tool', () => {
       Description: User is able to delete and undo/redo atom on structure with Data S-group.
     */
     await openFileAndAddToCanvas(page, 'KET/chain-with-name-and-value.ket');
-    await CommonLeftToolbar(page).selectEraseTool();
+    await CommonLeftToolbar(page).erase();
     await clickOnAtom(page, 'C', 3);
     await takeEditorScreenshot(page);
 
@@ -444,7 +434,7 @@ test.describe('Data S-Group tool', () => {
     */
     await openFileAndAddToCanvas(page, 'KET/chain-with-name-and-value.ket');
     await setSettingsOption(page, AtomsSetting.DisplayCarbonExplicitly);
-    await CommonLeftToolbar(page).selectEraseTool();
+    await CommonLeftToolbar(page).erase();
     await getAtomLocator(page, { atomLabel: 'C', atomId: 3 }).click();
     await deleteByKeyboard(page);
     await takeEditorScreenshot(page);

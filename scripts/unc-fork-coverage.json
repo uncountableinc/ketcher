@@ -1,5 +1,5 @@
 {
-  "mergeBase": "e610f5b44a9afc61939d3ba89f2d359bc646fb9a",
+  "mergeBase": "5b49a832e91bb56724f3524af8cc3b2a1b34bb23",
   "forkRef": "master",
   "upstreamTag": "v3.18.0",
   "behaviours": [
@@ -137,24 +137,6 @@
         "packages/ketcher-core/src/domain/serializers/ket/toKet/moleculeToKet.ts"
       ],
       "verdictNote": "drop: measured 9/9 on vanilla v3.18.0, over SRU, GEN and COP s-groups. Upstream lowercases connectivity in per-type post-load hooks; its own v2000.test.ts expected 'EU' for a GEN group at the fork's merge base and expects 'eu' in v3.18.0. The test must vary the s-group type: an SRU-only fixture passes everywhere and proves nothing."
-    },
-    {
-      "key": "logger-without-ketcher",
-      "summary": "Let the logger read settings before the ketcher global exists.",
-      "verdict": "drop",
-      "covered": "jest __tests__/unc-regression/logger-without-ketcher.test.ts",
-      "commits": ["81d4c7d75"],
-      "files": ["packages/ketcher-core/src/utilities/KetcherLogger.ts"],
-      "verdictNote": "drop: measured 3/3 on vanilla v3.18.0. Upstream replaced the throw with a console.warn."
-    },
-    {
-      "key": "keynorm-unmapped-key",
-      "summary": "Survive a keycode the key-name table does not cover.",
-      "verdict": "drop",
-      "covered": "jest __tests__/unc-regression/keynorm-unmapped-key.test.ts",
-      "commits": ["905baf429"],
-      "files": ["packages/ketcher-core/src/utilities/keynorm.ts"],
-      "verdictNote": "drop: measured 3/4 on vanilla v3.18.0. Upstream rewrote keynorm around event.key with string defaults, so it cannot throw. The fourth test measures that rewritten API, not the guard."
     },
     {
       "key": "indigo-stereo-style",
