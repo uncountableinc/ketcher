@@ -232,12 +232,22 @@ export function getRelSGroupsBySelection(
   struct: Struct,
   selectedAtoms: number[],
 ) {
+  // A transform carries an S-group only when the whole group is selected.
+  // Carrying it on a partial selection applies a transform the group did not
+  // undergo, which makes the result depend on how the user split the edit:
+  // dragging two members separately moves the data label twice.
+  const selected = new Set(selectedAtoms);
   const sgroups = new Set<SGroup>();
 
   selectedAtoms.forEach((atom) => {
     struct.atoms.get(atom)?.sgs.forEach((sgid) => {
       const sgroup = struct.sgroups.get(sgid);
-      if (sgroup && !sgroup.data.attached && !sgroup.data.absolute) {
+      if (
+        sgroup &&
+        !sgroup.data.attached &&
+        !sgroup.data.absolute &&
+        sgroup.atoms.every((member) => selected.has(member))
+      ) {
         sgroups.add(sgroup);
       }
     });
