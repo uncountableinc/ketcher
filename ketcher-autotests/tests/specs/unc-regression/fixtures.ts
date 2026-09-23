@@ -35,6 +35,12 @@ export const PLAIN_CHAIN_KET = micromoleculeKet({
   bonds: CHAIN_BONDS,
 });
 
+/** A two-carbon fragment, for telling a replaced canvas from an appended one. */
+export const SHORT_CHAIN_KET = micromoleculeKet({
+  atoms: CHAIN_ATOMS.slice(0, 2),
+  bonds: CHAIN_BONDS.slice(0, 1),
+});
+
 /** The same chain with an SRU repeating unit over its three middle atoms. */
 export const SRU_CHAIN_KET = micromoleculeKet({
   atoms: CHAIN_ATOMS,

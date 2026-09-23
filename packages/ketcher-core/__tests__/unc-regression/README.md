@@ -122,6 +122,40 @@ is unreachable. Our patch threaded a render through that call instead.
 Both satisfy the requirement, so on `v3.18.0` the patch is redundant — keep the test,
 drop the commit.
 
+## Reverting an upstream behaviour change
+
+`sgroup-partial-selection-transform.test.ts` guards a fork patch of an unusual shape:
+it restores behaviour upstream changed, rather than adding behaviour upstream lacks.
+
+`getRelSGroupsBySelection` decides which S-groups a flip, rotate or drag carries along
+with the selected atoms. At v3.6.0 a group came along only when every one of its member
+atoms was selected. From v3.7.0 any selected member atom drags the whole group's data
+label, which makes the result depend on how the user split the edit. Four call sites
+share the helper: flip and rotate in `actions/rotate.ts`, drag in `actions/fragment.ts`,
+and the rotate tool. The fork restores the containment rule while keeping v3.7.0's `Set`
+return type, so the callers are untouched.
+
+| Test file | Fork commits | fork | vanilla v3.7.0 | verdict |
+| --- | --- | --- | --- | --- |
+| `sgroup-partial-selection-transform.test.ts` | `1262f8bcf1` | 12/12 | 8/12 | **reapply** |
+
+The four that fail on vanilla are the partial-selection cases, and only those. The other
+eight assert behaviour both versions share, which is what makes the set informative
+rather than broadly broken.
+
+Because upstream owns this function, expect every upstream merge to bring back the
+`any member atom` rule, silently rather than as a conflict. Those four failures are the
+signal to reapply.
+
+Three traps when editing this fixture, each of which makes it prove nothing:
+
+- the S-group label must sit off the flip axis, or flipping it is a no-op and the
+  assertion passes on every version;
+- two flips about the SAME axis cancel, so a split-selection test has to use two
+  different axes or it passes on every version;
+- the helper returns a Pool on v3.6.0 and a `Set` from v3.7.0, so read it with `forEach`
+  the way the production callers do, not by spreading it.
+
 ## Already covered elsewhere, do not duplicate
 
 - `da4fa3016` (MAT-75501, polymer `*` end-group cap) —
@@ -131,7 +165,7 @@ drop the commit.
 
 ## Browser-only, in `ketcher-autotests/tests/specs/unc-regression/`
 
-Twenty-two Playwright tests, all run against the standalone demo build and passing.
+Twenty-five Playwright tests, all run against the standalone demo build and passing.
 Start the demo first, then run them:
 
 ```bash
@@ -151,6 +185,7 @@ npx playwright test tests/specs/unc-regression/ --project=chromium
 | `editor-instance.spec.ts` | `c32453d96` / `36c00e15a`, `6a59f2ba2` |
 | `fullscreen-dropdown-container.spec.ts` | `3d3b76a6c`, `83730d640` |
 | `render-offset-restore.spec.ts` | `aefcd0a14` |
+| `platform-structure-tools.spec.ts` | none — pins the ketcher APIs the platform's Bodie structure tools call |
 
 `fixtures.ts` holds the shared KET fixtures.
 The specs build their structures through `ketcher.setMolecule` rather than reading
