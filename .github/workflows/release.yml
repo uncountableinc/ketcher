@@ -11,7 +11,6 @@ jobs:
 
     permissions:
       contents: write
-      id-token: write
 
     steps:
       - uses: actions/checkout@v2
@@ -69,15 +68,3 @@ jobs:
             *.tgz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6
-        with:
-          role-to-assume: arn:aws:iam::502071203139:role/ketcher-release-workflow-role
-          aws-region: us-west-2
-
-      - name: Mirror packages to S3
-        run: |
-          for tarball in *.tgz; do
-            aws s3 cp "$tarball" "s3://unc-expose-to-public/ketcher/${GITHUB_REF_NAME}/$tarball"
-          done
