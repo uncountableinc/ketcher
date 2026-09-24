@@ -7,10 +7,8 @@ import {
   BondType,
   waitForPageInit,
   waitForRender,
-  clickOnBond,
   clickOnAtom,
   clickOnCanvas,
-  screenshotBetweenUndoRedo,
   resetZoomLevelToDefault,
   takeElementScreenshot,
   pasteFromClipboardAndOpenAsNewProject,
@@ -49,6 +47,8 @@ import {
   PropertyLabelType,
   TypeOption,
 } from '@tests/pages/constants/s-GroupPropertiesDialog/Constants';
+import { getBondLocator } from '@utils/macromolecules/polymerBond';
+import { CommonTopLeftToolbar } from '@tests/pages/common/CommonTopLeftToolbar';
 
 test.describe('Right-click menu', () => {
   test.beforeEach(async ({ page }) => {
@@ -140,7 +140,7 @@ test.describe('Right-click menu', () => {
     await waitForRender(page, async () => {
       await clickOnAtom(page, 'C', 1);
     });
-    await CommonLeftToolbar(page).selectAreaSelectionTool();
+    await CommonLeftToolbar(page).areaSelectionTool();
     await takeEditorScreenshot(page);
   });
 
@@ -342,7 +342,6 @@ test.describe('Right-click menu', () => {
     Test case: EPMLSOPKET-8926
     Description: Only selected atoms and bonds are deleted. No error is thrown.
     */
-    // let point: { x: number; y: number };
     await openFileAndAddToCanvasAsNewProject(
       page,
       'KET/chain-with-stereo-and-atoms.ket',
@@ -434,7 +433,6 @@ test.describe('Right-click menu', () => {
     Test case: EPMLSOPKET-15496
     Description: Three selected Carbon atoms changed to Nitrogen atoms.
     */
-    // let point: { x: number; y: number };
     await openFileAndAddToCanvasAsNewProject(page, 'KET/chain.ket');
     await setSettingsOption(page, AtomsSetting.DisplayCarbonExplicitly);
     await page.keyboard.down('Shift');
@@ -545,11 +543,11 @@ test.describe('Right-click menu', () => {
     */
     await drawBenzeneRing(page);
     await setSettingsOption(page, AtomsSetting.DisplayCarbonExplicitly);
-    await CommonLeftToolbar(page).selectAreaSelectionTool(
+    await CommonLeftToolbar(page).areaSelectionTool(
       SelectionToolType.Rectangle,
     );
     await page.keyboard.down('Shift');
-    await clickOnBond(page, BondType.DOUBLE, 1);
+    await getBondLocator(page, { bondId: 2 }).click({ force: true });
     await clickOnAtom(page, 'C', 2);
     await page.keyboard.up('Shift');
     await ContextMenu(
@@ -593,7 +591,7 @@ test.describe('Right-click menu', () => {
     */
     await drawBenzeneRing(page);
     await setSettingsOption(page, AtomsSetting.DisplayCarbonExplicitly);
-    await CommonLeftToolbar(page).selectAreaSelectionTool(
+    await CommonLeftToolbar(page).areaSelectionTool(
       SelectionToolType.Rectangle,
     );
     const colors = [
@@ -629,7 +627,7 @@ test.describe('Right-click menu', () => {
         4. Select each color individually and verify the highlights.
     */
     await drawBenzeneRing(page);
-    await CommonLeftToolbar(page).selectAreaSelectionTool(
+    await CommonLeftToolbar(page).areaSelectionTool(
       SelectionToolType.Rectangle,
     );
     const colors = [
@@ -705,7 +703,11 @@ test.describe('Right-click menu', () => {
     ).click([MicroBondOption.Highlight, HighlightOption.Blue]);
     await clickOnCanvas(page, 100, 100);
     await takeEditorScreenshot(page);
-    await screenshotBetweenUndoRedo(page);
+    await CommonTopLeftToolbar(page).undo();
+    await takeEditorScreenshot(page, {
+      maxDiffPixels: 1,
+    });
+    await CommonTopLeftToolbar(page).redo();
     await takeEditorScreenshot(page);
   });
 

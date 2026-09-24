@@ -19,7 +19,6 @@ import {
   Bond,
   SGroupAttachmentPoint,
   Struct,
-  UnresolvedMonomer,
   Vec2,
   RxnArrow as MicromoleculeRxnArrow,
   MultitailArrow as MicromoleculeMultitailArrow,
@@ -304,6 +303,7 @@ export class KetSerializer implements Serializer<Struct> {
       deserializedContent?.drawingEntitiesManager,
       struct,
     );
+
     return struct;
   }
 
@@ -726,9 +726,11 @@ export class KetSerializer implements Serializer<Struct> {
       fullName: monomer.monomerItem.props.Name,
       alias: monomer.monomerItem.label,
       aliasHELM: monomer.monomerItem.props.aliasHELM,
+      aliasAxoLabs: monomer.monomerItem.props.aliasAxoLabs,
       attachmentPoints: monomer.monomerItem.attachmentPoints,
       idtAliases: monomer.monomerItem.props.idtAliases,
-      unresolved: monomer instanceof UnresolvedMonomer ? true : undefined,
+      unresolved: monomer.monomerItem.props.unresolved ? true : undefined,
+      modificationTypes: monomer.monomerItem.props.modificationTypes,
     };
     // CHEMs do not have natural analog
     if (monomer.monomerItem.props.MonomerType !== 'CHEM') {
@@ -764,7 +766,7 @@ export class KetSerializer implements Serializer<Struct> {
 
     variantMonomer.monomers.forEach((monomer) => {
       const monomerTemplateId =
-        monomer.monomerItem.props.id ||
+        monomer.monomerItem.props.id ??
         getMonomerUniqueKey(monomer.monomerItem);
 
       this.serializeMonomerTemplate(monomerTemplateId, monomer, fileContent);
@@ -838,7 +840,7 @@ export class KetSerializer implements Serializer<Struct> {
                 '_' +
                 option.templateId +
                 '_' +
-                (option.probability || option.ratio || ''),
+                (option.probability ?? option.ratio ?? ''),
               '',
             );
         } else {
@@ -1062,7 +1064,7 @@ export class KetSerializer implements Serializer<Struct> {
       attachmentPointsToReplace.forEach(
         (attachmentPointToAdd, attachmentPointToDelete) => {
           sgroup.removeAttachmentPoint(attachmentPointToDelete);
-          sgroup.addAttachmentPoint(attachmentPointToAdd);
+          sgroup.addAttachmentPoint(attachmentPointToAdd, false);
         },
       );
     });
@@ -1161,7 +1163,7 @@ export class KetSerializer implements Serializer<Struct> {
             template as IKetAmbiguousMonomerTemplate;
           const variantMonomerLibraryItem: AmbiguousMonomerType = {
             id: variantMonomerTemplate.id,
-            label: variantMonomerTemplate.alias || '%',
+            label: variantMonomerTemplate.alias ?? '%',
             idtAliases: variantMonomerTemplate.idtAliases,
             isAmbiguous: true,
             monomers: createMonomersForVariantMonomer(

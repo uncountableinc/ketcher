@@ -26,13 +26,7 @@ import {
   convertToRaw,
   getDefaultKeyBinding,
 } from 'draft-js';
-import React, {
-  useCallback,
-  useState,
-  useRef,
-  useEffect,
-  RefObject,
-} from 'react';
+import React, { useCallback, useState, useRef, useEffect } from 'react';
 
 import { Dialog } from '../../../components';
 import { DialogParams } from '../../../../../../components/Dialog/Dialog';
@@ -153,7 +147,7 @@ const Text = (props: TextProps) => {
     },
   };
 
-  const refEditor = useRef(null) as RefObject<Editor | null>;
+  const refEditor = useRef<Editor | null>(null);
   const setFocusInEditor = useCallback(() => {
     refEditor.current?.focus();
     refEditor.current?.editor?.setAttribute('data-testid', 'text-editor');
@@ -224,4 +218,4 @@ const Text = (props: TextProps) => {
   );
 };
 
-export default connect((store) => ({ formState: (store as any).modal }))(Text);
+export default connect((store: any) => ({ formState: store.modal }))(Text);

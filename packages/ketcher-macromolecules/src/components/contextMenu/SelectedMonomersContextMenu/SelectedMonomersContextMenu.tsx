@@ -1,4 +1,4 @@
-import { ItemParams } from 'react-contexify';
+import { ItemParams, useContextMenu } from 'react-contexify';
 import { CONTEXT_MENU_ID } from '../types';
 import { createPortal } from 'react-dom';
 import {
@@ -32,6 +32,9 @@ export const SelectedMonomersContextMenu = ({
 }: SelectedMonomersContextMenuType) => {
   const selectedMonomers = _selectedMonomers || [];
   const editor = useAppSelector(selectEditor);
+  const { hideAll } = useContextMenu({
+    id: CONTEXT_MENU_ID.FOR_SELECTED_MONOMERS,
+  });
   const monomersForAminoAcidModification = getMonomersForAminoAcidModification(
     selectedMonomers,
     contextMenuEvent,
@@ -39,9 +42,15 @@ export const SelectedMonomersContextMenu = ({
   const isCanvasContext = (props?: {
     selectedMonomers?: BaseMonomer[];
     polymerBondRenderer?: unknown;
-  }) =>
-    !props?.polymerBondRenderer &&
-    (!props?.selectedMonomers || props?.selectedMonomers.length === 0);
+  }) => {
+    const hasSelectedEntities =
+      (editor?.drawingEntitiesManager?.selectedEntitiesArr?.length ?? 0) > 0;
+    return (
+      !props?.polymerBondRenderer &&
+      (!props?.selectedMonomers || props?.selectedMonomers.length === 0) &&
+      !hasSelectedEntities
+    );
+  };
 
   const modifyAminoAcidsMenuItems = getModifyAminoAcidsMenuItems(
     monomersForAminoAcidModification,
@@ -60,11 +69,6 @@ export const SelectedMonomersContextMenu = ({
     !isCycleExistsForSelectedMonomers(selectedMonomers);
 
   const menuItems = [
-    {
-      name: 'layout_circular',
-      title: 'Create cyclic structure',
-      disabled: cyclicStructureFormationDisabled,
-    },
     {
       name: 'copy',
       title: 'Copy',
@@ -111,6 +115,11 @@ export const SelectedMonomersContextMenu = ({
       subMenuItems: modifyAminoAcidsMenuItems,
     },
     {
+      name: 'layout_circular',
+      title: 'Arrange as a Ring',
+      disabled: cyclicStructureFormationDisabled,
+    },
+    {
       name: 'edit_attachment_points',
       title: 'Edit Attachment Points...',
       disabled: ({
@@ -127,8 +136,7 @@ export const SelectedMonomersContextMenu = ({
       name: 'delete',
       title: 'Delete',
       icon: <Icon name={'deleteMenu' as IconName} />,
-      disabled: ({ props = {} }) =>
-        isBondContext(props) || isCanvasContext(props),
+      disabled: ({ props = {} }) => isCanvasContext(props),
     },
   ];
 
@@ -136,6 +144,7 @@ export const SelectedMonomersContextMenu = ({
     switch (true) {
       case menuItemId === 'layout_circular':
         editor?.events.layoutCircular.dispatch();
+        hideAll();
         break;
       case menuItemId === 'copy':
         editor?.events.copySelectedStructure.dispatch();

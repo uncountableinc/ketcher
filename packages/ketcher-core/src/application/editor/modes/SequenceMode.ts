@@ -38,8 +38,10 @@ import {
 } from 'domain/helpers/rna';
 import {
   peptideNaturalAnalogues,
+  peptideAmbiguousSymbols,
   RNA_DNA_NON_MODIFIED_PART,
   rnaDnaNaturalAnalogues,
+  rnaDnaAmbiguousSymbols,
   RnaDnaNaturalAnaloguesEnum,
 } from 'domain/constants/monomers';
 import {
@@ -70,7 +72,9 @@ import { KetMonomerClass } from 'application/formatters';
 
 const naturalAnalogues = uniq([
   ...rnaDnaNaturalAnalogues,
+  ...rnaDnaAmbiguousSymbols,
   ...peptideNaturalAnalogues,
+  ...peptideAmbiguousSymbols,
 ]);
 
 enum Direction {
@@ -507,12 +511,11 @@ export class SequenceMode extends BaseMode {
   public mousemove(event: MouseEvent) {
     if (this.isEditInRNABuilderMode) return;
     const eventData = event.target?.__data__;
-    const isEventOnSequenceItem = eventData instanceof BaseSequenceItemRenderer;
     // this.mousemoveCounter > 1 used here to prevent selection of single monomer
     // when user just clicked on it during the mousemove event
     if (
       this.isEditMode &&
-      isEventOnSequenceItem &&
+      eventData instanceof BaseSequenceItemRenderer &&
       this.selectionStarted &&
       this.mousemoveCounter > 1
     ) {
@@ -605,15 +608,15 @@ export class SequenceMode extends BaseMode {
     nextNodeToConnect?: SequenceNode | null,
     previousNodeToConnect?: SequenceNode,
   ) {
-    if (!peptideNaturalAnalogues.includes(enteredSymbol)) {
-      return undefined;
-    }
-
     const modelChanges = new Command();
     const editor = CoreEditor.provideEditorInstance();
     const newPeptideLibraryItem = getPeptideLibraryItem(editor, enteredSymbol);
 
-    assert(newPeptideLibraryItem);
+    // If no library item found for the symbol, return undefined
+    if (!newPeptideLibraryItem) {
+      // Symbol not found in monomer library
+      return undefined;
+    }
 
     const peptideAddCommand = editor.drawingEntitiesManager.addMonomer(
       newPeptideLibraryItem,
@@ -646,10 +649,6 @@ export class SequenceMode extends BaseMode {
     nextNodeToConnect?: SequenceNode | null,
     previousNodeToConnect?: SequenceNode,
   ) {
-    if (!rnaDnaNaturalAnalogues.includes(enteredSymbol)) {
-      return undefined;
-    }
-
     const editor = CoreEditor.provideEditorInstance();
     const modelChanges = new Command();
     const { modelChanges: addedNodeModelChanges, node: nodeToAdd } =
@@ -668,6 +667,11 @@ export class SequenceMode extends BaseMode {
             newNodePosition,
             getSugarBySequenceType(editor.sequenceTypeEnterMode),
           );
+
+    // If creation failed (symbol not found in library), return undefined
+    if (!addedNodeModelChanges || !nodeToAdd) {
+      return undefined;
+    }
 
     modelChanges.merge(addedNodeModelChanges);
 
