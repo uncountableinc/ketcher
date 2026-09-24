@@ -319,30 +319,27 @@ class SelectTool implements Tool {
       editor.hover(getHoverToFuse(dragCtx.mergeItems));
 
       editor.update(dragCtx.action, true);
-      return true;
+    } else {
+      const isSelectionRunning = onSelectionMove(
+        event,
+        this.editor,
+        this.#lassoHelper,
+      );
+      if (!isSelectionRunning) {
+        const maps = getMapsForClosestItem(
+          this.#lassoHelper.fragment || event.altKey,
+        );
+        const item = editor.findItem(event, maps, null);
+        editor.hover(item, null, event);
+        handleMovingPosibilityCursor(
+          item,
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore: raphael typing issues
+          this.editor.render.paper.canvas,
+          getItemCursor(this.editor.render, item),
+        );
+      }
     }
-
-    const isSelectionRunning = onSelectionMove(
-      event,
-      this.editor,
-      this.#lassoHelper,
-    );
-    if (isSelectionRunning) {
-      return true;
-    }
-
-    const maps = getMapsForClosestItem(
-      this.#lassoHelper.fragment || event.altKey,
-    );
-    const item = editor.findItem(event, maps, null);
-    editor.hover(item, null, event);
-    handleMovingPosibilityCursor(
-      item,
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore: raphael typing issues
-      this.editor.render.paper.canvas,
-      getItemCursor(this.editor.render, item),
-    );
 
     return true;
   }

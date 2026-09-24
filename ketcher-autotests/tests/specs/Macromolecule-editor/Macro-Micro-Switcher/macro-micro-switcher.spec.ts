@@ -30,7 +30,7 @@ import {
   waitForPageInit,
   waitForRender,
 } from '@utils';
-import { delay, MacroFileType } from '@utils/canvas';
+import { MacroFileType } from '@utils/canvas';
 import { selectAllStructuresOnCanvas } from '@utils/canvas/selectSelection';
 import { pageReload } from '@utils/common/helpers';
 import {
@@ -272,7 +272,7 @@ test.describe('Macro-Micro-Switcher', () => {
     await CommonTopRightToolbar(page).turnOnMicromoleculesEditor();
     await selectAllStructuresOnCanvas(page);
     await getAbbreviationLocator(page, { name: 'Edc' }).hover();
-    await dragMouseTo(400, 400, page);
+    await dragMouseTo(page, 400, 400);
     await takeEditorScreenshot(page);
   });
 
@@ -314,9 +314,9 @@ test.describe('Macro-Micro-Switcher', () => {
     await CommonTopRightToolbar(page).turnOnMicromoleculesEditor();
     await resetZoomLevelToDefault(page);
     await getAbbreviationLocator(page, { name: 'Edc' }).hover();
-    await dragMouseTo(400, 400, page);
+    await dragMouseTo(page, 400, 400);
     await getAbbreviationLocator(page, { name: 'Edc' }).hover();
-    await dragMouseTo(500, 500, page);
+    await dragMouseTo(page, 500, 500);
     await takeEditorScreenshot(page);
   });
 
@@ -357,7 +357,7 @@ test.describe('Macro-Micro-Switcher', () => {
     );
     await CommonTopRightToolbar(page).turnOnMicromoleculesEditor();
     await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
-    await delay(1);
+    await page.waitForTimeout(1 * 1000);
     await moveMouseToTheMiddleOfTheScreen(page);
     await zoomWithMouseWheel(page, -400);
 
@@ -1013,7 +1013,7 @@ test.describe('Macro-Micro-Switcher', () => {
         monomerAlias: 'F1',
       }).hover();
       await MonomerPreviewTooltip(page).waitForBecomeVisible();
-      await dragMouseTo(600, 600, page);
+      await dragMouseTo(page, 600, 600);
       await moveMouseAway(page);
       await takeEditorScreenshot(page);
       await CommonTopRightToolbar(page).turnOnMicromoleculesEditor();
@@ -1039,7 +1039,7 @@ test.describe('Macro-Micro-Switcher', () => {
         monomerAlias: 'F1',
       }).hover();
       await MonomerPreviewTooltip(page).waitForBecomeVisible();
-      await dragMouseTo(600, 600, page);
+      await dragMouseTo(page, 600, 600);
       await moveMouseAway(page);
       await takeEditorScreenshot(page);
       await CommonTopRightToolbar(page).turnOnMicromoleculesEditor();
@@ -1066,7 +1066,7 @@ test.describe('Macro-Micro-Switcher', () => {
         monomerAlias: 'F1',
       }).hover();
       await MonomerPreviewTooltip(page).waitForBecomeVisible();
-      await dragMouseTo(600, 600, page);
+      await dragMouseTo(page, 600, 600);
       await moveMouseAway(page);
       await takeEditorScreenshot(page);
       await CommonTopRightToolbar(page).turnOnMicromoleculesEditor();
@@ -1093,7 +1093,7 @@ test.describe('Macro-Micro-Switcher', () => {
         monomerAlias: 'F1',
       }).hover();
       await MonomerPreviewTooltip(page).waitForBecomeVisible();
-      await dragMouseTo(600, 600, page);
+      await dragMouseTo(page, 600, 600);
       await moveMouseAway(page);
       await takeEditorScreenshot(page);
       await CommonTopRightToolbar(page).turnOnMicromoleculesEditor();

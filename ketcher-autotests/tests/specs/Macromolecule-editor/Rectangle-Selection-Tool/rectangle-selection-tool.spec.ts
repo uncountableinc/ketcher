@@ -36,7 +36,8 @@ async function moveMonomersToNewPosition(
   await CommonLeftToolbar(page).areaSelectionTool(SelectionToolType.Rectangle);
   await selectAllStructuresOnCanvas(page);
   await getMonomerLocator(page, { monomerAlias: monomerName }).click();
-  await dragMouseTo(x, y, page);
+  await dragMouseTo(page, x, y);
+  await moveMouseAway(page);
   await takeEditorScreenshot(page);
 }
 
@@ -275,7 +276,7 @@ test.describe('Rectangle Selection Tool', () => {
       SelectionToolType.Rectangle,
     );
     await getMonomerLocator(page, Peptide.meD).click();
-    await dragMouseTo(200, 200, page);
+    await dragMouseTo(page, 200, 200);
     await takeEditorScreenshot(page);
   });
 
@@ -313,7 +314,7 @@ test.describe('Rectangle Selection Tool', () => {
       SelectionToolType.Rectangle,
     );
     await getMonomerLocator(page, Chem.A6OH).click();
-    await dragMouseTo(200, 200, page);
+    await dragMouseTo(page, 200, 200);
     await takeEditorScreenshot(page, {
       hideMonomerPreview: true,
       hideMacromoleculeEditorScrollBars: true,
@@ -338,7 +339,7 @@ test.describe('Rectangle Selection Tool', () => {
       await moveMonomersToNewPosition(
         page,
         testCase.filePath,
-        'A6OH',
+        'SMPEG2',
         400,
         500,
       );
@@ -356,7 +357,7 @@ test.describe('Rectangle Selection Tool', () => {
       description:
         'Check that you can open .mol file with connected CHEMs structure, select and move it on canvas',
       filePath: 'Molfiles-V3000/chems-connected.mol',
-      monomerName: 'A6OH',
+      monomerName: 'SMPEG2',
     },
     {
       description:
@@ -404,7 +405,7 @@ test.describe('Rectangle Selection Tool', () => {
       SelectionToolType.Rectangle,
     );
     await getMonomerLocator(page, Peptide._2Nal).hover();
-    await dragMouseTo(200, 200, page);
+    await dragMouseTo(page, 200, 200);
     await CommonTopLeftToolbar(page).undo();
     await takeEditorScreenshot(page);
     await CommonTopLeftToolbar(page).redo();
@@ -420,7 +421,7 @@ test.describe('Rectangle Selection Tool', () => {
     await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Snake);
     await selectAllStructuresOnCanvas(page);
     await getMonomerLocator(page, Peptide.Hhs).hover();
-    await dragMouseTo(850, 500, page);
+    await dragMouseTo(page, 850, 500);
     await takeEditorScreenshot(page);
   });
 
@@ -431,7 +432,7 @@ test.describe('Rectangle Selection Tool', () => {
     */
     await openFileAndAddToCanvasMacro(page, 'KET/two-rows-of-monomers.ket');
     await getMonomerLocator(page, Peptide.Hhs).hover();
-    await dragMouseTo(900, 500, page);
+    await dragMouseTo(page, 900, 500);
     await takeEditorScreenshot(page);
   });
 
