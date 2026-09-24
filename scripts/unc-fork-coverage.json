@@ -1,5 +1,5 @@
 {
-  "mergeBase": "2a3ba7939d601c4252af255c94d76ed93bc6d2b6",
+  "mergeBase": "8eced2ca1c68e3f45b092b2ba461e26880061b90",
   "forkRef": "master",
   "upstreamTag": "v3.18.0",
   "behaviours": [
@@ -132,7 +132,6 @@
       "commits": ["783bc6497", "493fcc1bd", "3aecd5500"],
       "files": [
         "packages/ketcher-core/src/domain/serializers/mol/parseSGroup.js",
-        "packages/ketcher-core/src/domain/serializers/mol/__tests__/v2000.test.ts",
         "packages/ketcher-core/src/domain/serializers/mol/molfile.ts",
         "packages/ketcher-core/src/domain/serializers/ket/toKet/moleculeToKet.ts"
       ],
