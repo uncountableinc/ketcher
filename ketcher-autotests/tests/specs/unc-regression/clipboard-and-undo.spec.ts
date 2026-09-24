@@ -1,6 +1,6 @@
 /* eslint-disable no-magic-numbers */
 import { test, expect } from '@playwright/test';
-import { clickOnAtom, selectUndoByKeyboard, waitForPageInit } from '@utils';
+import { clickOnAtom, undoByKeyboard, waitForPageInit } from '@utils';
 import { copyAndPaste } from '@utils/canvas/selectSelection';
 import { CommonLeftToolbar } from '@tests/pages/common/CommonLeftToolbar';
 import {
@@ -58,7 +58,7 @@ test.describe('clipboard and undo', () => {
     await CommonLeftToolbar(page).erase();
     await clickOnAtom(page, 'C', 0);
     const afterErase = await atomCount(page);
-    await selectUndoByKeyboard(page);
+    await undoByKeyboard(page);
 
     expect(afterErase).toBe(before - 1);
     expect(await atomCount(page)).toBe(before);
@@ -78,7 +78,7 @@ test.describe('clipboard and undo', () => {
 
     await CommonLeftToolbar(page).erase();
     await clickOnAtom(page, 'C', 0);
-    await selectUndoByKeyboard(page);
+    await undoByKeyboard(page);
 
     expect({
       atoms: await atomCount(page),

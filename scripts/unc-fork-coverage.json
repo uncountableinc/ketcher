@@ -125,19 +125,6 @@
       "verdictNote": "reapply: the suite cannot load on vanilla because upstream moved operations/base.ts, so this verdict is from source inspection - isInvertible appears nowhere in v3.18.0."
     },
     {
-      "key": "sgroup-connectivity-case",
-      "summary": "Lowercase S-group connectivity codes on MOL parse.",
-      "verdict": "drop",
-      "covered": "jest __tests__/unc-regression/sgroup-connectivity-case.test.ts",
-      "commits": ["783bc6497", "493fcc1bd", "3aecd5500"],
-      "files": [
-        "packages/ketcher-core/src/domain/serializers/mol/parseSGroup.js",
-        "packages/ketcher-core/src/domain/serializers/mol/molfile.ts",
-        "packages/ketcher-core/src/domain/serializers/ket/toKet/moleculeToKet.ts"
-      ],
-      "verdictNote": "drop: measured 9/9 on vanilla v3.18.0, over SRU, GEN and COP s-groups. Upstream lowercases connectivity in per-type post-load hooks; its own v2000.test.ts expected 'EU' for a GEN group at the fork's merge base and expects 'eu' in v3.18.0. The test must vary the s-group type: an SRU-only fixture passes everywhere and proves nothing."
-    },
-    {
       "key": "indigo-stereo-style",
       "summary": "Send render-stereo-style to Indigo image rendering.",
       "verdict": "reapply",
@@ -318,9 +305,10 @@
       "key": "sru-undo-crash",
       "summary": "Fix the undo crash after creating an SRU polymer S-group.",
       "verdict": "reapply",
-      "covered": "pre-existing ketcher-autotests/.../SRU-Polymer/sru-polymer-tool.spec.ts",
+      "covered": "playwright tests/specs/unc-regression/sru-undo-crash.spec.ts",
       "commits": ["cb5b18637", "9f256ceb8"],
-      "files": ["packages/ketcher-react/src/script/editor/tool/sgroup.ts"]
+      "files": ["packages/ketcher-react/src/script/editor/tool/sgroup.ts"],
+      "verdictNote": "reapply: measured on the fork with cb5b18637 reverted, where undo raises 'S-Group not empty!' and leaves the S-group, so the spec fails. The earlier 'implicitHCount' message match passed there."
     },
     {
       "key": "context-menu-native",
