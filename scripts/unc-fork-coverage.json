@@ -319,7 +319,7 @@
       "key": "sru-undo-crash",
       "summary": "Fix the undo crash after creating an SRU polymer S-group.",
       "verdict": "reapply",
-      "covered": "pre-existing ketcher-autotests/.../SRU-Polymer/sru-polymer-tool.spec.ts",
+      "covered": "playwright tests/specs/unc-regression/sru-undo-crash.spec.ts",
       "commits": ["cb5b18637", "9f256ceb8"],
       "files": ["packages/ketcher-react/src/script/editor/tool/sgroup.ts"]
     },
