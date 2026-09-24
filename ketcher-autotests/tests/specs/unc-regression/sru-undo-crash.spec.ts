@@ -9,7 +9,7 @@ import {
   TypeOption,
 } from '@tests/pages/constants/s-GroupPropertiesDialog/Constants';
 import { SGroupPropertiesDialog } from '@tests/pages/molecules/canvas/S-GroupPropertiesDialog';
-import { PLAIN_CHAIN_KET, setMolecule } from './fixtures';
+import { PLAIN_CHAIN_KET, setMolecule, sgroupCount } from './fixtures';
 
 /*
  * Fork commit under test:
@@ -18,30 +18,28 @@ import { PLAIN_CHAIN_KET, setMolecule } from './fixtures';
  *
  * Creating an SRU polymer S-group used to clone the whole structure to
  * recompute implicit hydrogens, which renumbered atom and fragment ids and
- * stranded the ids recorded on the undo stack. Undoing the S-group creation
- * then threw "Cannot set properties of undefined (setting 'implicitHCount')".
- * Erasing an atom first leaves an id gap, so the renumbering is observable.
+ * stranded the ids recorded on the undo stack. Erasing an atom first leaves an
+ * id gap, so the renumbering is observable.
+ *
+ * The error the stale ids raise depends on the upstream version: at v3.6.0 it
+ * was "Cannot set properties of undefined (setting 'implicitHCount')", at
+ * v3.10.0 it is "S-Group not empty!". Either way the S-group stays on the
+ * canvas. So the test asserts that undo removes the S-group and raises no page
+ * error, rather than matching one message, which passes on v3.10.0 with the
+ * fix reverted.
  */
-
-const STALE_ATOM_ERROR =
-  "Cannot set properties of undefined (setting 'implicitHCount')";
 
 test.describe('SRU polymer undo', () => {
   test.beforeEach(async ({ page }) => {
     await waitForPageInit(page);
   });
 
-  test('undo of an SRU polymer S-group does not throw on stale atoms', async ({
+  test('undo removes an SRU polymer S-group created after an erase', async ({
     page,
   }) => {
-    const errors: string[] = [];
-    page.on('console', (msg) => {
-      if (msg.type() === 'error') {
-        errors.push(msg.text());
-      }
-    });
+    const pageErrors: string[] = [];
     page.on('pageerror', (error) => {
-      errors.push(error.message);
+      pageErrors.push(error.message);
     });
 
     await setMolecule(page, PLAIN_CHAIN_KET);
@@ -55,11 +53,11 @@ test.describe('SRU polymer undo', () => {
       PolymerLabel: 'A',
       RepeatPattern: RepeatPatternOption.HeadToTail,
     });
+    expect(await sgroupCount(page)).toBe(1);
 
     await selectUndoByKeyboard(page);
 
-    expect(errors.filter((error) => error.includes(STALE_ATOM_ERROR))).toEqual(
-      [],
-    );
+    expect(await sgroupCount(page)).toBe(0);
+    expect(pageErrors).toEqual([]);
   });
 });

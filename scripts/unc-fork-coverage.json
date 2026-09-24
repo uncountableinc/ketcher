@@ -321,7 +321,8 @@
       "verdict": "reapply",
       "covered": "playwright tests/specs/unc-regression/sru-undo-crash.spec.ts",
       "commits": ["cb5b18637", "9f256ceb8"],
-      "files": ["packages/ketcher-react/src/script/editor/tool/sgroup.ts"]
+      "files": ["packages/ketcher-react/src/script/editor/tool/sgroup.ts"],
+      "verdictNote": "reapply: measured on the fork with cb5b18637 reverted, where undo raises 'S-Group not empty!' and leaves the S-group, so the spec fails. The earlier 'implicitHCount' message match passed there."
     },
     {
       "key": "context-menu-native",
