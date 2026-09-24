@@ -160,12 +160,10 @@ Three traps when editing this fixture, each of which makes it prove nothing:
 
 - `da4fa3016` (MAT-75501, polymer `*` end-group cap) —
   `__tests__/application/render/restruct/reatom.test.ts`
-- `cb5b18637` (SRU undo crash, MAT-68021 / MAT-75711) —
-  `ketcher-autotests/.../SRU-Polymer/sru-polymer-tool.spec.ts`
 
 ## Browser-only, in `ketcher-autotests/tests/specs/unc-regression/`
 
-Twenty-five Playwright tests, all run against the standalone demo build and passing.
+Twenty-six Playwright tests, all run against the standalone demo build and passing.
 Start the demo first, then run them:
 
 ```bash
@@ -185,6 +183,7 @@ npx playwright test tests/specs/unc-regression/ --project=chromium
 | `editor-instance.spec.ts` | `c32453d96` / `36c00e15a`, `6a59f2ba2` |
 | `fullscreen-dropdown-container.spec.ts` | `3d3b76a6c`, `83730d640` |
 | `render-offset-restore.spec.ts` | `aefcd0a14` |
+| `sru-undo-crash.spec.ts` | `cb5b18637` (MAT-68021 / MAT-75711) |
 | `platform-structure-tools.spec.ts` | none — pins the ketcher APIs the platform's Bodie structure tools call |
 
 `fixtures.ts` holds the shared KET fixtures.
@@ -251,7 +250,7 @@ Every commit in the KEEP set, and where it is covered.
 | `3d3b76a6c`, `83730d640` | Playwright `fullscreen-dropdown-container` |
 | `aefcd0a14` | Playwright `render-offset-restore` |
 | `da4fa3016` | pre-existing `__tests__/application/render/restruct/reatom.test.ts` |
-| `cb5b18637`, `9f256ceb8` | pre-existing `ketcher-autotests/.../SRU-Polymer/sru-polymer-tool.spec.ts` |
+| `cb5b18637`, `9f256ceb8` | Playwright `sru-undo-crash` |
 
 ## Still uncovered
 
