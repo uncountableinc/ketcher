@@ -97,7 +97,7 @@ jobs:
     if: ${{ !cancelled() }}
     needs: [part]
     runs-on: ubuntu-latest
-    container: node:18.14-bullseye-slim
+    container: node:22.11-bullseye-slim
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
