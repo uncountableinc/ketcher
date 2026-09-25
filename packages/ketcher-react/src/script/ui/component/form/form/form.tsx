@@ -16,8 +16,7 @@
 
 import { Component, useCallback, useState } from 'react';
 
-import { Validator, ValidationError } from 'jsonschema';
-import { JSON_SCHEMA_VALIDATOR_OPTIONS } from '../../../data/schema/options-schema';
+import { Validator, ValidationError, Schema } from 'jsonschema';
 import { ErrorPopover } from './errorPopover';
 import {
   FormContext,
@@ -128,8 +127,12 @@ export interface CustomQueryFieldProps extends FieldProps {
   ) => void;
 }
 
-type ValidationErrorWithInvalidMessage = ValidationError & {
-  schema: { invalidMessage?: string | ((data: unknown) => string) };
+interface KetcherSchema extends Schema {
+  invalidMessage?: string | ((data: unknown) => string);
+}
+
+type FormValidationError = ValidationError & {
+  schema: KetcherSchema;
 };
 
 class Form extends Component<FormProps> {
@@ -144,7 +147,7 @@ class Form extends Component<FormProps> {
 
     if (init) {
       const { valid, errors } = this.schema.serialize(init);
-      const errs = getErrorsObj(errors as ValidationErrorWithInvalidMessage[]);
+      const errs = getErrorsObj(errors as FormValidationError[]);
       const initialState = { ...init, init: true };
       onUpdate(initialState, valid, errs);
     }
@@ -170,7 +173,7 @@ class Form extends Component<FormProps> {
   updateState(newState: Record<string, unknown>) {
     const { onUpdate } = this.props;
     const { instance, valid, errors } = this.schema.serialize(newState);
-    const errs = getErrorsObj(errors as ValidationErrorWithInvalidMessage[]);
+    const errs = getErrorsObj(errors as FormValidationError[]);
     onUpdate(instance as Record<string, unknown>, valid, errs);
   }
 
@@ -297,7 +300,7 @@ function Label({
   error: _error,
   children,
   ...props
-}: LabelProps) {
+}: Readonly<LabelProps>) {
   return (
     <label {...props}>
       {labelPos !== 'after' && renderLabelContent(title ?? '', tooltip ?? null)}
@@ -319,7 +322,7 @@ function usePopoverAnchor() {
   return { anchorEl, handleOpen, handleClose };
 }
 
-function Field(props: FieldProps) {
+function Field(props: Readonly<FieldProps>) {
   const {
     name,
     extraName,
@@ -401,7 +404,7 @@ function Field(props: FieldProps) {
   );
 }
 
-function FieldWithModal(props: FieldWithModalProps) {
+function FieldWithModal(props: Readonly<FieldWithModalProps>) {
   const { name, onChange, labelPos, className, onEdit, ...rest } = props;
   // Separate Label/wrapper-only props from Input-compatible props
   const {
@@ -467,7 +470,7 @@ function FieldWithModal(props: FieldWithModalProps) {
   );
 }
 
-function CustomQueryField(props: CustomQueryFieldProps) {
+function CustomQueryField(props: Readonly<CustomQueryFieldProps>) {
   const {
     name,
     onChange,
@@ -593,18 +596,15 @@ function propSchema(
 ) {
   const validator = new Validator();
   const schemaCopy = cloneDeep(schema);
-
-  // ajv compiles schemas with new Function, which main's CSP forbids
-  // (script-src has no 'unsafe-eval'), so the platform uses jsonschema.
-  validator.customFormats = {};
-
   if (customValid) {
     Object.entries(customValid).forEach(([formatName, formatValidator]) => {
-      validator.customFormats[formatName] = formatValidator as (
-        data: string,
-      ) => boolean;
+      validator.customFormats[formatName] = (value: string) =>
+        Boolean(formatValidator(value));
 
-      if (!schemaCopy.properties) return;
+      if (!schemaCopy.properties) {
+        return;
+      }
+
       const rest = omit(schemaCopy.properties[formatName], [
         'pattern',
         'maxLength',
@@ -622,18 +622,20 @@ function propSchema(
   return {
     key: schema.key || '',
     serialize: (inst: Record<string, unknown>) => {
-      const result = validator.validate(
-        inst,
-        schemaCopy,
-        JSON_SCHEMA_VALIDATOR_OPTIONS,
-      );
-      const isValid = result.valid;
-      const errors = result.errors;
+      // Pass an explicit base URI so jsonschema's resolveUrl() always receives
+      // a valid absolute URL as `from`.  Without this, it calls
+      // resolveUrl(undefined, ...) → new URL(undefined, 'resolve://'), which
+      // throws "Invalid URL" in Chromium <130 (Playwright ≤1.44) because that
+      // engine parses the base 'resolve://' (empty host) before inspecting the
+      // first argument.
+      const result = validator.validate(inst, schemaCopy as Schema, {
+        base: 'https://ketcher.local/',
+      });
 
       return {
         instance: serializeRewrite(serialize, inst, schemaCopy),
-        valid: isValid,
-        errors,
+        valid: result.valid,
+        errors: result.errors as unknown as FormValidationError[],
       };
     },
     deserialize: (inst: Record<string, unknown>) => {
@@ -668,20 +670,19 @@ function deserializeRewrite(
   return instance;
 }
 
-function getInvalidMessage(item: ValidationErrorWithInvalidMessage): string {
+function getInvalidMessage(item: FormValidationError): string {
   if (!item.schema?.invalidMessage) return item.message ?? '';
   return typeof item.schema.invalidMessage === 'function'
     ? item.schema.invalidMessage(item.instance)
     : item.schema.invalidMessage;
 }
 
-function getErrorsObj(
-  errors: ValidationErrorWithInvalidMessage[],
-): Record<string, string> {
+function getErrorsObj(errors: FormValidationError[]): Record<string, string> {
   const errs: Record<string, string> = {};
 
   errors.forEach((item) => {
-    const field = String(item.path[item.path.length - 1]);
+    // jsonschema uses "instance.fieldName"; strip the "instance." prefix
+    const field = item.property.replace(/^instance\./, '');
     if (!errs[field]) errs[field] = getInvalidMessage(item);
   });
 

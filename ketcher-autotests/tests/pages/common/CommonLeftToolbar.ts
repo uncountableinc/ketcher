@@ -1,10 +1,10 @@
 /* eslint-disable no-magic-numbers */
-import { Page, Locator } from '@playwright/test';
+import { Page, Locator, expect } from '@playwright/test';
 import { waitForRender } from '@utils/common/loaders/waitForRender';
 import { SelectionToolType } from '../constants/areaSelectionTool/Constants';
 import {
-  MacroBondType,
-  MicroBondType,
+  MacroBondTool,
+  MicroBondTool,
 } from '../constants/bondSelectionTool/Constants';
 
 type LeftToolbarLocators = {
@@ -89,13 +89,30 @@ export const CommonLeftToolbar = (page: Page) => {
       }
     },
 
-    async bondTool(bondType: MacroBondType | MicroBondType) {
+    isMacroBondTool(
+      value: MacroBondTool | MicroBondTool,
+    ): value is MacroBondTool {
+      return Object.values(MacroBondTool).includes(value as MacroBondTool);
+    },
+
+    async bondTool(bondType: MacroBondTool | MicroBondTool) {
       let attempts = 0;
       const maxAttempts = 5;
       const bondTypeButton = page
         .getByTestId(bondType)
         .filter({ has: page.locator(':visible') })
         .first();
+
+      if (
+        (await bondTypeButton.isVisible()) &&
+        this.isMacroBondTool(bondType)
+      ) {
+        await page.waitForTimeout(200);
+        await bondTypeButton.click({ force: true });
+        await expect(bondTypeButton).toHaveAttribute('class', /active/);
+        return;
+      }
+
       while (attempts < maxAttempts) {
         try {
           await this.expandBondSelectionDropdown();

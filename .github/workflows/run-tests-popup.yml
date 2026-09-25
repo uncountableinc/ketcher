@@ -49,7 +49,7 @@ jobs:
     timeout-minutes: 120
     runs-on: ubuntu-latest
     needs: build_ketcher
-    container: mcr.microsoft.com/playwright:v1.44.1-jammy
+    container: mcr.microsoft.com/playwright:v1.59.1-jammy
     strategy:
       fail-fast: false
       matrix:

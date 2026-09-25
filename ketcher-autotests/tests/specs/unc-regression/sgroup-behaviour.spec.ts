@@ -1,6 +1,7 @@
 /* eslint-disable no-magic-numbers */
 import { test, expect } from '@playwright/test';
-import { clickOnAtom, waitForPageInit } from '@utils';
+import { waitForPageInit } from '@utils';
+import { getAtomLocator } from '@utils/canvas/atoms/getAtomLocator/getAtomLocator';
 import {
   PLAIN_CHAIN_KET,
   setMolecule,
@@ -32,7 +33,7 @@ test.describe('s-group drawing behaviour', () => {
       window.ketcher.editor.selection({ atoms: [0, 1, 2, 3, 4] }),
     );
 
-    await clickOnAtom(page, 'C', 2);
+    await getAtomLocator(page, { atomLabel: 'C' }).nth(2).click();
 
     const selectedAtoms = await page.evaluate(
       () => window.ketcher.editor.selection()?.atoms ?? [],
@@ -46,7 +47,7 @@ test.describe('s-group drawing behaviour', () => {
     // The other half of the same branch: a fresh click must still retarget.
     await setMolecule(page, SRU_CHAIN_KET);
 
-    await clickOnAtom(page, 'C', 2);
+    await getAtomLocator(page, { atomLabel: 'C' }).nth(2).click();
 
     const selectedAtoms = await page.evaluate(
       () => window.ketcher.editor.selection()?.atoms ?? [],

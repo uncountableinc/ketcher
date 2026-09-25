@@ -1,5 +1,5 @@
 {
-  "mergeBase": "c9ec64c2151ef36b2b10863e6a243b87cd1b7d12",
+  "mergeBase": "98dbc62d0776e4e53c6989709ddfa20dc4adcb72",
   "forkRef": "master",
   "upstreamTag": "v3.18.0",
   "behaviours": [
@@ -225,8 +225,8 @@
     {
       "key": "jsonschema-validator",
       "summary": "Replace ajv with jsonschema in ketcher-react, and give the validator a base URL.",
-      "verdict": "reapply",
-      "verdictNote": "reapply, permanently: main serves the platform under a CSP whose script-src carries no 'unsafe-eval' (main/site/unc_flask/csp.txt; the only exemption is the CAD wasm worker). ajv validates by compiling schemas with new Function (ajv/dist/compile/index.js), which that CSP blocks, so every ketcher dialog that validates a form would fail in the platform. jsonschema interprets instead and needs no codegen. The fork demo page is not served under main's CSP, so taking upstream's ajv passes every fork test and breaks only main.",
+      "verdict": "drop",
+      "verdictNote": "dropped at the v3.16.0 merge: upstream replaced ajv with jsonschema themselves, so form.tsx and options-schema.ts are now byte-identical to upstream, and the fork's own jsonschema dependency, a duplicate of upstream's, is gone. The fork also carried native-url plus a resolve.alias key in packages/ketcher-react/rollup.config.ts; resolve is not a RollupOptions key, so that alias never took effect, and both were removed with the rest. Reapply this behaviour if upstream ever returns to ajv: main serves the platform under a CSP whose script-src carries no 'unsafe-eval' (main/site/unc_flask/csp.txt; the only exemption is the CAD wasm worker), and ajv validates by compiling schemas with new Function (ajv/dist/compile/index.js), which that CSP blocks, so every ketcher dialog that validates a form would fail in the platform. jsonschema interprets instead and needs no codegen. The fork demo page is not served under main's CSP, so an upstream ajv would pass every fork test and break only main. ketcher-core's own ajv dependency is unaffected: its prebuild script precompiles the KET schema, so no codegen runs in the browser.",
       "covered": "playwright tests/specs/unc-regression/settings-state.spec.ts",
       "commits": [
         "8b92271fc",

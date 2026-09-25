@@ -14,24 +14,21 @@
  * limitations under the License.
  ***************************************************************************/
 
-import {
-  Box2Abs,
-  FunctionalGroup,
-  SGroup,
-  Vec2,
-  MonomerMicromolecule,
-  SUPERATOM_CLASS,
-} from 'domain/entities';
+import { FunctionalGroup } from 'domain/entities/functionalGroup';
+import { SGroup, SUPERATOM_CLASS } from 'domain/entities/sgroup';
+import { MonomerMicromolecule } from 'domain/entities/monomerMicromolecule';
+import { Box2Abs } from 'domain/entities/box2Abs';
+import { Vec2 } from 'domain/entities/vec2';
 import { SgContexts } from 'application/editor/shared/constants';
 import ReDataSGroupData from './redatasgroupdata';
-import ReStruct from './restruct';
+import type ReStruct from './restruct';
 import { Render } from '../raphaelRender';
 import { LayerMap } from './generalEnumTypes';
 import ReObject from './reobject';
 import { Scale } from 'domain/helpers';
 import draw from '../draw';
 import util from '../util';
-import { tfx } from 'utilities';
+import { toFixed } from 'utilities';
 import BracketParams from '../bracket-params';
 import { RaphaelPaper } from 'raphael';
 import { RenderOptions } from '../render.types';
@@ -127,37 +124,11 @@ class ReSGroup extends ReObject {
           break;
         }
         case 'SRU': {
-          const connectivity: string = sgroup.data.connectivity || 'eu';
+          let connectivity: string = sgroup.data.connectivity || 'eu';
+          if (connectivity === 'ht') connectivity = '';
           const subscript = sgroup.data.subscript || 'n';
           SGroupdrawBracketsOptions.lowerIndexText = subscript;
-          SGroupdrawBracketsOptions.upperIndexText = connectivity.toUpperCase();
-          break;
-        }
-        case 'COP': {
-          const connectivity: string = sgroup.data.connectivity || 'eu';
-          SGroupdrawBracketsOptions.upperIndexText = connectivity.toUpperCase();
-          const subtype = sgroup.data.subtype;
-          if (sgroup.data.subtype) {
-            SGroupdrawBracketsOptions.lowerIndexText = subtype.toLowerCase();
-          } else {
-            SGroupdrawBracketsOptions.lowerIndexText = 'co';
-          }
-          break;
-        }
-        case 'MON': {
-          SGroupdrawBracketsOptions.lowerIndexText = 'mon';
-          break;
-        }
-        case 'MIX': {
-          const subscript = sgroup.data.subscript || 'mix';
-          SGroupdrawBracketsOptions.lowerIndexText = subscript;
-          break;
-        }
-        case 'COM': {
-          const subscript = sgroup.data.subscript || 'c';
-          const compno = sgroup.data.compno || 'X';
-          SGroupdrawBracketsOptions.lowerIndexText = subscript;
-          SGroupdrawBracketsOptions.upperIndexText = compno;
+          SGroupdrawBracketsOptions.upperIndexText = connectivity;
           break;
         }
         case 'COP': {
@@ -194,9 +165,6 @@ class ReSGroup extends ReObject {
         'SUP',
         'GEN',
         'COP',
-        'MON',
-        'MIX',
-        'COM',
         'queryComponent',
       ];
       if (
@@ -294,16 +262,14 @@ class ReSGroup extends ReObject {
         sGroupItem.hovering = paper
           .path(
             'M{0},{1}L{2},{3}L{4},{5}L{6},{7}L{0},{1}',
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore: raphael typing issues
-            tfx(a0.x),
-            tfx(a0.y),
-            tfx(a1.x),
-            tfx(a1.y),
-            tfx(b1.x),
-            tfx(b1.y),
-            tfx(b0.x),
-            tfx(b0.y),
+            toFixed(a0.x),
+            toFixed(a0.y),
+            toFixed(a1.x),
+            toFixed(a1.y),
+            toFixed(b1.x),
+            toFixed(b1.y),
+            toFixed(b0.x),
+            toFixed(b0.y),
           )
           .attr(options.hoverStyle);
         otherHovers.push(sGroupItem.hovering);
@@ -543,6 +509,10 @@ function SGroupdrawBrackets({
         font: render.options.font,
         'font-size': render.options.fontszsubInPx,
       });
+    if (isLowerText) {
+      indexPath.node?.setAttribute('data-testid', 's-group-label');
+      indexPath.node?.setAttribute('data-label-text', text);
+    }
     if (indexAttribute) indexPath.attr(indexAttribute);
 
     // Bounding box adjustment and final positioning
@@ -575,12 +545,12 @@ function showValue(
   sgroup: SGroup,
   options: RenderOptions,
 ): any {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore: raphael typing issues
   const text = paper.text(pos?.x, pos?.y, sgroup.data.fieldValue).attr({
     font: options.font,
     'font-size': options.fontszsubInPx,
   });
+  text.node?.setAttribute('data-testid', 's-group-label');
+  text.node?.setAttribute('data-label-text', sgroup.data.fieldValue);
   const box = text.getBBox();
   let rect = paper.rect(
     box.x - 1,
@@ -588,8 +558,6 @@ function showValue(
     box.width + 2,
     box.height + 2,
     3,
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore: raphael typing issues
     3,
   );
   rect = sgroup.selected
@@ -601,9 +569,6 @@ function showValue(
 }
 
 function drawGroupDat(restruct: ReStruct, sgroup: SGroup) {
-  SGroup.bracketPos(sgroup, restruct.molecule, restruct, restruct.render);
-  sgroup.areas = sgroup.bracketBox ? [sgroup.bracketBox] : [];
-
   if (sgroup.pp === null) sgroup.calculatePP(restruct.molecule);
 
   return sgroup.data.attached
@@ -662,12 +627,6 @@ function drawAttachedDat(restruct: ReStruct, sgroup: SGroup): any {
 
   return set;
 }
-
-// We decided that brackets will be always calculated using bounding box to avoid complexity.
-// See the PR discussion for more details.
-// FIXME: Unclear how to reconcile
-// - Tony
-// const USE_BOUNDING_BOX_FOR_BRACKETS = true;
 
 function getBracketParameters(bracketBox: Box2Abs, direction: Vec2) {
   const brackets: BracketParams[] = [];
