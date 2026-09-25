@@ -40,20 +40,13 @@ test.describe('right-click inside the editor', () => {
     await ContextMenu(page, atom).open();
 
     const preventedInsideCanvas = await page.evaluate(() => {
-      const canvas = document.querySelector('.Ketcher-root');
+      const canvas = document.querySelector('[data-testid="canvas"]');
       if (canvas === null) {
         return null;
       }
-      let prevented: boolean | null = null;
-      const listener = (event: Event) => {
-        prevented = event.defaultPrevented;
-      };
-      document.addEventListener('contextmenu', listener);
-      canvas.dispatchEvent(
+      return !canvas.dispatchEvent(
         new MouseEvent('contextmenu', { bubbles: true, cancelable: true }),
       );
-      document.removeEventListener('contextmenu', listener);
-      return prevented;
     });
 
     expect(preventedInsideCanvas).toBe(true);
