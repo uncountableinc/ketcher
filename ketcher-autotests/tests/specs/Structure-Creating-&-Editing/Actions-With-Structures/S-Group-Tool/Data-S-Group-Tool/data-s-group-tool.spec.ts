@@ -12,7 +12,6 @@ import {
   deleteByKeyboard,
   waitForRender,
   moveMouseAway,
-  delay,
 } from '@utils';
 import {
   copyAndPaste,
@@ -109,7 +108,7 @@ test.describe('Data S-Group tool', () => {
     });
 
     await page.mouse.move(RESET_TOOL_X, RESET_TOOL_Y);
-    await delay(RESET_TOOL_DELAY_SECONDS);
+    await page.waitForTimeout(RESET_TOOL_DELAY_SECONDS * 1000);
     await page.keyboard.press('Escape');
     await moveMouseToTheMiddleOfTheScreen(page);
 
