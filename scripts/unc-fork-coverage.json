@@ -51,12 +51,12 @@
       ],
       "files": [
         "packages/ketcher-core/src/domain/entities/sgroup.ts",
-        "packages/ketcher-core/src/domain/serializers/mol/common.js",
-        "packages/ketcher-core/src/domain/serializers/mol/v2000.js",
+        "packages/ketcher-core/src/domain/serializers/mol/common.ts",
+        "packages/ketcher-core/src/domain/serializers/mol/v2000.ts",
         "packages/ketcher-core/src/domain/serializers/ket/fromKet/moleculeToStruct.ts",
         "packages/ketcher-core/src/domain/serializers/ket/toKet/moleculeToKet.ts",
         "packages/ketcher-core/src/domain/serializers/mol/molfile.ts",
-        "packages/ketcher-react/src/script/ui/data/schema/struct-schema.js",
+        "packages/ketcher-react/src/script/ui/data/schema/struct-schema.ts",
         "packages/ketcher-react/src/script/ui/state/constants.ts"
       ]
     },
@@ -84,9 +84,8 @@
       "verdict": "drop",
       "covered": "jest __tests__/unc-regression/data-sgroup-bracket-pos.test.ts",
       "commits": ["a4394409c"],
-      "files": [
-        "packages/ketcher-core/src/application/render/restruct/resgroup.ts"
-      ]
+      "files": [],
+      "verdictNote": "dropped at the v3.16.0 merge: upstream threads the render through Data S-group draw itself, so resgroup.ts is now byte-identical to upstream. Measured, not assumed: jest __tests__/unc-regression/data-sgroup-bracket-pos.test.ts passes at v3.16.0 with the file resolved to upstream."
     },
     {
       "key": "server-format-routing",
@@ -150,7 +149,6 @@
         "5e1077347"
       ],
       "files": [
-        "packages/ketcher-core/src/application/render/restruct/resgroup.ts",
         "packages/ketcher-react/src/script/editor/tool/select/select.ts",
         "packages/ketcher-react/src/script/editor/tool/sgroup.ts"
       ]
@@ -207,7 +205,7 @@
       "covered": "playwright tests/specs/unc-regression/sru-user-values.spec.ts",
       "commits": ["37c0a4b53", "8c5ee82f0", "241b1d08f", "1a41ba32e"],
       "files": [
-        "packages/ketcher-react/src/script/ui/data/convert/structconv.js"
+        "packages/ketcher-react/src/script/ui/data/convert/structconv.ts"
       ]
     },
     {
@@ -218,8 +216,7 @@
       "commits": ["4e21564a4", "8799f4afc", "6304e0cc4", "5b2e28010"],
       "files": [
         "packages/ketcher-react/src/script/ui/state/options/index.js",
-        "packages/ketcher-react/src/script/ui/state/index.js",
-        "packages/ketcher-react/src/script/ui/data/schema/options-schema.ts"
+        "packages/ketcher-react/src/script/ui/state/index.js"
       ]
     },
     {
@@ -235,11 +232,7 @@
         "70289d55f",
         "7f965ea0f"
       ],
-      "files": [
-        "packages/ketcher-react/src/script/ui/component/form/form/form.tsx",
-        "packages/ketcher-react/src/script/ui/data/schema/options-schema.ts",
-        "packages/ketcher-react/src/script/ui/dialog/toolbox/sgroup.test.tsx"
-      ]
+      "files": []
     },
     {
       "key": "fullscreen-and-ketcher-id",
@@ -333,15 +326,12 @@
         "54064df25"
       ],
       "files": [
-        "packages/ketcher-core/src/application/render/draw.ts",
         "packages/ketcher-core/src/application/render/util.ts",
         "packages/ketcher-core/src/application/render/restruct/reImage.ts",
         "packages/ketcher-core/src/application/render/restruct/rebond.ts",
-        "packages/ketcher-core/src/application/render/restruct/resimpleObject.ts",
         "packages/ketcher-core/src/application/render/restruct/restruct.ts",
         "packages/ketcher-core/src/application/render/restruct/retext.ts",
         "packages/ketcher-core/src/application/render/restruct/reatom.ts",
-        "packages/ketcher-core/src/application/render/restruct/resgroup.ts",
         "packages/ketcher-react/src/script/editor/tool/arrow/commonArrow.ts",
         "packages/ketcher-react/src/script/editor/tool/image.ts",
         "packages/ketcher-react/src/script/editor/tool/reactionplus.ts",
@@ -362,8 +352,8 @@
         "packages/ketcher-react/src/script/editor/tool/sgroup.ts",
         "packages/ketcher-react/src/script/ui/action/zoom.js",
         "packages/ketcher-react/src/script/ui/component/form/buttonlist.tsx",
-        "packages/ketcher-react/src/script/ui/data/convert/structconv.js",
-        "packages/ketcher-react/src/script/ui/data/schema/struct-schema.js",
+        "packages/ketcher-react/src/script/ui/data/convert/structconv.ts",
+        "packages/ketcher-react/src/script/ui/data/schema/struct-schema.ts",
         "packages/ketcher-react/src/script/ui/dialog/template/TemplateDialog.tsx",
         "packages/ketcher-react/src/script/ui/dialog/toolbox/labeledit.tsx",
         "packages/ketcher-react/src/script/ui/state/action/index.js",
@@ -426,12 +416,10 @@
       "key": "align-descriptors-guard",
       "summary": "Return early from AlignDescriptors when the structure has no coordinates, instead of reading max.x off a null bounding box.",
       "verdict": "drop",
-      "verdictNote": "drop at the v3.16.2 merge: upstream added the identical if (!structBox) return; there, and moved the class to operations/AlignDescriptors.ts, so expect a rename conflict as well.",
+      "verdictNote": "dropped at the v3.16.0 merge, one release earlier than expected: upstream added the identical if (!structBox) return; and moved the class to operations/AlignDescriptors.ts, so descriptors.ts is now byte-identical to upstream. Measured, not assumed: jest __tests__/unc-regression/operation-null-guards.test.ts passes at v3.16.0 with the file resolved to upstream.",
       "covered": "jest __tests__/unc-regression/operation-null-guards.test.ts",
       "commits": ["1a41ba32e"],
-      "files": [
-        "packages/ketcher-core/src/application/editor/operations/descriptors.ts"
-      ]
+      "files": []
     },
     {
       "key": "atom-attr-is-dummy",
