@@ -120,6 +120,7 @@ function postLoadSru(sgroup) {
   sgroup.data.connectivity = (sgroup.data.connectivity || 'EU')
     .trim()
     .toLowerCase();
+  sgroup.data.subtype = (sgroup.data.subtype || '').trim().toLowerCase();
 }
 
 function postLoadSup(sgroup) {
@@ -127,8 +128,11 @@ function postLoadSup(sgroup) {
   sgroup.data.subscript = '';
 }
 
-function postLoadGen(_sgroup, _mol, _atomMap) {
-  // empty function
+function postLoadGen(sgroup, _mol, _atomMap) {
+  sgroup.data.connectivity = (sgroup.data.connectivity || 'eu')
+    .trim()
+    .toLowerCase();
+  sgroup.data.subtype = (sgroup.data.subtype || '').trim().toLowerCase();
 }
 
 function postLoadDat(sgroup, mol) {
@@ -145,8 +149,11 @@ function postLoadMer(_sgroup) {
   // TODO: Implement after adding MER type support
 }
 
-function postLoadCop(_sgroup) {
-  // TODO: Implement after adding COP type support
+function postLoadCop(sgroup) {
+  sgroup.data.connectivity = (sgroup.data.connectivity || 'eu')
+    .trim()
+    .toLowerCase();
+  sgroup.data.subtype = (sgroup.data.subtype || '').trim().toLowerCase();
 }
 
 function postLoadCro(_sgroup) {
@@ -222,23 +229,12 @@ function initSGroup(sGroups, propData) {
   }
 }
 
-function applySGroupProp(
-  sGroups,
-  propName,
-  propData,
-  numeric,
-  core,
-  lowercase,
-) {
+function applySGroupProp(sGroups, propName, propData, numeric, core) {
   // eslint-disable-line max-params
   const kv = readKeyValuePairs(propData, !numeric);
   // "core" properties are stored directly in an sgroup, not in sgroup.data
   for (const key of kv.keys()) {
-    let v = kv.get(key);
-    if (lowercase) {
-      v = String(v).toLowerCase();
-    }
-    (core ? sGroups[key] : sGroups[key].data)[propName] = v;
+    (core ? sGroups[key] : sGroups[key].data)[propName] = kv.get(key);
   }
 }
 

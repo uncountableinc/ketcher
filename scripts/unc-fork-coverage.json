@@ -1,5 +1,5 @@
 {
-  "mergeBase": "2a3ba7939d601c4252af255c94d76ed93bc6d2b6",
+  "mergeBase": "8eced2ca1c68e3f45b092b2ba461e26880061b90",
   "forkRef": "master",
   "upstreamTag": "v3.18.0",
   "behaviours": [
@@ -123,20 +123,6 @@
         "packages/ketcher-core/src/application/editor/operations/base.ts"
       ],
       "verdictNote": "reapply: the suite cannot load on vanilla because upstream moved operations/base.ts, so this verdict is from source inspection - isInvertible appears nowhere in v3.18.0."
-    },
-    {
-      "key": "sgroup-connectivity-case",
-      "summary": "Lowercase S-group connectivity codes on MOL parse.",
-      "verdict": "drop",
-      "covered": "jest __tests__/unc-regression/sgroup-connectivity-case.test.ts",
-      "commits": ["783bc6497", "493fcc1bd", "3aecd5500"],
-      "files": [
-        "packages/ketcher-core/src/domain/serializers/mol/parseSGroup.js",
-        "packages/ketcher-core/src/domain/serializers/mol/__tests__/v2000.test.ts",
-        "packages/ketcher-core/src/domain/serializers/mol/molfile.ts",
-        "packages/ketcher-core/src/domain/serializers/ket/toKet/moleculeToKet.ts"
-      ],
-      "verdictNote": "drop: measured 9/9 on vanilla v3.18.0, over SRU, GEN and COP s-groups. Upstream lowercases connectivity in per-type post-load hooks; its own v2000.test.ts expected 'EU' for a GEN group at the fork's merge base and expects 'eu' in v3.18.0. The test must vary the s-group type: an SRU-only fixture passes everywhere and proves nothing."
     },
     {
       "key": "indigo-stereo-style",

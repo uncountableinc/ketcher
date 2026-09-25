@@ -1,6 +1,6 @@
 /* eslint-disable no-magic-numbers */
 import { test, expect } from '@playwright/test';
-import { getAtomByIndex } from '@utils/canvas/atoms';
+import { getAtomLocator } from '@utils/canvas/atoms/getAtomLocator/getAtomLocator';
 import { waitForPageInit } from '@utils';
 import { ContextMenu } from '@tests/pages/common/ContextMenu';
 import { PLAIN_CHAIN_KET, setMolecule } from './fixtures';
@@ -26,7 +26,7 @@ test.describe('right-click inside the editor', () => {
   });
 
   test('opens the editor context menu on an atom', async ({ page }) => {
-    const atom = await getAtomByIndex(page, { label: 'C' }, 0);
+    const atom = getAtomLocator(page, { atomLabel: 'C' }).first();
 
     await ContextMenu(page, atom).open();
 
@@ -36,7 +36,7 @@ test.describe('right-click inside the editor', () => {
   test('suppresses the browser menu for the editor canvas', async ({
     page,
   }) => {
-    const atom = await getAtomByIndex(page, { label: 'C' }, 0);
+    const atom = getAtomLocator(page, { atomLabel: 'C' }).first();
     await ContextMenu(page, atom).open();
 
     const preventedInsideCanvas = await page.evaluate(() => {

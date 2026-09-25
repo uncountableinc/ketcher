@@ -1,6 +1,7 @@
 /* eslint-disable no-magic-numbers */
 import { test, expect } from '@playwright/test';
-import { clickOnAtom, undoByKeyboard, waitForPageInit } from '@utils';
+import { undoByKeyboard, waitForPageInit, waitForRender } from '@utils';
+import { getAtomLocator } from '@utils/canvas/atoms/getAtomLocator/getAtomLocator';
 import { copyAndPaste } from '@utils/canvas/selectSelection';
 import { CommonLeftToolbar } from '@tests/pages/common/CommonLeftToolbar';
 import {
@@ -56,7 +57,9 @@ test.describe('clipboard and undo', () => {
     const before = await atomCount(page);
 
     await CommonLeftToolbar(page).erase();
-    await clickOnAtom(page, 'C', 0);
+    await waitForRender(page, async () => {
+      await getAtomLocator(page, { atomLabel: 'C' }).nth(0).click();
+    });
     const afterErase = await atomCount(page);
     await undoByKeyboard(page);
 
@@ -77,7 +80,9 @@ test.describe('clipboard and undo', () => {
     };
 
     await CommonLeftToolbar(page).erase();
-    await clickOnAtom(page, 'C', 0);
+    await waitForRender(page, async () => {
+      await getAtomLocator(page, { atomLabel: 'C' }).nth(0).click();
+    });
     await undoByKeyboard(page);
 
     expect({

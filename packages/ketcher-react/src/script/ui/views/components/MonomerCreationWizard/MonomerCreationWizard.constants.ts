@@ -24,8 +24,8 @@ export const MonomerTypeSelectConfig: MonomerTypeSelectItem[] = [
     label: 'Nucleotide (monomer)',
     iconName: 'nucleotide',
   },
-  { value: KetMonomerClass.CHEM, label: 'CHEM', iconName: 'chem' },
   { value: 'rnaPreset', label: 'Nucleotide (preset)', iconName: 'preset' },
+  { value: KetMonomerClass.CHEM, label: 'CHEM', iconName: 'chem' },
 ];
 
 export const MAX_MODIFICATION_TYPES = 5;
@@ -35,14 +35,15 @@ export const NotificationMessages: WizardNotificationMessageMap = {
     'Attachment points are set by default with hydrogens as leaving groups.',
   emptyMandatoryFields: 'Mandatory fields must be filled.',
   invalidSymbol:
-    'The monomer symbol must consist only of uppercase and lowercase letters, numbers, hyphens (-), underscores (_), and asterisks (*).',
+    'The monomer code must consist only of uppercase and lowercase letters, numbers, hyphens (-), underscores (_), and asterisks (*).',
   symbolExists:
-    'The symbol must be unique amongst peptide, RNA, or CHEM monomers.',
+    'The code must be unique amongst peptide, RNA, or CHEM monomers.',
   editingIsNotAllowed: 'Editing of the structure is not allowed.',
   noAttachmentPoints: 'The monomer must have at least one attachment point.',
   incorrectAttachmentPointsOrder:
     'Attachment point numbers must be in order, but R1 and R2 may be skipped.',
   creationSuccessful: 'The monomer was successfully added to the library.',
+  creationRNASuccessful: 'The preset was successfully added to the library.',
   incontinuousStructure: 'All monomers must have a continuous structure.',
   notUniqueModificationTypes:
     'Only one amino acid within a natural analogue can have the same modification type.',
@@ -58,6 +59,9 @@ export const NotificationMessages: WizardNotificationMessageMap = {
     'The HELM alias must be unique amongst peptide or RNA monomers.',
   invalidRnaPresetStructure:
     'Structure of rna preset component contains issues. Please adjust the structure.',
+  notUniquePresetCode: 'The preset code must be unique amongst other presets.',
+  invalidPresetCode:
+    'The preset code must consist only of uppercase and lowercase letters, numbers, hyphens (-), underscores (_), and asterisks (*).',
 };
 
 export const NotificationTypes: WizardNotificationTypeMap = {
@@ -69,6 +73,7 @@ export const NotificationTypes: WizardNotificationTypeMap = {
   noAttachmentPoints: 'error',
   incorrectAttachmentPointsOrder: 'error',
   creationSuccessful: 'info',
+  creationRNASuccessful: 'info',
   incontinuousStructure: 'error',
   notUniqueModificationTypes: 'error',
   modificationTypeExists: 'error',
@@ -77,7 +82,14 @@ export const NotificationTypes: WizardNotificationTypeMap = {
   invalidHELMAlias: 'error',
   notUniqueHELMAlias: 'error',
   invalidRnaPresetStructure: 'error',
+  notUniquePresetCode: 'error',
+  invalidPresetCode: 'error',
 };
 
 export const MonomerCreationExternalNotificationAction =
   'MonomerCreationExternalNotification';
+
+export const MonomerCreationMarkAsComponentAction =
+  'MonomerCreationMarkAsComponent';
+
+export type RnaPresetComponentType = 'base' | 'sugar' | 'phosphate';

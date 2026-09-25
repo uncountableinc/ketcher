@@ -48,6 +48,7 @@ export type WizardNotificationId =
   | 'noAttachmentPoints'
   | 'incorrectAttachmentPointsOrder'
   | 'creationSuccessful'
+  | 'creationRNASuccessful'
   | 'incontinuousStructure'
   | 'notUniqueModificationTypes'
   | 'modificationTypeExists'
@@ -55,7 +56,9 @@ export type WizardNotificationId =
   | 'impureStructure'
   | 'notUniqueHELMAlias'
   | 'invalidHELMAlias'
-  | 'invalidRnaPresetStructure';
+  | 'invalidRnaPresetStructure'
+  | 'notUniquePresetCode'
+  | 'invalidPresetCode';
 
 export type WizardNotificationTypeMap = Record<
   WizardNotificationId,
@@ -88,6 +91,11 @@ export type RnaPresetWizardStatePresetFieldValue = {
     name?: boolean;
   };
   notifications: WizardNotifications;
+  manuallyModifiedSymbols: {
+    base: boolean;
+    sugar: boolean;
+    phosphate: boolean;
+  };
 };
 
 export type RnaPresetWizardState = {
@@ -136,6 +144,12 @@ export type RnaPresetWizardAction =
       type: 'SetRnaPresetComponentStructure';
       rnaComponentKey: RnaPresetWizardStateFieldId;
       editor: Editor;
+    }
+  | {
+      type: 'UpdateRnaPresetComponentStructure';
+      rnaComponentKey: RnaPresetWizardComponentStateFieldId;
+      atomIds: number[];
+      bondIds: number[];
     }
   | {
       type: 'ResetErrors';

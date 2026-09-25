@@ -211,6 +211,23 @@ export const Preset = {
     base: Base.BaseX,
     phosphate: Phosphate.Phosphate,
   } as PresetType,
+  // for monomer creation test, doesn't exist initially
+  Preset: {
+    alias: 'Preset',
+    testId: 'Preset_Base_Sugar_Phosphate',
+    monomerType: MonomerType.Preset,
+    sugar: Sugar.Sugar,
+    base: Base.Base,
+    phosphate: Phosphate.Phosphate,
+  } as PresetType,
+  PresetWithDefaultComponents: {
+    alias: 'Preset',
+    testId: 'Preset_PresetB_PresetS_PresetP',
+    monomerType: MonomerType.Preset,
+    sugar: Sugar.DefaultSugarRnaComponent,
+    base: Base.DefaultBaseRnaComponent,
+    phosphate: Phosphate.DefaultPhosphateRnaComponent,
+  } as PresetType,
 };
 
 export type PresetsType = typeof Preset;

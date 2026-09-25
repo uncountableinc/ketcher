@@ -303,6 +303,20 @@ export class CoreEditor {
     }
   }
 
+  private clearSelectionAfterCopy(): void {
+    const hasSelectedEntities =
+      this.drawingEntitiesManager.selectedEntitiesArr.length > 0;
+
+    if (!hasSelectedEntities) {
+      return;
+    }
+
+    const modelChanges =
+      this.drawingEntitiesManager.unselectAllDrawingEntities();
+
+    this.renderersContainer.update(modelChanges);
+  }
+
   static provideEditorInstance(): CoreEditor {
     return editor;
   }
@@ -374,11 +388,20 @@ export class CoreEditor {
         return;
       }
 
+      // Validate base IDT alias is present when idtAliases is defined
+      if (newMonomer.props?.idtAliases && !newMonomer.props.idtAliases.base) {
+        KetcherLogger.error(
+          `Editor::updateMonomersLibrary: Base IDT alias is required when idtAliases is defined for monomer ${newMonomer.props.MonomerName}. The monomer was not added to the library.`,
+        );
+        return;
+      }
+
       const existingMonomerIndex = this._monomersLibrary.findIndex(
         (monomer) => {
           return (
             monomer?.props?.MonomerName === newMonomer?.props?.MonomerName &&
-            monomer?.props?.MonomerClass === newMonomer?.props?.MonomerClass
+            monomer?.props?.MonomerClass === newMonomer?.props?.MonomerClass &&
+            monomer?.props.hidden === newMonomer.props?.hidden
           );
         },
       );
@@ -483,6 +506,11 @@ export class CoreEditor {
     });
   }
 
+  public checkIfPresetCodeExists(code: string) {
+    const rnaPresets = this.defaultRnaPresetsLibraryItems;
+    return rnaPresets.some((preset) => preset.name === code);
+  }
+
   public get defaultRnaPresetsLibraryItems() {
     const monomersLibraryJson = this.monomersLibraryParsedJson;
 
@@ -563,6 +591,7 @@ export class CoreEditor {
       }
 
       this.mode.onCopy(event);
+      this.clearSelectionAfterCopy();
     };
     this.pasteEventHandler = (event: ClipboardEvent) => {
       // Need to add some abstraction for events handling to have a single point where we can disable events for macro mode
@@ -729,6 +758,7 @@ export class CoreEditor {
     });
     this.events.copySelectedStructure.add(() => {
       this.mode.onCopy();
+      this.clearSelectionAfterCopy();
     });
     this.events.pasteFromClipboard.add(() => {
       this.mode.onPaste();
@@ -746,6 +776,9 @@ export class CoreEditor {
       command.merge(this.drawingEntitiesManager.deleteSelectedEntities());
       history.update(command);
       this.renderersContainer.update(command);
+      this.events.selectEntities.dispatch(
+        this.drawingEntitiesManager.selectedEntities.map((entity) => entity[1]),
+      );
     });
     this.events.modifyAminoAcids.add(
       ({ monomers, modificationType }: ModifyAminoAcidsHandlerParams) => {

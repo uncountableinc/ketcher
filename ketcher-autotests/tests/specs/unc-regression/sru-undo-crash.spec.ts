@@ -1,6 +1,7 @@
 /* eslint-disable no-magic-numbers */
 import { test, expect } from '@playwright/test';
-import { clickOnAtom, undoByKeyboard, waitForPageInit } from '@utils';
+import { undoByKeyboard, waitForPageInit, waitForRender } from '@utils';
+import { getAtomLocator } from '@utils/canvas/atoms/getAtomLocator/getAtomLocator';
 import { selectAllStructuresOnCanvas } from '@utils/canvas/selectSelection';
 import { CommonLeftToolbar } from '@tests/pages/common/CommonLeftToolbar';
 import { LeftToolbar } from '@tests/pages/molecules/LeftToolbar';
@@ -44,7 +45,9 @@ test.describe('SRU polymer undo', () => {
 
     await setMolecule(page, PLAIN_CHAIN_KET);
     await CommonLeftToolbar(page).erase();
-    await clickOnAtom(page, 'C', 3);
+    await waitForRender(page, async () => {
+      await getAtomLocator(page, { atomLabel: 'C' }).nth(3).click();
+    });
 
     await selectAllStructuresOnCanvas(page);
     await LeftToolbar(page).sGroup();
