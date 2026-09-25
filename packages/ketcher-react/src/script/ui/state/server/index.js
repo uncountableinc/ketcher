@@ -15,9 +15,11 @@
  ***************************************************************************/
 
 import { ChemicalMimeType, KetcherLogger, KetSerializer } from 'ketcher-core';
-import { appUpdate, setStruct } from '../options';
+import { appUpdate } from '../options/actions';
+import { setStruct } from '../options';
 import omit from 'lodash/fp/omit';
 import without from 'lodash/fp/without';
+
 import { checkErrors } from '../modal/form';
 import { indigoVerification } from '../request';
 import { load } from '../shared';

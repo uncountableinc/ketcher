@@ -14,14 +14,14 @@
  * limitations under the License.
  ***************************************************************************/
 
-import { Schema, Validator } from 'jsonschema';
 import {
-  StereLabelStyleType,
+  StereoLabelStyleType,
   StereoColoringType,
   ShowHydrogenLabels,
   ShowHydrogenLabelNames,
   defaultBondThickness,
 } from 'ketcher-core';
+import { Validator, Schema } from 'jsonschema';
 
 type ExtendedSchema = Schema & {
   enumNames?: Array<string>;
@@ -118,13 +118,13 @@ const render: {
   stereoLabelStyle: {
     title: 'Label display at\u00A0stereogenic\u00A0centers',
     enum: [
-      StereLabelStyleType.IUPAC,
-      StereLabelStyleType.Classic,
-      StereLabelStyleType.On,
-      StereLabelStyleType.Off,
+      StereoLabelStyleType.IUPAC,
+      StereoLabelStyleType.Classic,
+      StereoLabelStyleType.On,
+      StereoLabelStyleType.Off,
     ],
     enumNames: ['IUPAC style', 'Classic', 'On', 'Off'],
-    default: StereLabelStyleType.IUPAC,
+    default: StereoLabelStyleType.IUPAC,
   },
   colorOfAbsoluteCenters: {
     title: ' Absolute Center color',
@@ -457,36 +457,29 @@ const optionsSchema: ExtendedSchema = {
 export default optionsSchema;
 
 export function getDefaultOptions(): Record<string, any> {
-  if (!optionsSchema.properties) return {};
+  const props = optionsSchema.properties;
+  if (!props) return {};
 
-  return Object.keys(optionsSchema.properties).reduce((res, prop) => {
-    res[prop] = (optionsSchema.properties?.[prop] as ExtendedSchema)?.default;
+  return Object.keys(props).reduce((res, prop) => {
+    res[prop] = props[prop].default;
     return res;
   }, {});
 }
 
-/**
- * jsonschema resolves every schema against a base URL. Without one it reaches
- * `new URL('')`, which throws and unmounts the editor. Both validate call sites
- * in this package must pass the same base, so it lives here.
- */
-export const JSON_SCHEMA_VALIDATOR_OPTIONS = { base: 'https://example.com' };
-
 export function validation(settings): Record<string, string> | null {
   if (typeof settings !== 'object' || settings === null) return null;
 
-  const validator = new Validator();
-  const result = validator.validate(
-    settings,
-    optionsSchema,
-    JSON_SCHEMA_VALIDATOR_OPTIONS,
+  const result = new Validator().validate(settings, optionsSchema as Schema, {
+    base: 'https://ketcher.local/',
+  });
+  const errorsProps = result.errors.map((e) =>
+    e.property.replace(/^instance\./, ''),
   );
-  const errorsProps = result.errors.map((el) => el.path[el.path.length - 1]);
 
   return Object.keys(settings).reduce((res, prop) => {
     if (!optionsSchema.properties) return res;
 
-    if (optionsSchema.properties[prop] && errorsProps.indexOf(prop) === -1)
+    if (optionsSchema.properties[prop] && !errorsProps.includes(prop))
       res[prop] = settings[prop];
 
     return res;

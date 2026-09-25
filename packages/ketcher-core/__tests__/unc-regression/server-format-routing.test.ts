@@ -56,7 +56,7 @@ describe('every format except KET is converted by the server', () => {
 
     await new FormatterFactory(structService)
       .create(format)
-      .getStructureFromStructAsync(struct);
+      .getStringFromStructureAsync(struct);
 
     expect(convertedFormats).toHaveLength(1);
   });
@@ -66,7 +66,7 @@ describe('every format except KET is converted by the server', () => {
 
     await new FormatterFactory(structService)
       .create(SupportedFormat.mol)
-      .getStructureFromStructAsync(struct);
+      .getStringFromStructureAsync(struct);
 
     expect(convertedFormats).toEqual(['chemical/x-mdl-molfile']);
   });
@@ -76,7 +76,7 @@ describe('every format except KET is converted by the server', () => {
 
     const result = await new FormatterFactory(structService)
       .create(SupportedFormat.ket)
-      .getStructureFromStructAsync(struct);
+      .getStringFromStructureAsync(struct);
 
     expect(convertedFormats).toEqual([]);
     expect(JSON.parse(result).root).toBeDefined();

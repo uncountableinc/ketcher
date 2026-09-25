@@ -1,8 +1,8 @@
 import { getLabelRenderModeForIndigo } from 'infrastructure/services/helpers';
-import { ketcherProvider } from 'application/utils';
+import { ketcherProvider } from 'application/ketcherProvider';
 
-jest.mock('application/utils', () => ({
-  ...jest.requireActual('application/utils'),
+jest.mock('application/ketcherProvider', () => ({
+  ...jest.requireActual('application/ketcherProvider'),
   ketcherProvider: { getKetcher: jest.fn() },
 }));
 

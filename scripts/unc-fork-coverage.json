@@ -1,5 +1,5 @@
 {
-  "mergeBase": "c9ec64c2151ef36b2b10863e6a243b87cd1b7d12",
+  "mergeBase": "98dbc62d0776e4e53c6989709ddfa20dc4adcb72",
   "forkRef": "master",
   "upstreamTag": "v3.18.0",
   "behaviours": [
@@ -51,12 +51,12 @@
       ],
       "files": [
         "packages/ketcher-core/src/domain/entities/sgroup.ts",
-        "packages/ketcher-core/src/domain/serializers/mol/common.js",
-        "packages/ketcher-core/src/domain/serializers/mol/v2000.js",
+        "packages/ketcher-core/src/domain/serializers/mol/common.ts",
+        "packages/ketcher-core/src/domain/serializers/mol/v2000.ts",
         "packages/ketcher-core/src/domain/serializers/ket/fromKet/moleculeToStruct.ts",
         "packages/ketcher-core/src/domain/serializers/ket/toKet/moleculeToKet.ts",
         "packages/ketcher-core/src/domain/serializers/mol/molfile.ts",
-        "packages/ketcher-react/src/script/ui/data/schema/struct-schema.js",
+        "packages/ketcher-react/src/script/ui/data/schema/struct-schema.ts",
         "packages/ketcher-react/src/script/ui/state/constants.ts"
       ]
     },
@@ -84,9 +84,8 @@
       "verdict": "drop",
       "covered": "jest __tests__/unc-regression/data-sgroup-bracket-pos.test.ts",
       "commits": ["a4394409c"],
-      "files": [
-        "packages/ketcher-core/src/application/render/restruct/resgroup.ts"
-      ]
+      "files": [],
+      "verdictNote": "dropped at the v3.16.0 merge: upstream threads the render through Data S-group draw itself, so resgroup.ts is now byte-identical to upstream. Measured, not assumed: jest __tests__/unc-regression/data-sgroup-bracket-pos.test.ts passes at v3.16.0 with the file resolved to upstream."
     },
     {
       "key": "server-format-routing",
@@ -153,7 +152,8 @@
         "packages/ketcher-core/src/application/render/restruct/resgroup.ts",
         "packages/ketcher-react/src/script/editor/tool/select/select.ts",
         "packages/ketcher-react/src/script/editor/tool/sgroup.ts"
-      ]
+      ],
+      "verdictNote": "reapply. The v3.16.0 merge took upstream's resgroup.ts whole and silently lost this behaviour's share of it: the SRU connectivity uppercasing and the COP, MON, MIX and COM bracket-label cases. The claim was then removed as stale, which was wrong. The file was not stale because upstream had absorbed the behaviour, it was stale because the behaviour had been deleted, and the coverage check cannot tell those apart. Restored at the v3.16.0 merge. Do not resolve this file to upstream wholesale: it carries deltas from more than one behaviour, so diff it per behaviour before taking either side. Upstream's own COP case is removed instead, as the fork's comes first and is the live one."
     },
     {
       "key": "clipboard-and-undo",
@@ -207,7 +207,7 @@
       "covered": "playwright tests/specs/unc-regression/sru-user-values.spec.ts",
       "commits": ["37c0a4b53", "8c5ee82f0", "241b1d08f", "1a41ba32e"],
       "files": [
-        "packages/ketcher-react/src/script/ui/data/convert/structconv.js"
+        "packages/ketcher-react/src/script/ui/data/convert/structconv.ts"
       ]
     },
     {
@@ -218,15 +218,14 @@
       "commits": ["4e21564a4", "8799f4afc", "6304e0cc4", "5b2e28010"],
       "files": [
         "packages/ketcher-react/src/script/ui/state/options/index.js",
-        "packages/ketcher-react/src/script/ui/state/index.js",
-        "packages/ketcher-react/src/script/ui/data/schema/options-schema.ts"
+        "packages/ketcher-react/src/script/ui/state/index.js"
       ]
     },
     {
       "key": "jsonschema-validator",
       "summary": "Replace ajv with jsonschema in ketcher-react, and give the validator a base URL.",
-      "verdict": "reapply",
-      "verdictNote": "reapply, permanently: main serves the platform under a CSP whose script-src carries no 'unsafe-eval' (main/site/unc_flask/csp.txt; the only exemption is the CAD wasm worker). ajv validates by compiling schemas with new Function (ajv/dist/compile/index.js), which that CSP blocks, so every ketcher dialog that validates a form would fail in the platform. jsonschema interprets instead and needs no codegen. The fork demo page is not served under main's CSP, so taking upstream's ajv passes every fork test and breaks only main.",
+      "verdict": "drop",
+      "verdictNote": "dropped at the v3.16.0 merge: upstream replaced ajv with jsonschema themselves, so form.tsx and options-schema.ts are now byte-identical to upstream, and the fork's own jsonschema dependency, a duplicate of upstream's, is gone. The fork also carried native-url plus a resolve.alias key in packages/ketcher-react/rollup.config.ts; resolve is not a RollupOptions key, so that alias never took effect, and both were removed with the rest. Reapply this behaviour if upstream ever returns to ajv: main serves the platform under a CSP whose script-src carries no 'unsafe-eval' (main/site/unc_flask/csp.txt; the only exemption is the CAD wasm worker), and ajv validates by compiling schemas with new Function (ajv/dist/compile/index.js), which that CSP blocks, so every ketcher dialog that validates a form would fail in the platform. jsonschema interprets instead and needs no codegen. The fork demo page is not served under main's CSP, so an upstream ajv would pass every fork test and break only main. ketcher-core's own ajv dependency is unaffected: its prebuild script precompiles the KET schema, so no codegen runs in the browser.",
       "covered": "playwright tests/specs/unc-regression/settings-state.spec.ts",
       "commits": [
         "8b92271fc",
@@ -235,11 +234,7 @@
         "70289d55f",
         "7f965ea0f"
       ],
-      "files": [
-        "packages/ketcher-react/src/script/ui/component/form/form/form.tsx",
-        "packages/ketcher-react/src/script/ui/data/schema/options-schema.ts",
-        "packages/ketcher-react/src/script/ui/dialog/toolbox/sgroup.test.tsx"
-      ]
+      "files": []
     },
     {
       "key": "fullscreen-and-ketcher-id",
@@ -333,15 +328,12 @@
         "54064df25"
       ],
       "files": [
-        "packages/ketcher-core/src/application/render/draw.ts",
         "packages/ketcher-core/src/application/render/util.ts",
         "packages/ketcher-core/src/application/render/restruct/reImage.ts",
         "packages/ketcher-core/src/application/render/restruct/rebond.ts",
-        "packages/ketcher-core/src/application/render/restruct/resimpleObject.ts",
         "packages/ketcher-core/src/application/render/restruct/restruct.ts",
         "packages/ketcher-core/src/application/render/restruct/retext.ts",
         "packages/ketcher-core/src/application/render/restruct/reatom.ts",
-        "packages/ketcher-core/src/application/render/restruct/resgroup.ts",
         "packages/ketcher-react/src/script/editor/tool/arrow/commonArrow.ts",
         "packages/ketcher-react/src/script/editor/tool/image.ts",
         "packages/ketcher-react/src/script/editor/tool/reactionplus.ts",
@@ -362,8 +354,8 @@
         "packages/ketcher-react/src/script/editor/tool/sgroup.ts",
         "packages/ketcher-react/src/script/ui/action/zoom.js",
         "packages/ketcher-react/src/script/ui/component/form/buttonlist.tsx",
-        "packages/ketcher-react/src/script/ui/data/convert/structconv.js",
-        "packages/ketcher-react/src/script/ui/data/schema/struct-schema.js",
+        "packages/ketcher-react/src/script/ui/data/convert/structconv.ts",
+        "packages/ketcher-react/src/script/ui/data/schema/struct-schema.ts",
         "packages/ketcher-react/src/script/ui/dialog/template/TemplateDialog.tsx",
         "packages/ketcher-react/src/script/ui/dialog/toolbox/labeledit.tsx",
         "packages/ketcher-react/src/script/ui/state/action/index.js",
@@ -426,12 +418,10 @@
       "key": "align-descriptors-guard",
       "summary": "Return early from AlignDescriptors when the structure has no coordinates, instead of reading max.x off a null bounding box.",
       "verdict": "drop",
-      "verdictNote": "drop at the v3.16.2 merge: upstream added the identical if (!structBox) return; there, and moved the class to operations/AlignDescriptors.ts, so expect a rename conflict as well.",
+      "verdictNote": "dropped at the v3.16.0 merge, one release earlier than expected: upstream added the identical if (!structBox) return; and moved the class to operations/AlignDescriptors.ts, so descriptors.ts is now byte-identical to upstream. Measured, not assumed: jest __tests__/unc-regression/operation-null-guards.test.ts passes at v3.16.0 with the file resolved to upstream.",
       "covered": "jest __tests__/unc-regression/operation-null-guards.test.ts",
       "commits": ["1a41ba32e"],
-      "files": [
-        "packages/ketcher-core/src/application/editor/operations/descriptors.ts"
-      ]
+      "files": []
     },
     {
       "key": "atom-attr-is-dummy",
