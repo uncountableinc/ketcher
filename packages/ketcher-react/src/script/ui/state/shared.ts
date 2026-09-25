@@ -103,7 +103,12 @@ export function load(struct: string | Struct, options?) {
     const serverSettings = state.options.getServerSettings();
     const errorHandler = editor.errorHandler;
     options = options || {};
-    let { isPaste, method, ...otherOptions } = options;
+    let {
+      isPaste,
+      method,
+      preserveViewport = false,
+      ...otherOptions
+    } = options;
     otherOptions = {
       ...serverSettings,
       ...otherOptions,
@@ -133,8 +138,10 @@ export function load(struct: string | Struct, options?) {
         );
       }
 
-      // scaling works bad with molecule-to-monomer connections
-      if (!hasMoleculeToMonomerConnections) {
+      // scaling works bad with molecule-to-monomer connections.
+      // preserveViewport also skips rescale so aromatize/dearomatize keep the
+      // current canvas position instead of re-normalizing coordinates.
+      if (!preserveViewport && !hasMoleculeToMonomerConnections) {
         parsedStruct.rescale(); // TODO: move out parsing?
       }
 
@@ -217,7 +224,9 @@ export function load(struct: string | Struct, options?) {
         editor.struct(parsedStruct, method === 'layout');
       }
 
-      editor.zoomAccordingContent(parsedStruct);
+      if (!preserveViewport) {
+        editor.zoomAccordingContent(parsedStruct);
+      }
 
       const isIndigoFunctionCalled = !!method;
       if (!isPaste && !isIndigoFunctionCalled) {

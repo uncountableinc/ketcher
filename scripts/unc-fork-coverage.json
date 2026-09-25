@@ -401,7 +401,7 @@
       "key": "operation-null-guards",
       "summary": "Guard the lookups vanilla dereferences unchecked when an operation is replayed against a structure that no longer holds the atom, half bond or editor it names.",
       "verdict": "reapply",
-      "verdictNote": "reapply: v3.18.0 leaves AtomAttr.execute, Struct.halfBondUpdate, Struct.atomUpdateHalfBonds and BaseMode.onKeyDown unguarded. Carried as patch-package patches against the built bundle in main until this change; building ketcher-core from this source reports every hunk of all three patch files already applied.",
+      "verdictNote": "reapply, and note a second file the coverage check cannot see: v3.18.0 added upstream's own __tests__/application/editor/actions/isDummy.test.ts, which asserts AtomAttr.isDummy returns false when the atom is gone. This fork asserts true, so the action drops the operation. Upstream guarded only isDummy and left execute doing atoms.get(aid)!, so their false makes the action keep an operation that then dereferences the missing atom, which is the crash this behaviour exists to prevent. The AtomAttr assertion in that upstream test is changed to true and carries a comment saying why; expect it to conflict on later merges. The manifest claims packages/*/src only, so nothing else will flag it.",
       "covered": "jest __tests__/unc-regression/operation-null-guards.test.ts",
       "commits": ["1a41ba32e"],
       "files": [
