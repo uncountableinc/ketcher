@@ -1,5 +1,5 @@
 {
-  "mergeBase": "a3ad48c224b264b90dfa5f346eb5e8f6898ec02d",
+  "mergeBase": "f4f013e1855b71b0cbd37fc79d55b0cbe51c2371",
   "forkRef": "master",
   "upstreamTag": "v3.18.0",
   "behaviours": [
@@ -404,7 +404,7 @@
       "key": "operation-null-guards",
       "summary": "Guard the lookups vanilla dereferences unchecked when an operation is replayed against a structure that no longer holds the atom, half bond or editor it names.",
       "verdict": "reapply",
-      "verdictNote": "reapply: v3.18.0 leaves AtomAttr.execute, Struct.halfBondUpdate, Struct.atomUpdateHalfBonds and BaseMode.onKeyDown unguarded. Carried as patch-package patches against the built bundle in main until this change; building ketcher-core from this source reports every hunk of all three patch files already applied.",
+      "verdictNote": "reapply, and note a second file the coverage check cannot see: v3.18.0 added upstream's own __tests__/application/editor/actions/isDummy.test.ts, which asserts AtomAttr.isDummy returns false when the atom is gone. This fork asserts true, so the action drops the operation. Upstream guarded only isDummy and left execute doing atoms.get(aid)!, so their false makes the action keep an operation that then dereferences the missing atom, which is the crash this behaviour exists to prevent. The AtomAttr assertion in that upstream test is changed to true and carries a comment saying why; expect it to conflict on later merges. The manifest claims packages/*/src only, so nothing else will flag it.",
       "covered": "jest __tests__/unc-regression/operation-null-guards.test.ts",
       "commits": ["1a41ba32e"],
       "files": [
@@ -440,6 +440,17 @@
       "covered": "jest __tests__/unc-regression/sgroup-partial-selection-transform.test.ts",
       "commits": ["1262f8bcf1"],
       "files": ["packages/ketcher-core/src/application/editor/actions/utils.ts"]
+    },
+    {
+      "key": "system-controls-mock-passthrough",
+      "summary": "Let SystemControls.test.tsx mock of ketcher-core fall through to the real module.",
+      "verdict": "drop",
+      "verdictNote": "not a fork behaviour, a fix for an upstream defect: v3.18.0 added the useSettings hook to packages/ketcher-react/src/hooks/index.ts, which pulls state/options/index.js and then options-schema.ts into this test's import graph. That test replaces ketcher-core with an object carrying only shortcutStr, so options-schema reads StereoLabelStyleType off undefined and the suite fails to run. Spreading jest.requireActual('ketcher-core') into the mock keeps the shortcutStr override and restores every other export. Verified as upstream's, not the merge's, by running the test against upstream's own state/options/index.js, which fails identically. Drop this the moment upstream fixes the mock.",
+      "covered": "jest packages/ketcher-react/src/script/ui/views/toolbars/TopToolbar/SystemControls.test.tsx, which is the failing test itself",
+      "commits": [],
+      "files": [
+        "packages/ketcher-react/src/script/ui/views/toolbars/TopToolbar/SystemControls.test.tsx"
+      ]
     }
   ]
 }

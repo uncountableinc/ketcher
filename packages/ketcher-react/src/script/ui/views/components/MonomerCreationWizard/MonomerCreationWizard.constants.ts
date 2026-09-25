@@ -68,11 +68,11 @@ export const NotificationMessages: WizardNotificationMessageMap = {
   invalidRnaPresetStructure:
     'Structure of rna preset component contains issues. Please adjust the structure.',
   rnaPresetAtomsOutsideComponents:
-    'Every atom in the loaded structure must belong to a sugar, base, or a phosphate.',
+    'Some atoms do not belong to any nucleotide component (sugar, base, or phosphate).',
   rnaPresetAtomsInMultipleComponents:
-    'Every atom in the loaded structure must belong only to one of the components (sugar, base, or phosphate).',
+    'Some atoms belong to multiple nucleotide components.',
   rnaPresetMissingComponents:
-    'Every preset must contain at least two components, with sugar being a mandatory component.',
+    'Preset must contain at least two components, with sugar being one of them.',
   rnaPresetInvalidSugarConnectionBonds:
     'Sugar can only have one single bond with base and one single bond with phosphate.',
   rnaPresetUnexpectedBasePhosphateBond:
@@ -89,7 +89,9 @@ export const NotificationMessages: WizardNotificationMessageMap = {
   invalidPhosphatePositionAttachmentPoints:
     '3′ position requires phosphate R1 and sugar R2, 5′ position requires phosphate R2 and sugar R1.',
   phosphatePositionNotSelected:
-    "You must chose the position of the phosphate (5' or 3').",
+    "You must choose the position of the phosphate (5' or 3').",
+  editAllPresetWarning: '',
+  editAllPresetError: '',
 };
 
 export const NotificationTypes: WizardNotificationTypeMap = {
@@ -125,6 +127,8 @@ export const NotificationTypes: WizardNotificationTypeMap = {
   invalidName: 'error',
   invalidPhosphatePositionAttachmentPoints: 'error',
   phosphatePositionNotSelected: 'error',
+  editAllPresetWarning: 'warning',
+  editAllPresetError: 'error',
 };
 
 export const MonomerCreationExternalNotificationAction =
