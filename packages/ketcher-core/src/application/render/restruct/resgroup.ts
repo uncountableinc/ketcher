@@ -124,11 +124,37 @@ class ReSGroup extends ReObject {
           break;
         }
         case 'SRU': {
-          let connectivity: string = sgroup.data.connectivity || 'eu';
-          if (connectivity === 'ht') connectivity = '';
+          const connectivity: string = sgroup.data.connectivity || 'eu';
           const subscript = sgroup.data.subscript || 'n';
           SGroupdrawBracketsOptions.lowerIndexText = subscript;
-          SGroupdrawBracketsOptions.upperIndexText = connectivity;
+          SGroupdrawBracketsOptions.upperIndexText = connectivity.toUpperCase();
+          break;
+        }
+        case 'COP': {
+          const connectivity: string = sgroup.data.connectivity || 'eu';
+          SGroupdrawBracketsOptions.upperIndexText = connectivity.toUpperCase();
+          const subtype = sgroup.data.subtype;
+          if (sgroup.data.subtype) {
+            SGroupdrawBracketsOptions.lowerIndexText = subtype.toLowerCase();
+          } else {
+            SGroupdrawBracketsOptions.lowerIndexText = 'co';
+          }
+          break;
+        }
+        case 'MON': {
+          SGroupdrawBracketsOptions.lowerIndexText = 'mon';
+          break;
+        }
+        case 'MIX': {
+          const subscript = sgroup.data.subscript || 'mix';
+          SGroupdrawBracketsOptions.lowerIndexText = subscript;
+          break;
+        }
+        case 'COM': {
+          const subscript = sgroup.data.subscript || 'c';
+          const compno = sgroup.data.compno || 'X';
+          SGroupdrawBracketsOptions.lowerIndexText = subscript;
+          SGroupdrawBracketsOptions.upperIndexText = compno;
           break;
         }
         case 'SUP': {

@@ -148,8 +148,11 @@
         "163120938",
         "5e1077347"
       ],
-      "files": ["packages/ketcher-react/src/script/editor/tool/sgroup.ts"],
-      "verdictNote": "shrank at the v3.17.0 merge: upstream added its own guard in select.ts that skips the auto-expand to the enclosing s-group when the clicked item is already selected, the same intent as the fork's, checked through isItemSelected(selection, ci, ctab). Only the tool/sgroup.ts delta is still ours."
+      "files": [
+        "packages/ketcher-core/src/application/render/restruct/resgroup.ts",
+        "packages/ketcher-react/src/script/editor/tool/sgroup.ts"
+      ],
+      "verdictNote": "reapply. The v3.16.0 merge took upstream's resgroup.ts whole and silently lost this behaviour's share of it: the SRU connectivity uppercasing and the COP, MON, MIX and COM bracket-label cases. The claim was then removed as stale, which was wrong. The file was not stale because upstream had absorbed the behaviour, it was stale because the behaviour had been deleted, and the coverage check cannot tell those apart. Restored at the v3.16.0 merge. Do not resolve this file to upstream wholesale: it carries deltas from more than one behaviour, so diff it per behaviour before taking either side. Upstream's own COP case is removed instead, as the fork's comes first and is the live one. shrank at the v3.17.0 merge: upstream added its own guard in select.ts that skips the auto-expand to the enclosing s-group when the clicked item is already selected, the same intent as the fork's, checked through isItemSelected(selection, ci, ctab). Only the tool/sgroup.ts delta is still ours."
     },
     {
       "key": "clipboard-and-undo",
