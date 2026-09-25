@@ -12,7 +12,6 @@ import {
   deleteByKeyboard,
   waitForRender,
   moveMouseAway,
-  delay,
 } from '@utils';
 import {
   copyAndPaste,
@@ -48,8 +47,6 @@ import { RotationTool } from '@tests/pages/common/canvas/RotationTool';
 const RESET_TOOL_X = 100;
 const RESET_TOOL_Y = 100;
 const RESET_TOOL_DELAY_SECONDS = 0.2;
-const CANVAS_CLICK_X = 600;
-const CANVAS_CLICK_Y = 600;
 
 test.describe('Data S-Group tool', () => {
   test.beforeEach(async ({ page }) => {
@@ -111,7 +108,7 @@ test.describe('Data S-Group tool', () => {
     });
 
     await page.mouse.move(RESET_TOOL_X, RESET_TOOL_Y);
-    await delay(RESET_TOOL_DELAY_SECONDS);
+    await page.waitForTimeout(RESET_TOOL_DELAY_SECONDS * 1000);
     await page.keyboard.press('Escape');
     await moveMouseToTheMiddleOfTheScreen(page);
 
