@@ -15,10 +15,10 @@
  ***************************************************************************/
 
 import styled from '@emotion/styled';
+import { useCallback, useEffect, useState } from 'react';
 import { shortcutStr } from 'ketcher-core';
 import { TopToolbarIconButton } from './TopToolbarIconButton';
 import { useAppContext } from 'src/hooks';
-import { useCallback } from 'react';
 
 interface SystemControlsProps {
   disabledButtons: string[];
@@ -56,6 +56,27 @@ export const SystemControls = ({
   onAboutOpen,
   className,
 }: SystemControlsProps) => {
+  const [isFullscreen, setIsFullscreen] = useState(getIfFullScreen);
+
+  useEffect(() => {
+    const syncFullscreenMode = () => setIsFullscreen(getIfFullScreen());
+
+    document.addEventListener('fullscreenchange', syncFullscreenMode);
+    document.addEventListener('webkitfullscreenchange', syncFullscreenMode);
+    document.addEventListener('mozfullscreenchange', syncFullscreenMode);
+    document.addEventListener('MSFullscreenChange', syncFullscreenMode);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', syncFullscreenMode);
+      document.removeEventListener(
+        'webkitfullscreenchange',
+        syncFullscreenMode,
+      );
+      document.removeEventListener('mozfullscreenchange', syncFullscreenMode);
+      document.removeEventListener('MSFullscreenChange', syncFullscreenMode);
+    };
+  }, []);
+
   const { ketcherId } = useAppContext();
   const onFullscreenCallback = useCallback(() => {
     onFullscreen(ketcherId);
@@ -98,7 +119,7 @@ export const SystemControls = ({
       <TopToolbarIconButton
         title="Fullscreen mode"
         onClick={onFullscreenCallback}
-        iconName={getIfFullScreen() ? 'fullscreen-exit' : 'fullscreen-enter'}
+        iconName={isFullscreen ? 'fullscreen-exit' : 'fullscreen-enter'}
         disabled={disabledButtons.includes('fullscreen')}
         isHidden={hiddenButtons.includes('fullscreen')}
         testId="fullscreen-mode-button"

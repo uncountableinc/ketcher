@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************/
 
-import BaseOperation from 'application/editor/operations/base';
+import BaseOperation from 'application/editor/operations/BaseOperation';
 import { OperationType } from 'application/editor';
 import { ReStruct } from 'application/render';
 import { MonomerMicromolecule } from 'domain/entities';
@@ -30,7 +30,7 @@ type ShiftMonomerData = {
 export class ShiftMonomerOperation extends BaseOperation {
   private previousValue: Partial<{ x: number; y: number }> | null = null;
 
-  constructor(public data: ShiftMonomerData) {
+  constructor(public readonly data: ShiftMonomerData) {
     super(OperationType.SHIFT_MONOMER);
   }
 

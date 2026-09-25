@@ -242,8 +242,6 @@ export function sgroupToStruct(source) {
   const sgroup = new SGroup(source.type);
   ifDef(sgroup, 'atoms', source.atoms);
   switch (source.type) {
-    case 'GEN':
-      break;
     case 'MUL': {
       ifDef(sgroup.data, 'mul', source.mul);
       break;
@@ -297,6 +295,7 @@ export function sgroupToStruct(source) {
       ifDef(sgroup.data, 'fieldValue', source.fieldData);
       break;
     }
+    case 'GEN':
     default:
       break;
   }

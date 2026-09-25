@@ -9,7 +9,6 @@ import {
   openFileAndAddToCanvas,
   takePageScreenshot,
   moveMouseToTheMiddleOfTheScreen,
-  getRightAtomByAttributes,
   cutToClipboardByKeyboard,
   pasteFromClipboardByKeyboard,
   copyToClipboardByKeyboard,
@@ -370,15 +369,15 @@ test.describe('Template Manupulations', () => {
     await CommonTopRightToolbar(page).selectZoomOutTool();
     await clickInTheMiddleOfTheScreen(page);
     await drawBenzeneRing(page);
-    await page.getByTestId('reaction-plus').click();
+    await LeftToolbar(page).reactionPlusTool();
     await clickOnCanvas(page, 1, 1, { from: 'pageCenter' });
     await BottomToolbar(page).clickRing(RingButton.Cyclooctane);
     // eslint-disable-next-line no-magic-numbers
     await clickOnCanvas(page, 1, -4, { from: 'pageCenter' });
-    await takePageScreenshot(page);
+    await takeEditorScreenshot(page);
     await LeftToolbar(page).selectArrowTool();
     await clickOnCanvas(page, 1, 0, { from: 'pageCenter' });
-    await takePageScreenshot(page);
+    await takeEditorScreenshot(page);
     await zoomSelector.click();
     await takeEditorScreenshot(page);
   });
@@ -528,7 +527,7 @@ test.describe('Template Manupulations', () => {
     */
     const X_DELTA_ONE = 100;
     await BottomToolbar(page).structureLibrary();
-    await StructureLibraryDialog(page).addFunctionalGroup(
+    await StructureLibraryDialog(page).selectFunctionalGroup(
       FunctionalGroupsTabItems.CONH2,
     );
     await clickInTheMiddleOfTheScreen(page);
@@ -574,7 +573,7 @@ test.describe('Open Ketcher', () => {
     await getAtomLocator(page, { atomLabel: 'C', atomId: 6 }).hover({
       force: true,
     });
-    await takePageScreenshot(page);
+    await takeEditorScreenshot(page);
     await CommonTopLeftToolbar(page).clearCanvas();
   });
 
@@ -589,7 +588,7 @@ test.describe('Open Ketcher', () => {
     await getAtomLocator(page, { atomLabel: 'C', atomId: 8 }).hover({
       force: true,
     });
-    await takePageScreenshot(page);
+    await takeEditorScreenshot(page);
   });
 
   test('Templates - The full preview of the Template from the Templates toolbar, following mouse cursor', async () => {
@@ -602,11 +601,13 @@ test.describe('Open Ketcher', () => {
     await BottomToolbar(page).benzene();
     await moveMouseToTheMiddleOfTheScreen(page);
     await clickOnCanvas(page, xOffsetFromCenter, 0, { from: 'pageCenter' });
-    await takePageScreenshot(page);
+    await takeEditorScreenshot(page);
     await BottomToolbar(page).cyclopentadiene();
-    const point = await getRightAtomByAttributes(page, { label: 'C' });
-    await page.mouse.move(point.x, point.y);
-    await takePageScreenshot(page);
+    await getAtomLocator(page, { atomId: 7 }).hover({
+      force: true,
+    });
+    await page.waitForTimeout(300);
+    await takeEditorScreenshot(page);
   });
 
   test('Templates - The full preview of the Template from the Template library, following mouse cursor', async () => {
@@ -619,16 +620,18 @@ test.describe('Open Ketcher', () => {
     */
     const xOffsetFromCenter = 40;
     await BottomToolbar(page).structureLibrary();
-    await StructureLibraryDialog(page).addTemplate(
+    await StructureLibraryDialog(page).selectTemplate(
       TemplateLibraryTab.Aromatics,
       AromaticsTemplate.Azulene,
     );
     await moveMouseToTheMiddleOfTheScreen(page);
     await clickOnCanvas(page, xOffsetFromCenter, 0, { from: 'pageCenter' });
-    await takePageScreenshot(page);
-    const point = await getRightAtomByAttributes(page, { label: 'C' });
-    await page.mouse.move(point.x, point.y);
-    await takePageScreenshot(page);
+    await takeEditorScreenshot(page);
+    await getAtomLocator(page, { atomId: 19 }).hover({
+      force: true,
+    });
+    await page.waitForTimeout(200);
+    await takeEditorScreenshot(page);
   });
 
   test(
@@ -648,7 +651,7 @@ test.describe('Open Ketcher', () => {
       await CommonLeftToolbar(page).areaSelectionTool(
         SelectionToolType.Rectangle,
       );
-      await takePageScreenshot(page);
+      await takeEditorScreenshot(page);
 
       await selectAllStructuresOnCanvas(page);
       await cutToClipboardByKeyboard(page);
@@ -657,7 +660,7 @@ test.describe('Open Ketcher', () => {
       await BottomToolbar(page).clickRing(RingButton.Benzene);
       await clickInTheMiddleOfTheScreen(page);
       await BottomToolbar(page).clickRing(RingButton.Benzene);
-      await takePageScreenshot(page);
+      await takeEditorScreenshot(page);
     },
   );
 
@@ -669,17 +672,17 @@ test.describe('Open Ketcher', () => {
     */
     const xOffsetFromCenter = 40;
     await BottomToolbar(page).structureLibrary();
-    await StructureLibraryDialog(page).addTemplate(
+    await StructureLibraryDialog(page).selectTemplate(
       TemplateLibraryTab.Aromatics,
       AromaticsTemplate.Naphtalene,
     );
     await moveMouseToTheMiddleOfTheScreen(page);
     await clickOnCanvas(page, xOffsetFromCenter, 0, { from: 'pageCenter' });
-    await takePageScreenshot(page);
+    await takeEditorScreenshot(page);
     await CommonLeftToolbar(page).areaSelectionTool(
       SelectionToolType.Rectangle,
     );
-    await takePageScreenshot(page);
+    await takeEditorScreenshot(page);
     await CommonLeftToolbar(page).areaSelectionTool(
       SelectionToolType.Rectangle,
     );
@@ -700,13 +703,13 @@ test.describe('Open Ketcher', () => {
     await clickInTheMiddleOfTheScreen(page);
     await takePageScreenshot(page);
     await BottomToolbar(page).structureLibrary();
-    await StructureLibraryDialog(page).addTemplate(
+    await StructureLibraryDialog(page).selectTemplate(
       TemplateLibraryTab.Aromatics,
       AromaticsTemplate.Azulene,
     );
     await getAtomLocator(page, { atomLabel: 'C', atomId: 8 }).hover({
       force: true,
     });
-    await takePageScreenshot(page);
+    await takeEditorScreenshot(page);
   });
 });

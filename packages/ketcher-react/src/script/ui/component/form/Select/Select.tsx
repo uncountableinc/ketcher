@@ -34,7 +34,7 @@ interface Props {
   options: Array<Option>;
   onChange: (value: string) => void;
   className?: string;
-  value?: string;
+  value?: string | number;
   multiple?: boolean;
   disabled?: boolean;
   formName?: string;
@@ -71,7 +71,6 @@ const Select = ({
   error,
 }: Props) => {
   const [currentValue, setCurrentValue] = useState<Option>();
-
   useEffect(() => {
     let option;
     if (options) {

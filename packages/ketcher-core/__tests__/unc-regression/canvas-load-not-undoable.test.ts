@@ -3,7 +3,7 @@
 // base class is still undefined when its subclasses extend it.
 import 'domain/serializers';
 import { Action } from 'application/editor/actions/action';
-import { BaseOperation } from 'application/editor/operations/base';
+import { BaseOperation } from 'application/editor/operations/BaseOperation';
 import { CanvasLoad } from 'application/editor/operations/CanvasLoad';
 import { OperationType } from 'application/editor/operations/OperationType';
 

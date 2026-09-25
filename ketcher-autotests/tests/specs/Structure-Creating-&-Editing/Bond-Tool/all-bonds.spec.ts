@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable no-magic-numbers */
 import { test, expect, Page } from '@fixtures';
 import {
@@ -8,7 +9,6 @@ import {
   takeEditorScreenshot,
   openFileAndAddToCanvas,
   takeLeftToolbarScreenshot,
-  waitForPageInit,
   waitForRender,
   cutToClipboardByKeyboard,
   copyToClipboardByKeyboard,
@@ -18,7 +18,6 @@ import {
   takeElementScreenshot,
   openFileAndAddToCanvasMacro,
 } from '@utils';
-import { getLeftBondByAttributes } from '@utils/canvas/bonds';
 import { SelectionToolType } from '@tests/pages/constants/areaSelectionTool/Constants';
 import {
   MicroBondDataIds,
@@ -54,6 +53,7 @@ import {
 } from '@utils/files/receiveFileComparisonData';
 import { CommonTopRightToolbar } from '@tests/pages/common/CommonTopRightToolbar';
 import { getMonomerLocator } from '@utils/macromolecules/monomer';
+import { SGroupPropertiesDialog } from '@tests/pages/molecules/canvas/S-GroupPropertiesDialog';
 
 const buttonIdToTitle: Record<MicroBondType, string> = {
   [MicroBondType.Single]: 'Single Bond (1)',
@@ -74,20 +74,18 @@ const buttonIdToTitle: Record<MicroBondType, string> = {
 
 let page: Page;
 
-test.beforeAll(async ({ browser }) => {
-  const context = await browser.newContext();
-  page = await context.newPage();
-
-  await waitForPageInit(page);
+test.beforeAll(async ({ initMoleculesCanvas }) => {
+  page = await initMoleculesCanvas();
 });
 
+test.beforeEach(async ({ MoleculesCanvas: _ }) => {});
+
 test.afterEach(async () => {
-  await CommonTopLeftToolbar(page).clearCanvas();
   await CommonLeftToolbar(page).handTool();
 });
 
-test.afterAll(async ({ browser }) => {
-  await Promise.all(browser.contexts().map((context) => context.close()));
+test.afterAll(async ({ closePage }) => {
+  await closePage();
 });
 
 test.describe(`Bond tool:`, () => {
@@ -340,9 +338,13 @@ test.describe(`Bond tool (copy-paste):`, () => {
           SelectionToolType.Rectangle,
         );
 
-        point = await getLeftBondByAttributes(page, {
-          reactingCenterStatus: 0,
-        });
+        const boundingBox = await getBondLocator(page, {}).boundingBox();
+        if (boundingBox) {
+          point = {
+            x: boundingBox.x + boundingBox.width / 2,
+            y: boundingBox.y + boundingBox.height / 2,
+          };
+        }
 
         await clickOnCanvas(page, point.x, point.y, {
           waitForRenderTimeOut: 100,
@@ -403,7 +405,7 @@ test.describe('Bond Tool', () => {
        *Description: A bond is added to a contracted functional group and form a bond
        */
       await BottomToolbar(page).structureLibrary();
-      await StructureLibraryDialog(page).addFunctionalGroup(
+      await StructureLibraryDialog(page).selectFunctionalGroup(
         FunctionalGroupsTabItems.Boc,
       );
       await clickInTheMiddleOfTheScreen(page);
@@ -441,6 +443,7 @@ test.describe('Bond Tool', () => {
      */
     const hotKeys = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit0'];
     await page.keyboard.press('Escape');
+    await clickInTheMiddleOfTheScreen(page);
     for (const [index, hotKey] of hotKeys.entries()) {
       // Delay prevents the search field from opening after the hotkey press
       // (otherwise the main window is blocked and the panel tools can't be selected)
@@ -463,6 +466,7 @@ test.describe('Bond Tool', () => {
     await LeftToolbar(page).sGroup();
     await getBondLocator(page, { bondId: 7 }).click({ force: true });
     await takeEditorScreenshot(page);
+    await SGroupPropertiesDialog(page).cancel();
   });
 
   test('Drawing bonds in one direction does not change the bond created in the other direction', async () => {
@@ -617,49 +621,6 @@ test.describe('Bond Tool', () => {
     await takeEditorScreenshot(page);
   });
 
-  test('Aromatic - Ring inside the cycle structure', async () => {
-    /**
-     *Test case: EPMLSOPKET-1436
-     *Description: Aromatic Bond tool - Ring inside the cycle structure
-     */
-    await BottomToolbar(page).clickRing(RingButton.Cyclohexane);
-    await clickInTheMiddleOfTheScreen(page);
-    await CommonLeftToolbar(page).bondTool(MicroBondType.Aromatic);
-    const bondIds = [11, 6, 7, 8, 9, 10];
-    let i = 0;
-    while (i < bondIds.length) {
-      await getBondLocator(page, { bondId: bondIds[i] }).click({ force: true });
-      i++;
-    }
-    await takeEditorScreenshot(page);
-    await IndigoFunctionsToolbar(page).dearomatize();
-    await takeEditorScreenshot(page);
-    await IndigoFunctionsToolbar(page).aromatize();
-    await takeEditorScreenshot(page);
-  });
-
-  test('Allow for stereo-bonds (up and down) to be a bond between AA and LGA for PNG and SVG format', async () => {
-    /*
-     * Test case: https://github.com/epam/ketcher/issues/8254
-     * Requirements:
-     * - If the stereo-bond has the LGA at the narrow end, it should be treated as a simple single bond.
-     * - If only one AP has a stereo bond between LGA and AA, and the narrow end of the bond is at the AA,
-     * the bond between the monomers should remain be that stereo-bond with the same AA at the narrow end.
-     * - If both APs have a stereo bond between LGA and AA, and the narrow ends of the bonds are at the AAa, the bond between the monomers should be a simple single bond.
-     * Expected result: The schema with different connection should save in PNG and SVG format
-     */
-
-    await openFileAndAddToCanvasAsNewProject(
-      page,
-      'KET/stereo-bonds-between-aa-lga.ket',
-    );
-    await IndigoFunctionsToolbar(page).layout();
-    await verifyPNGExport(page);
-    await verifySVGExport(page);
-    await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
-    await verifySVGExport(page);
-  });
-
   test('Allow for stereo-bonds (up and down) to be a bond between AA and LGA for KET format', async () => {
     /*
      * Test case: https://github.com/epam/ketcher/issues/8254
@@ -731,3 +692,45 @@ for (const bondType of Object.values(MicroBondType)) {
     await commonLeftToolbar.handTool();
   });
 }
+test('Aromatic - Ring inside the cycle structure', async () => {
+  /**
+   *Test case: EPMLSOPKET-1436
+   *Description: Aromatic Bond tool - Ring inside the cycle structure
+   */
+  await BottomToolbar(page).clickRing(RingButton.Cyclohexane);
+  await clickInTheMiddleOfTheScreen(page);
+  await CommonLeftToolbar(page).bondTool(MicroBondType.Aromatic);
+  const bondIds = [11, 6, 7, 8, 9, 10];
+  let i = 0;
+  while (i < bondIds.length) {
+    await getBondLocator(page, { bondId: bondIds[i] }).click({ force: true });
+    i++;
+  }
+  await takeEditorScreenshot(page);
+  await IndigoFunctionsToolbar(page).dearomatize();
+  await takeEditorScreenshot(page);
+  await IndigoFunctionsToolbar(page).aromatize();
+  await takeEditorScreenshot(page);
+});
+
+test('Allow for stereo-bonds (up and down) to be a bond between AA and LGA for PNG and SVG format', async () => {
+  /*
+   * Test case: https://github.com/epam/ketcher/issues/8254
+   * Requirements:
+   * - If the stereo-bond has the LGA at the narrow end, it should be treated as a simple single bond.
+   * - If only one AP has a stereo bond between LGA and AA, and the narrow end of the bond is at the AA,
+   * the bond between the monomers should remain be that stereo-bond with the same AA at the narrow end.
+   * - If both APs have a stereo bond between LGA and AA, and the narrow ends of the bonds are at the AAa, the bond between the monomers should be a simple single bond.
+   * Expected result: The schema with different connection should save in PNG and SVG format
+   */
+
+  await openFileAndAddToCanvasAsNewProject(
+    page,
+    'KET/stereo-bonds-between-aa-lga.ket',
+  );
+  await IndigoFunctionsToolbar(page).layout();
+  await verifyPNGExport(page);
+  await verifySVGExport(page);
+  await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
+  await verifySVGExport(page);
+});

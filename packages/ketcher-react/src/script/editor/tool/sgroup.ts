@@ -56,7 +56,7 @@ class SGroupTool implements Tool {
   }
 
   checkSelection() {
-    let selection = this.editor.selection() || {};
+    let selection = this.editor.selection() ?? {};
     const struct = this.editor.render.ctab;
     const molecule = struct.molecule;
     const filteredAtomsAndBonds = filterNotPartOfSuperatomWithoutLabel(
@@ -70,7 +70,7 @@ class SGroupTool implements Tool {
       bonds: filteredAtomsAndBonds.bonds,
     };
 
-    selection = this.editor.selection(selection) || {};
+    selection = this.editor.selection(selection) ?? {};
     this.editor.rotateController.rerender();
     this.editor.update(true);
 
@@ -539,7 +539,7 @@ class SGroupTool implements Tool {
     functionalGroups,
     result: Array<number>,
   ) {
-    if (!atomsResult || !atomsResult.length) {
+    if (!atomsResult?.length) {
       return;
     }
 
@@ -560,7 +560,7 @@ class SGroupTool implements Tool {
     molecule,
     result: Array<number>,
   ) {
-    if (!bondsResult || !bondsResult.length) {
+    if (!bondsResult?.length) {
       return;
     }
 
@@ -721,7 +721,7 @@ class SGroupTool implements Tool {
   static sgroupDialog(editor: Editor, id: number | null) {
     const restruct = editor.render.ctab;
     const struct = restruct.molecule;
-    const selection = editor.selection() || {};
+    const selection = editor.selection() ?? {};
     const sg = id !== null ? struct.sgroups.get(id) : null;
 
     // Prevent opening S-Group properties for expanded monomers
@@ -817,7 +817,7 @@ function createQueryComponentSGroup(
       editor.errorHandler?.('Cannot convert to a query component');
       return;
     }
-    selection = { atoms: sg.atoms || [] };
+    selection = { atoms: sg.atoms ?? [] };
   }
   if (checkOverlapping(struct, 'queryComponent', selection.atoms)) {
     editor.errorHandler?.(
@@ -865,7 +865,7 @@ function getContextBySelection(restruct, selection) {
     return SgContexts.Bond;
   }
 
-  selection.atoms = selection.atoms || [];
+  selection.atoms = selection.atoms ?? [];
 
   const atomSet = new Pile(selection.atoms);
   const allBondsSelected = bonds.every(
@@ -884,7 +884,7 @@ function getContextBySelection(restruct, selection) {
 function fromContextType(id, editor, newSg, currSelection) {
   const restruct = editor.render.ctab;
   const sg = restruct.molecule.sgroups.get(id);
-  const sourceAtoms = sg?.atoms || currSelection.atoms || [];
+  const sourceAtoms = sg?.atoms ?? currSelection.atoms ?? [];
   const context = newSg.attrs.context;
 
   if (

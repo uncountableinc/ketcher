@@ -17,7 +17,6 @@
 import { TransientView } from 'application/render/renderers/TransientView/TransientView';
 import { D3SvgElementSelection } from 'application/render/types';
 import { Vec2 } from 'domain/entities';
-import { arc as d3Arc } from 'd3';
 import { Coordinates } from 'application/editor';
 
 export type RotationViewParams = {
@@ -72,6 +71,30 @@ const getDegreeDifference = (a: number, b: number) => {
   return diff > 180 ? 360 - diff : diff;
 };
 
+const getPointOnCircle = (center: Vec2, radius: number, angle: number) => {
+  return {
+    x: center.x + radius * Math.cos(angle),
+    y: center.y + radius * Math.sin(angle),
+  };
+};
+
+const getRotationArcPath = (
+  center: Vec2,
+  radius: number,
+  startAngle: number,
+  rotationAngle: number,
+) => {
+  const start = getPointOnCircle(center, radius, startAngle);
+  const end = getPointOnCircle(center, radius, startAngle + rotationAngle);
+  const largeArcFlag = Math.abs(rotationAngle) > Math.PI ? 1 : 0;
+  const sweepFlag = rotationAngle < 0 ? 0 : 1;
+
+  return (
+    `M${start.x},${start.y}` +
+    `A${radius},${radius} 0 ${largeArcFlag},${sweepFlag} ${end.x},${end.y}`
+  );
+};
+
 // TypeScript doesn't support abstract static methods, but the TransientView pattern
 // requires static show() methods. This ts-ignore is necessary to follow the
 // established pattern used by other TransientView subclasses (SelectionView, etc.)
@@ -114,9 +137,7 @@ export class RotationView extends TransientView {
       cursor,
     } = params;
 
-    if (!isRotating) {
-      RotationView.lastSnappingRadius = undefined;
-    } else if (!RotationView.wasRotating) {
+    if (!isRotating || !RotationView.wasRotating) {
       RotationView.lastSnappingRadius = undefined;
     }
     RotationView.wasRotating = isRotating;
@@ -248,22 +269,32 @@ export class RotationView extends TransientView {
     handleGroup
       .append('circle')
       .attr('r', STYLE.HANDLE_RADIUS)
-      .attr('fill', STYLE.INITIAL_COLOR)
+      .attr('fill', isRotating ? STYLE.ACTIVE_COLOR : STYLE.INITIAL_COLOR)
       .attr('stroke', 'none')
-      .attr('style', 'cursor: grab');
+      .attr('style', `cursor: ${isRotating ? 'grabbing' : 'grab'}`);
 
     // Draw arrows on handle
     const arrowGroup = handleGroup.append('g');
     arrowGroup
       .append('path')
       .attr('d', LEFT_ARROW_PATH)
-      .attr('fill', 'white')
+      .attr('fill', isRotating ? 'none' : 'white')
       .attr('transform', 'translate(-10,-10)');
     arrowGroup
       .append('path')
       .attr('d', RIGHT_ARROW_PATH)
-      .attr('fill', 'white')
+      .attr('fill', isRotating ? 'none' : 'white')
       .attr('transform', 'translate(-10,-10)');
+
+    if (!isRotating) {
+      handleGroup
+        .on('mouseenter', () => {
+          handleGroup.select('circle').attr('fill', STYLE.ACTIVE_COLOR);
+        })
+        .on('mouseleave', () => {
+          handleGroup.select('circle').attr('fill', STYLE.INITIAL_COLOR);
+        });
+    }
 
     // Draw rotation protractor and arc when rotating
     if (isRotating) {
@@ -356,12 +387,14 @@ export class RotationView extends TransientView {
           const textRadius = radius + STYLE.DEGREE_TEXT_MARGIN + tickLength;
           const textX = center.x + textRadius * Math.cos(angle);
           const textY = center.y + textRadius * Math.sin(angle);
-          const textFill =
-            diff > 90
-              ? 'none'
-              : degree !== 0 && degree === currentDegrees
-              ? STYLE.ACTIVE_COLOR
-              : STYLE.INITIAL_COLOR;
+          let textFill: string;
+          if (diff > 90) {
+            textFill = 'none';
+          } else if (degree !== 0 && degree === currentDegrees) {
+            textFill = STYLE.ACTIVE_COLOR;
+          } else {
+            textFill = STYLE.INITIAL_COLOR;
+          }
 
           transientLayer
             .append('text')
@@ -375,17 +408,12 @@ export class RotationView extends TransientView {
         });
 
         // Draw rotation arc
-        const endAngle = startAngle + rotationAngle;
-        const arcGenerator = d3Arc()
-          .innerRadius(radius)
-          .outerRadius(radius)
-          .startAngle(Math.min(startAngle, endAngle))
-          .endAngle(Math.max(startAngle, endAngle));
-
         transientLayer
           .append('path')
-          .attr('d', arcGenerator as unknown as string)
-          .attr('transform', `translate(${center.x},${center.y})`)
+          .attr(
+            'd',
+            getRotationArcPath(center, radius, startAngle, rotationAngle),
+          )
           .attr('fill', 'none')
           .attr('stroke', STYLE.ACTIVE_COLOR)
           .attr('stroke-width', 1)
@@ -393,7 +421,7 @@ export class RotationView extends TransientView {
 
         // Draw angle text
         const angleInDegrees = Math.round((rotationAngle * 180) / Math.PI);
-        const textAngle = startAngle + rotationAngle / 2;
+        const textAngle = startAngle;
         const textRadius = radius + 20;
         const textX = center.x + textRadius * Math.cos(textAngle);
         const textY = center.y + textRadius * Math.sin(textAngle);

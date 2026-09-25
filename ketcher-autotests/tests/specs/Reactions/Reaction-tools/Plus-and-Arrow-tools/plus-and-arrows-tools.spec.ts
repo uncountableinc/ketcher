@@ -15,6 +15,7 @@ import {
   pasteFromClipboardByKeyboard,
   clickOnCanvas,
   resetZoomLevelToDefault,
+  Arrows,
 } from '@utils';
 import {
   copyAndPaste,
@@ -34,6 +35,7 @@ import { IndigoFunctionsToolbar } from '@tests/pages/molecules/IndigoFunctionsTo
 import { LeftToolbar } from '@tests/pages/molecules/LeftToolbar';
 import { ArrowType } from '@tests/pages/constants/arrowSelectionTool/Constants';
 import { INPUT_DELAY } from '@utils/globals';
+import { getArrowLocator } from '@utils/canvas/arrow-signes/getArrow';
 
 const xOffsetFromCenter = -35;
 const idToTitle: {
@@ -437,19 +439,22 @@ test.describe('Plus and Arrows tools ', () => {
     test('Select reaction arrow, copy and paste it onto the canvas', async ({
       page,
     }) => {
-      await clickOnCanvas(page, point.x + OFFSET_FROM_ARROW, point.y, {
-        from: 'pageTopLeft',
+      const arrow = getArrowLocator(page, {
+        arrowType: Arrows.EquilibriumFilledHalfBow,
       });
-
+      await arrow.hover({ force: true });
+      await arrow.click({ force: true });
       await copyToClipboardByKeyboard(page);
       await pasteFromClipboardByKeyboard(page);
-
       await clickOnCanvas(page, 0, -100, { from: 'pageCenter' });
       await CommonTopLeftToolbar(page).undo();
       await takeEditorScreenshot(page, {
         maxDiffPixels: 1,
       });
       await CommonTopLeftToolbar(page).redo();
+      await takeEditorScreenshot(page, {
+        maxDiffPixels: 1,
+      });
     });
 
     test('Click the equilibrium arrow with the Erase tool, Undo, Erase for part of reaction, Undo/Redo', async ({
@@ -743,24 +748,26 @@ test.describe('Plus and Arrows tools ', () => {
       await page.mouse.move(point.x + 100, point.y - 50);
     });
 
-    test('to Horizontal Position with Angle ≤ 15 Degrees', async ({ page }) => {
+    test('to Horizontal Position with Angle ≤ 5 Degrees', async ({ page }) => {
       /**
-       * Test case: Test case: EPMLSOPKET-15548
-       * Description: Arrow Snapping to Horizontal Position with Angle ≤ 15 Degrees
+       * Original Test case: Test case: EPMLSOPKET-15548
+       * Current behavior defined by https://github.com/epam/ketcher/issues/5568
+       * Description: Arrow Snapping to Horizontal Position with Angle ≤ 5 Degrees
        */
       await page.mouse.down();
-      await page.mouse.move(point.x + 100, point.y - 20);
+      await page.mouse.move(point.x + 100, point.y - 5);
       await takeEditorScreenshot(page);
       await page.mouse.up();
     });
 
-    test('to Vertical Position with Angle ≤ 15 Degrees', async ({ page }) => {
+    test('to Vertical Position with Angle ≤ 5 Degrees', async ({ page }) => {
       /**
-       * Test case: Test case: EPMLSOPKET-15549
-       * Description: Arrow Snapping to Vertical Position with Angle ≤ 15 Degrees
+       * Original Test case: Test case: EPMLSOPKET-15549
+       * Current behavior defined by https://github.com/epam/ketcher/issues/5568
+       * Description: Arrow Snapping to Vertical Position with Angle ≤ 5 Degrees
        */
       await page.mouse.down();
-      await page.mouse.move(point.x + 20, point.y - 100);
+      await page.mouse.move(point.x + 5, point.y - 100);
       await takeEditorScreenshot(page);
       await page.mouse.up();
     });

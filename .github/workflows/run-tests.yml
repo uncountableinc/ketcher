@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     # Bookworm, not bullseye: the bullseye security pool no longer serves the
     # package versions its own index advertises, so apt-get install fails there.
-    container: node:18.20-bookworm-slim
+    container: node:24.14.1-bookworm-slim
     steps:
       - name: Install dependencies
         run: apt-get update -y && apt-get install -y git
@@ -97,7 +97,7 @@ jobs:
     if: ${{ !cancelled() }}
     needs: [part]
     runs-on: ubuntu-latest
-    container: node:22.11-bullseye-slim
+    container: node:24.14.1-bullseye-slim
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
