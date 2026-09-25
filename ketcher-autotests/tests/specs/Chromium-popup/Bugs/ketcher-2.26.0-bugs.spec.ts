@@ -32,7 +32,7 @@ import {
   MolFileFormat,
   ZoomOutByKeyboard,
 } from '@utils';
-import { delay, selectAllStructuresOnCanvas } from '@utils/canvas';
+import { selectAllStructuresOnCanvas } from '@utils/canvas';
 import { waitForPageInit, waitForRender } from '@utils/common';
 import { processResetToDefaultState } from '@utils/testAnnotations/resetToDefaultState';
 import { SaveStructureDialog } from '@tests/pages/common/SaveStructureDialog';
@@ -732,7 +732,7 @@ test.describe('Ketcher bugs in 2.26.0', () => {
     );
     await selectAllStructuresOnCanvas(page);
     await page.getByTestId('bottomTail-move').hover({ force: true });
-    await dragMouseTo(200, 500, page);
+    await dragMouseTo(page, 200, 500);
     await takeEditorScreenshot(page);
     await removeTail(page, 'tails-0-move');
     await takeEditorScreenshot(page);
@@ -910,7 +910,7 @@ test.describe('Ketcher bugs in 2.26.0', () => {
       .locator('rect')
       .nth(1)
       .hover();
-    await dragMouseTo(600, 350, page);
+    await dragMouseTo(page, 600, 350);
     await takeEditorScreenshot(page);
   });
 
@@ -1040,7 +1040,7 @@ test.describe('Ketcher bugs in 2.26.0', () => {
       page,
       'Molfiles-V3000/Chromium-popup/monomers-connected-to-microstructures-expected.mol',
     );
-    await delay(1);
+    await page.waitForTimeout(1 * 1000);
     await takeEditorScreenshot(page, {
       hideMonomerPreview: true,
       hideMacromoleculeEditorScrollBars: true,

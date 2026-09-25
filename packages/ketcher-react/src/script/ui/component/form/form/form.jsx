@@ -46,7 +46,6 @@ class Form extends Component {
     }
     this.updateState = this.updateState.bind(this);
 
-    // Cache the context value to avoid creating new objects on every render
     this._cachedSchema = schema;
     this._contextValue = { schema, stateStore: this };
   }
@@ -262,6 +261,7 @@ function Field(props) {
         onMouseEnter={handlePopoverOpen}
         onMouseLeave={handlePopoverClose}
         data-testid={props['data-testid'] + '-input-span'}
+        role="none"
       >
         {formField}
       </span>
@@ -307,6 +307,7 @@ function FieldWithModal(props) {
         })}
         onMouseEnter={handlePopoverOpen}
         onMouseLeave={handlePopoverClose}
+        role="none"
       >
         <Input name={name} schema={desc} {...fieldOpts} {...rest} />
         <IconButton
@@ -378,6 +379,7 @@ function CustomQueryField(props) {
           [classes.dataError]: dataError,
           [classes.inputWrapper]: true,
         })}
+        role="none"
       >
         <Input
           type="textarea"

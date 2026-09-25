@@ -1,10 +1,10 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable max-len */
 /* eslint-disable no-magic-numbers */
 
 import { Page, test } from '@fixtures';
 import {
   takeEditorScreenshot,
-  waitForPageInit,
   MacroFileType,
   pasteFromClipboardAndAddToMacromoleculesCanvas,
   openFileAndAddToCanvasMacro,
@@ -12,10 +12,15 @@ import {
   ZoomInByKeyboard,
   resetZoomLevelToDefault,
   moveMouseAway,
+  takeElementScreenshot,
+  getCoordinatesOfTheMiddleOfTheCanvas,
+  dragMouseTo,
+  SymbolType,
 } from '@utils';
 import { selectAllStructuresOnCanvas } from '@utils/canvas/selectSelection';
 import {
   getMonomerLocator,
+  getSymbolLocator,
   MonomerLocatorOptions,
 } from '@utils/macromolecules/monomer';
 import { bondTwoMonomers } from '@utils/macromolecules/polymerBond';
@@ -26,30 +31,20 @@ import { Base } from '@tests/pages/constants/monomers/Bases';
 import { Phosphate } from '@tests/pages/constants/monomers/Phosphates';
 import { Nucleotide } from '@tests/pages/constants/monomers/Nucleotides';
 import { Chem } from '@tests/pages/constants/monomers/Chem';
-import { CommonTopLeftToolbar } from '@tests/pages/common/CommonTopLeftToolbar';
-import { CommonTopRightToolbar } from '@tests/pages/common/CommonTopRightToolbar';
 import { ContextMenu } from '@tests/pages/common/ContextMenu';
 import { MonomerOption } from '@tests/pages/constants/contextMenu/Constants';
 import { MacromoleculesTopToolbar } from '@tests/pages/macromolecules/MacromoleculesTopToolbar';
 import { LayoutMode } from '@tests/pages/constants/macromoleculesTopToolbar/Constants';
+import { CommonLeftToolbar } from '@tests/pages/common/CommonLeftToolbar';
 
 let page: Page;
 
-test.beforeAll(async ({ browser }) => {
-  const context = await browser.newContext();
-  page = await context.newPage();
-
-  await waitForPageInit(page);
-  await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
-  await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Snake);
+test.beforeAll(async ({ initSnakeCanvas }) => {
+  page = await initSnakeCanvas();
 });
-
-test.afterEach(async () => {
-  await CommonTopLeftToolbar(page).clearCanvas();
-});
-
-test.afterAll(async ({ browser }) => {
-  await Promise.all(browser.contexts().map((context) => context.close()));
+test.beforeEach(async ({ SnakeCanvas: _ }) => {});
+test.afterAll(async ({ closePage }) => {
+  await closePage();
 });
 
 interface IMonomer {
@@ -939,3 +934,306 @@ for (const leftMonomer of shortMonomerList) {
     );
   }
 }
+
+test('12. AxoLabs: No-shift complementary pair establishes hydrogen bonds', async () => {
+  /*
+   * Test task: https://github.com/epam/ketcher/issues/9098
+   * Description: Check that no-shift complementary pair establishes hydrogen bonds
+   * Steps:
+   * 1. Load macro with no-shift complementary pair on the canvas
+   * 2. Take screenshot to validate that hydrogen bonds are present
+   */
+
+  await pasteFromClipboardAndAddToMacromoleculesCanvas(
+    page,
+    MacroFileType.AxoLabs,
+    `5'-ACGp-3'
+5'-UGCp-3'`,
+  );
+  const baseGLocator = getMonomerLocator(page, {
+    monomerType: MonomerType.Base,
+    monomerAlias: 'G',
+    hydrogenConnectionNumber: 1,
+  });
+  await CommonLeftToolbar(page).handTool();
+  await baseGLocator.hover({
+    force: true,
+  });
+  const locators = await getCoordinatesOfTheMiddleOfTheCanvas(page);
+  await dragMouseTo(page, locators.x, locators.y);
+  await takeElementScreenshot(page, baseGLocator, {
+    padding: 195,
+  });
+  await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+    LayoutMode.Sequence,
+  );
+
+  const baseGSymbolLocator = getSymbolLocator(page, {
+    symbolAlias: 'G',
+    isAntisense: true,
+    dataSymbolType: SymbolType.RNA,
+    hydrogenConnectionNumber: 1,
+  });
+  await takeElementScreenshot(page, baseGSymbolLocator, {
+    padding: 55,
+  });
+});
+
+test('13. AxoLabs: Shifted alignment establishes partial hydrogen bonds (AUGCA/UGC)', async () => {
+  /*
+   * Test task: https://github.com/epam/ketcher/issues/9098
+   * Description: Check that shifted alignment establishes partial hydrogen bonds
+   * Steps:
+   * 1. Load macro with shifted alignment (AUGCA/UGC) on the canvas
+   * 2. Take screenshot to validate that hydrogen bonds are present
+   */
+
+  await pasteFromClipboardAndAddToMacromoleculesCanvas(
+    page,
+    MacroFileType.AxoLabs,
+    `5'-AUGCA-3'
+5'-UGC-3'`,
+  );
+  const baseCLocator = getMonomerLocator(page, {
+    monomerType: MonomerType.Base,
+    monomerAlias: 'C',
+    hydrogenConnectionNumber: 1,
+  }).nth(1);
+  await CommonLeftToolbar(page).handTool();
+  await baseCLocator.hover({
+    force: true,
+  });
+  const locators = await getCoordinatesOfTheMiddleOfTheCanvas(page);
+  await dragMouseTo(page, locators.x, locators.y);
+  await takeElementScreenshot(page, baseCLocator, {
+    padding: 255,
+  });
+  await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+    LayoutMode.Sequence,
+  );
+  const baseCSymbolLocator = getSymbolLocator(page, {
+    symbolAlias: 'C',
+    isAntisense: true,
+    dataSymbolType: SymbolType.RNA,
+    hydrogenConnectionNumber: 1,
+  });
+  await takeElementScreenshot(page, baseCSymbolLocator, {
+    padding: 55,
+  });
+});
+
+test('14. AxoLabs: Shifted alignment establishes partial hydrogen bonds (ACG/ACG)', async () => {
+  /*
+   * Test task: https://github.com/epam/ketcher/issues/9098
+   * Description: Check that shifted alignment establishes partial hydrogen bonds
+   * Steps:
+   * 1. Load macro with shifted alignment (ACG/ACG) on the canvas
+   * 2. Take screenshot to validate that hydrogen bonds are present
+   */
+
+  await pasteFromClipboardAndAddToMacromoleculesCanvas(
+    page,
+    MacroFileType.AxoLabs,
+    `5'-ACGp-3'
+5'-ACGp-3'`,
+  );
+  const baseGLocator = getMonomerLocator(page, {
+    monomerType: MonomerType.Base,
+    monomerAlias: 'G',
+    hydrogenConnectionNumber: 1,
+  }).nth(1);
+  await CommonLeftToolbar(page).handTool();
+  await baseGLocator.hover({
+    force: true,
+  });
+  const locators = await getCoordinatesOfTheMiddleOfTheCanvas(page);
+  await dragMouseTo(page, locators.x, locators.y);
+  await takeElementScreenshot(page, baseGLocator, {
+    padding: 240,
+  });
+
+  await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+    LayoutMode.Sequence,
+  );
+  const baseGSymbolLocator = getSymbolLocator(page, {
+    symbolAlias: 'G',
+    isAntisense: true,
+    dataSymbolType: SymbolType.RNA,
+    hydrogenConnectionNumber: 1,
+  });
+  await takeElementScreenshot(page, baseGSymbolLocator, {
+    padding: 55,
+  });
+});
+
+test('15. AxoLabs: Even number of strings pairs 1-2 and 3-4 (shifted pair + ACG/UGC)', async () => {
+  /*
+   * Test task: https://github.com/epam/ketcher/issues/9098
+   * Description: Check that even number of strings pairs 1-2 and 3-4 (shifted pair + ACG/UGC) establishes partial hydrogen bonds
+   * Steps:
+   * 1. Load macro with shifted alignment (ACG/ACG) on the canvas
+   * 2. Take screenshot to validate that hydrogen bonds are present
+   */
+
+  await pasteFromClipboardAndAddToMacromoleculesCanvas(
+    page,
+    MacroFileType.AxoLabs,
+    `5'-AUGCA-3'
+5'-UGC-3'
+5'-ACGp-3'
+5'-UGC-3'`,
+  );
+  const phosphatePLocator = getMonomerLocator(page, {
+    monomerType: MonomerType.Phosphate,
+    monomerAlias: 'P',
+  }).nth(8);
+  await takeElementScreenshot(page, phosphatePLocator, {
+    padding: 300,
+  });
+
+  await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+    LayoutMode.Sequence,
+  );
+  const phosphatePSymbolLocator = getSymbolLocator(page, {
+    symbolAlias: 'P',
+    dataSymbolType: SymbolType.Phosphate,
+  });
+  await CommonLeftToolbar(page).areaSelectionTool();
+  await CommonLeftToolbar(page).handTool();
+  await phosphatePSymbolLocator.hover({
+    force: true,
+  });
+  const locators = await getCoordinatesOfTheMiddleOfTheCanvas(page);
+  await dragMouseTo(page, locators.x, locators.y);
+  await takeElementScreenshot(page, phosphatePSymbolLocator, {
+    padding: 150,
+  });
+});
+
+test('16. AxoLabs: Odd number of strings leaves last unpaired (ACG/UGC + ACG)', async () => {
+  /*
+   * Test task: https://github.com/epam/ketcher/issues/9098
+   * Description: Check that odd number of strings leaves last unpaired (ACG/UGC + ACG) establishes partial hydrogen bonds only for first two pairs, but not for the third one
+   * Steps:
+   * 1. Load macro with shifted alignment (ACG/ACG) and one additional string on the canvas
+   * 2. Take screenshot to validate that hydrogen bonds are present
+   */
+
+  await pasteFromClipboardAndAddToMacromoleculesCanvas(
+    page,
+    MacroFileType.AxoLabs,
+    `5'-ACGp-3'
+5'-UGCp-3'
+5'-ACGp-3'`,
+  );
+  const sugarRLocator = getMonomerLocator(page, {
+    monomerType: MonomerType.Sugar,
+    monomerAlias: 'R',
+  }).nth(4);
+  await takeElementScreenshot(page, sugarRLocator, {
+    padding: 210,
+  });
+  await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+    LayoutMode.Sequence,
+  );
+  const baseGSymbolLocator = getSymbolLocator(page, {
+    symbolAlias: 'G',
+    isAntisense: false,
+    dataSymbolType: SymbolType.RNA,
+    hydrogenConnectionNumber: 0,
+  }).nth(1);
+  await CommonLeftToolbar(page).handTool();
+  await baseGSymbolLocator.hover({
+    force: true,
+  });
+  const locators = await getCoordinatesOfTheMiddleOfTheCanvas(page);
+  await dragMouseTo(page, locators.x, locators.y);
+  await takeElementScreenshot(page, baseGSymbolLocator, {
+    padding: 150,
+  });
+});
+
+test('17. AxoLabs: DNA complementary alignment establishes hydrogen bonds (AAT/TT)', async () => {
+  /*
+   * Test task: https://github.com/epam/ketcher/issues/9106
+   * Description: Check that DNA complementary pair establishes hydrogen bonds
+   * Steps:
+   * 1. Load macro with DNA complementary pair on the canvas
+   * 2. Take screenshot to validate that hydrogen bonds are present
+   */
+
+  await pasteFromClipboardAndAddToMacromoleculesCanvas(
+    page,
+    MacroFileType.AxoLabs,
+    `5'-AATm-3'
+5'-TmTm-3'`,
+  );
+  const baseTLocator = getMonomerLocator(page, {
+    monomerType: MonomerType.Base,
+    monomerAlias: 'T',
+    hydrogenConnectionNumber: 1,
+  }).nth(0);
+  await CommonLeftToolbar(page).handTool();
+  await baseTLocator.hover({
+    force: true,
+  });
+  const locators = await getCoordinatesOfTheMiddleOfTheCanvas(page);
+  await dragMouseTo(page, locators.x, locators.y);
+  await takeElementScreenshot(page, baseTLocator, {
+    padding: 135,
+  });
+  await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+    LayoutMode.Sequence,
+  );
+  const baseTSymbolLocator = getSymbolLocator(page, {
+    symbolAlias: 'T',
+    isAntisense: true,
+    dataSymbolType: SymbolType.RNA,
+    hydrogenConnectionNumber: 1,
+  }).nth(1);
+  await takeElementScreenshot(page, baseTSymbolLocator, {
+    padding: 55,
+  });
+});
+
+test('18. AxoLabs: Tie alignment chooses left-most position (GAG/C)', async () => {
+  /*
+   * Test task: https://github.com/epam/ketcher/issues/9106
+   * Description: Check that tie in alignment index chooses the left-most position
+   * Steps:
+   * 1. Load macro with tie alignment case on the canvas
+   * 2. Take screenshot to validate placement and hydrogen bonds
+   */
+
+  await pasteFromClipboardAndAddToMacromoleculesCanvas(
+    page,
+    MacroFileType.AxoLabs,
+    `5'-GAGp-3'
+5'-Cp-3'`,
+  );
+  const phosphatePLocator = getMonomerLocator(page, {
+    monomerType: MonomerType.Phosphate,
+    monomerAlias: 'P',
+  }).nth(3);
+  await CommonLeftToolbar(page).handTool();
+  await phosphatePLocator.hover({
+    force: true,
+  });
+  const locators = await getCoordinatesOfTheMiddleOfTheCanvas(page);
+  await dragMouseTo(page, locators.x, locators.y);
+  await takeElementScreenshot(page, phosphatePLocator, {
+    padding: 195,
+  });
+  await MacromoleculesTopToolbar(page).selectLayoutModeTool(
+    LayoutMode.Sequence,
+  );
+  const baseCSymbolLocator = getSymbolLocator(page, {
+    symbolAlias: 'C',
+    isAntisense: true,
+    dataSymbolType: SymbolType.RNA,
+    hydrogenConnectionNumber: 1,
+  });
+  await takeElementScreenshot(page, baseCSymbolLocator, {
+    padding: 55,
+  });
+});

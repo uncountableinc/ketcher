@@ -80,6 +80,7 @@ import {
   takeElementScreenshot,
   SdfFileFormat,
   dragMouseAndMoveTo,
+  getCoordinatesOfTheMiddleOfTheScreen,
 } from '@utils';
 import { getAtomLocator } from '@utils/canvas/atoms/getAtomLocator/getAtomLocator';
 import { getAbbreviationLocator } from '@utils/canvas/s-group-signes/getAbbreviation';
@@ -884,6 +885,11 @@ test.describe('Bugs: ketcher-3.11.0 — first trio', () => {
       'CHEM1{[4aPEGMal]}|CHEM2{[4FB]}|CHEM3{[A6OH]}$CHEM2,CHEM1,1:R2-1:R1|CHEM3,CHEM2,1:R2-1:R1$$$V2.0',
     );
     const chainlocator = getSymbolLocator(page, { symbolId: 7 });
+    const locators = await getCoordinatesOfTheMiddleOfTheScreen(page);
+    await CommonLeftToolbar(page).handTool();
+    await chainlocator.hover({ force: true });
+    await dragMouseTo(page, locators.x, locators.y);
+    await CommonLeftToolbar(page).areaSelectionTool();
     await chainlocator.hover({ force: true });
     await MonomerPreviewTooltip(page).waitForBecomeVisible();
     await takeElementScreenshot(page, chainlocator, {
@@ -996,9 +1002,9 @@ test.describe('Bugs: ketcher-3.11.0 — first trio', () => {
 
     await CommonLeftToolbar(page).handTool();
     await page.mouse.move(600, 200);
-    await dragMouseTo(450, 250, page);
+    await dragMouseTo(page, 450, 250);
     await page.mouse.move(600, 200);
-    await dragMouseTo(450, 250, page);
+    await dragMouseTo(page, 450, 250);
 
     await presetSection.setupSugar({
       atomIds: [5, 6, 7],
@@ -1146,9 +1152,9 @@ test.describe('Bugs: ketcher-3.11.0 — first trio', () => {
 
     await CommonLeftToolbar(page).handTool();
     await page.mouse.move(600, 200);
-    await dragMouseTo(450, 250, page);
+    await dragMouseTo(page, 450, 250);
     await page.mouse.move(600, 200);
-    await dragMouseTo(450, 250, page);
+    await dragMouseTo(page, 450, 250);
 
     await presetSection.setupSugar({
       atomIds: [5, 6, 7],

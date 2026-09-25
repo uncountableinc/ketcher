@@ -14,7 +14,9 @@ import {
   copyToClipboardByKeyboard,
   pasteFromClipboardByKeyboard,
   clickOnCanvas,
-  delay,
+  openFileAndAddToCanvasAsNewProject,
+  takeElementScreenshot,
+  openFileAndAddToCanvasMacro,
 } from '@utils';
 import { getLeftBondByAttributes } from '@utils/canvas/bonds';
 import { SelectionToolType } from '@tests/pages/constants/areaSelectionTool/Constants';
@@ -44,6 +46,14 @@ import { AtomsSetting } from '@tests/pages/constants/settingsDialog/Constants';
 import { setSettingsOption } from '@tests/pages/molecules/canvas/SettingsDialog';
 import { getAtomLocator } from '@utils/canvas/atoms/getAtomLocator/getAtomLocator';
 import { getBondLocator } from '@utils/macromolecules/polymerBond';
+import {
+  FileType,
+  verifyFileExport,
+  verifyPNGExport,
+  verifySVGExport,
+} from '@utils/files/receiveFileComparisonData';
+import { CommonTopRightToolbar } from '@tests/pages/common/CommonTopRightToolbar';
+import { getMonomerLocator } from '@utils/macromolecules/monomer';
 
 const buttonIdToTitle: Record<MicroBondType, string> = {
   [MicroBondType.Single]: 'Single Bond (1)',
@@ -159,7 +169,7 @@ test.describe(`Bond tool:`, () => {
       await LeftToolbar(page).chain();
       await moveMouseToTheMiddleOfTheScreen(page);
       point = await getCoordinatesOfTheMiddleOfTheScreen(page);
-      await dragMouseTo(point.x + DELTA, point.y, page);
+      await dragMouseTo(page, point.x + DELTA, point.y);
 
       await CommonLeftToolbar(page).bondTool(bondType);
 
@@ -195,7 +205,7 @@ test.describe(`Bond tool:`, () => {
       await LeftToolbar(page).chain();
       await moveMouseToTheMiddleOfTheScreen(page);
       point = await getCoordinatesOfTheMiddleOfTheScreen(page);
-      await dragMouseTo(point.x + DELTA, point.y, page);
+      await dragMouseTo(page, point.x + DELTA, point.y);
 
       await CommonLeftToolbar(page).bondTool(bondType);
 
@@ -323,7 +333,7 @@ test.describe(`Bond tool (copy-paste):`, () => {
         );
 
         await moveMouseToTheMiddleOfTheScreen(page);
-        await dragMouseTo(point.x + 100, point.y, page);
+        await dragMouseTo(page, point.x + 100, point.y);
         await CommonTopLeftToolbar(page).undo();
 
         await CommonLeftToolbar(page).areaSelectionTool(
@@ -435,7 +445,7 @@ test.describe('Bond Tool', () => {
       // Delay prevents the search field from opening after the hotkey press
       // (otherwise the main window is blocked and the panel tools can't be selected)
       if (index > 0) {
-        await delay(1);
+        await page.waitForTimeout(1 * 1000);
       }
 
       await page.keyboard.press(hotKey);
@@ -556,7 +566,7 @@ test.describe('Bond Tool', () => {
     if (point2) {
       await page.mouse.move(point2.x, point2.y);
       const coordinatesWithShift = point2.y + yDelta;
-      await dragMouseTo(point2.x, coordinatesWithShift, page);
+      await dragMouseTo(page, point2.x, coordinatesWithShift);
     }
     await takeEditorScreenshot(page);
   });
@@ -573,7 +583,7 @@ test.describe('Bond Tool', () => {
       SelectionToolType.Rectangle,
     );
     await clickOnCanvas(page, point.x, point.y, { from: 'pageCenter' });
-    await dragMouseTo(x + 50, y, page);
+    await dragMouseTo(page, x + 50, y);
     await takeEditorScreenshot(page);
     const point1 = await getBondLocator(page, { bondId: 13 });
     await ContextMenu(page, point1).click(MicroBondOption.EditSelectedBonds);
@@ -626,6 +636,81 @@ test.describe('Bond Tool', () => {
     await takeEditorScreenshot(page);
     await IndigoFunctionsToolbar(page).aromatize();
     await takeEditorScreenshot(page);
+  });
+
+  test('Allow for stereo-bonds (up and down) to be a bond between AA and LGA for PNG and SVG format', async () => {
+    /*
+     * Test case: https://github.com/epam/ketcher/issues/8254
+     * Requirements:
+     * - If the stereo-bond has the LGA at the narrow end, it should be treated as a simple single bond.
+     * - If only one AP has a stereo bond between LGA and AA, and the narrow end of the bond is at the AA,
+     * the bond between the monomers should remain be that stereo-bond with the same AA at the narrow end.
+     * - If both APs have a stereo bond between LGA and AA, and the narrow ends of the bonds are at the AAa, the bond between the monomers should be a simple single bond.
+     * Expected result: The schema with different connection should save in PNG and SVG format
+     */
+
+    await openFileAndAddToCanvasAsNewProject(
+      page,
+      'KET/stereo-bonds-between-aa-lga.ket',
+    );
+    await IndigoFunctionsToolbar(page).layout();
+    await verifyPNGExport(page);
+    await verifySVGExport(page);
+    await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
+    await verifySVGExport(page);
+  });
+
+  test('Allow for stereo-bonds (up and down) to be a bond between AA and LGA for KET format', async () => {
+    /*
+     * Test case: https://github.com/epam/ketcher/issues/8254
+     * Requirements:
+     * - If the stereo-bond has the LGA at the narrow end, it should be treated as a simple single bond.
+     * - If only one AP has a stereo bond between LGA and AA, and the narrow end of the bond is at the AA,
+     * the bond between the monomers should remain be that stereo-bond with the same AA at the narrow end.
+     * - If both APs have a stereo bond between LGA and AA, and the narrow ends of the bonds are at the AAa, the bond between the monomers should be a simple single bond.
+     * Expected result: The schema with different connection should save in KET format
+     */
+
+    await openFileAndAddToCanvasAsNewProject(
+      page,
+      'KET/stereo-bonds-between-aa-lga.ket',
+    );
+    await IndigoFunctionsToolbar(page).layout();
+    await verifyFileExport(
+      page,
+      'KET/stereo-bonds-between-aa-lga-expected.ket',
+      FileType.KET,
+    );
+    await openFileAndAddToCanvasAsNewProject(
+      page,
+      'KET/stereo-bonds-between-aa-lga-expected.ket',
+    );
+    await CommonTopRightToolbar(page).setZoomInputValue('50');
+    await takeElementScreenshot(page, getAtomLocator(page, { atomId: 90 }), {
+      padding: 240,
+    });
+    await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
+    await CommonTopRightToolbar(page).setZoomInputValue('50');
+    await takeElementScreenshot(
+      page,
+      getMonomerLocator(page, { monomerId: 467 }),
+      {
+        padding: 215,
+      },
+    );
+    await CommonTopLeftToolbar(page).clearCanvas();
+    await openFileAndAddToCanvasMacro(
+      page,
+      'KET/stereo-bonds-between-aa-lga-expected.ket',
+    );
+    await CommonTopRightToolbar(page).setZoomInputValue('50');
+    await takeElementScreenshot(
+      page,
+      getMonomerLocator(page, { monomerId: 617 }),
+      {
+        padding: 215,
+      },
+    );
   });
 });
 

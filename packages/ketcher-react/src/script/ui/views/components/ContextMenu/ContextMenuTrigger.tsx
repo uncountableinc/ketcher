@@ -220,7 +220,7 @@ const ContextMenuTrigger: FC<PropsWithChildren> = ({ children }) => {
   }, [handleDisplay]);
 
   return (
-    <div ref={divRef} style={{ height: '100%' }}>
+    <div ref={divRef} style={{ height: '100%' }} role="application">
       {children}
     </div>
   );
