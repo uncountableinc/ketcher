@@ -48,8 +48,6 @@ import { selectionDelete } from '../../Rotation/utils';
 const RESET_TOOL_X = 100;
 const RESET_TOOL_Y = 100;
 const RESET_TOOL_DELAY_SECONDS = 0.2;
-const CANVAS_CLICK_X = 600;
-const CANVAS_CLICK_Y = 600;
 
 test.describe('Data S-Group tool', () => {
   test.beforeEach(async ({ page }) => {
