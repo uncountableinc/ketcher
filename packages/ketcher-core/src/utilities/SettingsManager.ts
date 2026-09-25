@@ -166,7 +166,7 @@ export class SettingsManager {
 
   static get monomerLibraryUpdates() {
     const { monomerLibraryUpdates } = this.getSettings();
-    return monomerLibraryUpdates || [];
+    return monomerLibraryUpdates ?? [];
   }
 
   static set monomerLibraryUpdates(monomerLibraryUpdates: string[]) {

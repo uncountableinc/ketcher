@@ -24,9 +24,9 @@ import { generateMenuShortcuts } from 'ketcher-core';
 import { removeStructAction } from 'src/script/ui/state/shared';
 import { createSelector } from 'reselect';
 
-const getActionState = (state) => state.actionState || {};
+const getActionState = (state) => state.actionState ?? {};
 
-const selectCustomButtons = (state) => state?.options?.customButtons || [];
+const selectCustomButtons = (state) => state?.options?.customButtons ?? [];
 
 const disabledButtonsSelector = createSelector(
   [getActionState],
@@ -63,9 +63,12 @@ const mapStateToProps = (state: any) => {
     currentZoom: Math.round(state.actionState?.zoom?.selected * 100),
     disabledButtons: disabledButtonsSelector(state),
     hiddenButtons: hiddenButtonsSelector(state),
+    isModeSwitcherDisabled: Boolean(
+      state.editor?.isMonomerCreationWizardActive,
+    ),
     customButtons: selectCustomButtons(state),
     shortcuts,
-    status: state.actionState || {},
+    status: state.actionState ?? {},
     opened: state.toolbar.opened,
     indigoVerification: state.requestsStatuses.indigoVerification,
     disableableButtons,
@@ -116,7 +119,17 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
         data: { menuName, isSelected },
       }),
     onFullscreen: (ketcherId: string) =>
-      dispatch(onAction((action.fullscreen.action as ActionFn)(ketcherId))),
+      dispatch(
+        onAction(
+          // The fork's fullscreen action takes a ketcherId and returns the
+          // ActionFn, so it does not match ActionFn itself. v3.15.0 tightened
+          // ActionFn's parameter from any to ActionStateEditor, which is what
+          // made the old cast stop compiling.
+          (action.fullscreen.action as unknown as (id: string) => ActionFn)(
+            ketcherId,
+          ),
+        ),
+      ),
     onHelp: () => dispatchAction('help'),
     onAbout: () => dispatchAction('about'),
     onToggleExplicitHydrogens: () => dispatchAction('explicit-hydrogens'),

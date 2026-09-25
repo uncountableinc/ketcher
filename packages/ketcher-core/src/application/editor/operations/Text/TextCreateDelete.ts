@@ -18,7 +18,7 @@
 import { ReStruct, ReText } from '../../../render';
 import { Text, Vec2 } from 'domain/entities';
 
-import { BaseOperation } from '../base';
+import { BaseOperation } from '../BaseOperation';
 import { OperationType } from '../OperationType';
 
 interface TextCreateData {
@@ -29,7 +29,7 @@ interface TextCreateData {
 }
 
 export class TextCreate extends BaseOperation {
-  data: TextCreateData;
+  readonly data: TextCreateData;
 
   constructor(content: string, position: Vec2, pos: Array<Vec2>, id?: number) {
     super(OperationType.TEXT_CREATE);
@@ -67,7 +67,7 @@ interface TextDeleteData {
 }
 
 export class TextDelete extends BaseOperation {
-  data: TextDeleteData;
+  readonly data: TextDeleteData;
 
   constructor(id: number) {
     super(OperationType.TEXT_DELETE);

@@ -254,7 +254,7 @@ test.describe('Copy/Cut/Paste Actions', () => {
       force: true,
     });
     await MoleculesTopToolbar(page).copy();
-    await expect(page).toHaveScreenshot();
+    await takeEditorScreenshot(page);
   });
 
   test('Copy the Bond from reaction', async () => {
@@ -1143,7 +1143,7 @@ test.describe('Copy/Cut/Paste Actions', () => {
     await selectAllStructuresOnCanvas(page);
     await copyToClipboardByKeyboard(page);
     await PasteFromClipboardDialog(page).cancel();
-    await page.keyboard.press('Control+Alt+v');
+    await page.keyboard.press('ControlOrMeta+Alt+v');
     // await clickInTheMiddleOfTheScreen(page, 'left', {
     //   waitForMergeInitialization: true,
     // });

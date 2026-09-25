@@ -9,7 +9,6 @@ import {
   takePageScreenshot,
   takePresetsScreenshot,
   takeRNABuilderScreenshot,
-  waitForPageInit,
   waitForRender,
   moveMouseAway,
   takeElementScreenshot,
@@ -106,21 +105,16 @@ async function configureInitialState(page: Page) {
 test.describe('RNA Library', () => {
   let page: Page;
 
-  test.beforeAll(async ({ browser }) => {
-    const context = await browser.newContext();
-    page = await context.newPage();
+  test.beforeAll(async ({ initFlexCanvas }) => {
+    page = await initFlexCanvas();
+  });
 
-    await waitForPageInit(page);
-    await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
+  test.beforeEach(async ({ FlexCanvas: _ }) => {
     await configureInitialState(page);
   });
 
-  test.afterEach(async ({ context: _ }) => {
-    await CommonTopLeftToolbar(page).clearCanvas();
-  });
-
-  test.afterAll(async ({ browser }) => {
-    await Promise.all(browser.contexts().map((context) => context.close()));
+  test.afterAll(async ({ closePage }) => {
+    await closePage();
   });
 
   test(
@@ -1067,7 +1061,7 @@ test.describe('RNA Library', () => {
       'KET/monomers-connected-with-bonds.ket',
     );
     await CommonTopRightToolbar(page).turnOnMicromoleculesEditor();
-    await takePageScreenshot(page);
+    await takeEditorScreenshot(page);
   });
 
   test('Validate it is not possible to create preset if Sugar is without R3 connection point (Sugar is selected and we select Base)', async () => {

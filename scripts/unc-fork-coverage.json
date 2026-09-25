@@ -226,6 +226,7 @@
       "key": "jsonschema-validator",
       "summary": "Replace ajv with jsonschema in ketcher-react, and give the validator a base URL.",
       "verdict": "reapply",
+      "verdictNote": "reapply, permanently: main serves the platform under a CSP whose script-src carries no 'unsafe-eval' (main/site/unc_flask/csp.txt; the only exemption is the CAD wasm worker). ajv validates by compiling schemas with new Function (ajv/dist/compile/index.js), which that CSP blocks, so every ketcher dialog that validates a form would fail in the platform. jsonschema interprets instead and needs no codegen. The fork demo page is not served under main's CSP, so taking upstream's ajv passes every fork test and breaks only main.",
       "covered": "playwright tests/specs/unc-regression/settings-state.spec.ts",
       "commits": [
         "8b92271fc",
@@ -235,7 +236,7 @@
         "7f965ea0f"
       ],
       "files": [
-        "packages/ketcher-react/src/script/ui/component/form/form/form.jsx",
+        "packages/ketcher-react/src/script/ui/component/form/form/form.tsx",
         "packages/ketcher-react/src/script/ui/data/schema/options-schema.ts",
         "packages/ketcher-react/src/script/ui/dialog/toolbox/sgroup.test.tsx"
       ]
