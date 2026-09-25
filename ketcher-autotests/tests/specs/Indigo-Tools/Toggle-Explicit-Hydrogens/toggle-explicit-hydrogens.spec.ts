@@ -264,7 +264,7 @@ test.describe('4. Fold/unfold hydrogens for', () => {
     'Simple molecules + Radical.ket',
     // Simple molecules + Radical - https://github.com/epam/Indigo/issues/1556, https://github.com/epam/Indigo/issues/1557
     'Simple molecules + Valences.ket',
-    // Simple molecules + Valences - https://github.com/epam/Indigo/issues/1551
+    // Simple molecules + Valences - https://github.com/epam/Indigo/issues/1551, https://github.com/epam/Indigo/issues/3702
     'Simple Molecules.ket',
   ];
 

@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************/
-import React, { useCallback, useEffect } from 'react';
-import { contextMenu, Menu, MenuProps } from 'react-contexify';
+import { type FC, useCallback, useEffect } from 'react';
+import { type MenuProps, contextMenu, Menu } from 'react-contexify';
 import { useAppContext } from 'src/hooks';
-import Editor from 'src/script/editor';
+import type Editor from 'src/script/editor';
 import styles from './ContextMenu.module.less';
 import { CONTEXT_MENU_ID } from './contextMenu.types';
 import AtomMenuItems from './menuItems/AtomMenuItems';
@@ -36,7 +36,7 @@ const props: Partial<MenuProps> = {
   className: styles.contextMenu,
 };
 
-const ContextMenu: React.FC = () => {
+const ContextMenu: FC = () => {
   const { ketcherId } = useAppContext();
 
   useEffect(() => {

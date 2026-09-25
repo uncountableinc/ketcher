@@ -1,7 +1,7 @@
 import { fromFlip } from 'application/editor/actions/rotate';
 import { getRelSGroupsBySelection } from 'application/editor/actions/utils';
 import { ReStruct, Render } from 'application/render';
-import { RenderOptions } from 'application/render/render.types';
+import type { RenderOptions } from 'application/render/render.types';
 import { Atom, SGroup, Struct, Vec2 } from 'domain/entities';
 
 /*
