@@ -15,11 +15,10 @@
  ***************************************************************************/
 
 import styled from '@emotion/styled';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { shortcutStr } from 'ketcher-core';
 import { TopToolbarIconButton } from './TopToolbarIconButton';
 import { useAppContext } from 'src/hooks';
-import { useCallback } from 'react';
 
 interface SystemControlsProps {
   disabledButtons: string[];
