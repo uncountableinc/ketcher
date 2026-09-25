@@ -498,11 +498,9 @@ function filterBugsInTests(
       item.TestNameContains === undefined ||
       item.TestNameContains.some((substring) => testName.includes(substring));
     const sequenceIdMatch =
-      // item.SequenceId === undefined || item.SequenceId === sequenceId;
       item.SequenceId === undefined || item.SequenceId.includes(sequenceId);
     const replaceMonomerIdMatch =
       item.ReplaceMonomerId === undefined ||
-      // item.ReplaceMonomerId === replaceMonomerId;
       item.ReplaceMonomerId === undefined ||
       item.ReplaceMonomerId.includes(replaceMonomerId);
 
@@ -1401,11 +1399,6 @@ for (const noR1AttachmentPointReplaceMonomer of noR1AttachmentPointReplaceMonome
         6. Add info to log if known bugs exist and skip test
       */
       test.setTimeout(20000);
-      // const title = test.info().title;
-      // // If (for some reasons) on random test ErrorMessage doesn't work - use that dirty hack - page reload helps
-      // if (title.includes('Case 15-1-17.')) {
-      //   await pageReload(page);
-      // }
 
       await openFileAndAddToCanvasMacro(page, sequence.FileName);
       await selectAndReplaceAllSymbolsWithError(

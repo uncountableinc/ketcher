@@ -206,8 +206,8 @@ class ReSGroup extends ReObject {
   }
 
   getTextHighlightDimensions(
-    padding = 0,
     render: Render,
+    padding = 0,
   ): { startX: number; startY: number; width: number; height: number } {
     let startX = 0;
     let startY = 0;
@@ -241,8 +241,8 @@ class ReSGroup extends ReObject {
     const { fontszInPx, radiusScaleFactor } = options;
     const radius = fontszInPx * radiusScaleFactor * 2;
     const { startX, startY, width, height } = this.getTextHighlightDimensions(
-      fontszInPx / 2,
       render,
+      fontszInPx / 2,
     );
     return paper.rect(startX, startY, width, height, radius);
   }
@@ -638,7 +638,7 @@ function drawAttachedDat(restruct: ReStruct, sgroup: SGroup): any {
   const paper = render.paper;
   const set = paper.set();
 
-  SGroup.getAtoms(restruct, sgroup).forEach((aid) => {
+  SGroup.getAtoms(restruct.molecule, sgroup).forEach((aid) => {
     const atom = restruct.atoms.get(aid);
     if (atom) {
       const p = Scale.modelToCanvas(atom.a.pp, options);

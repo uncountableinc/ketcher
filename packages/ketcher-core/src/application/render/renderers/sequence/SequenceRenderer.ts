@@ -196,9 +196,9 @@ export class SequenceRenderer {
               chainItem.antisenseChain ?? chainItem.chain,
               currentMonomerIndexOverall,
               SequenceRenderer.caretPosition,
-              previousRowsWithAntisense,
               chainItem,
               chainItem.antisenseNode?.monomer?.renderer,
+              previousRowsWithAntisense,
             );
 
             antisenseNodeRenderer.show();
@@ -233,9 +233,9 @@ export class SequenceRenderer {
             chainItem.chain,
             currentMonomerIndexOverall,
             SequenceRenderer.caretPosition,
-            previousRowsWithAntisense,
             chainItem,
             node.monomer.renderer,
+            previousRowsWithAntisense,
           );
 
           renderer.show();
@@ -830,7 +830,7 @@ export class SequenceRenderer {
 
   public static get nextNodeInSameChain() {
     if (SequenceRenderer.nextCaretPosition === SequenceRenderer.caretPosition) {
-      return;
+      return undefined;
     }
 
     const currentNode = this.currentEdittingNode;

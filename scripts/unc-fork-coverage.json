@@ -1,5 +1,5 @@
 {
-  "mergeBase": "0f5199567451bc3bcd8970100b8c2c4009a6be2e",
+  "mergeBase": "2a3ba7939d601c4252af255c94d76ed93bc6d2b6",
   "forkRef": "master",
   "upstreamTag": "v3.18.0",
   "behaviours": [
@@ -182,7 +182,7 @@
         "4b5bc5f38"
       ],
       "files": [
-        "packages/ketcher-react/src/script/ui/component/cliparea/cliparea.jsx",
+        "packages/ketcher-react/src/script/ui/component/cliparea/cliparea.tsx",
         "packages/ketcher-react/src/script/ui/state/shared.ts"
       ]
     },
@@ -374,7 +374,7 @@
         "packages/ketcher-react/src/script/editor/tool/select/select.helpers.ts",
         "packages/ketcher-react/src/script/editor/tool/sgroup.ts",
         "packages/ketcher-react/src/script/ui/action/zoom.js",
-        "packages/ketcher-react/src/script/ui/component/form/buttonlist.jsx",
+        "packages/ketcher-react/src/script/ui/component/form/buttonlist.tsx",
         "packages/ketcher-react/src/script/ui/data/convert/structconv.js",
         "packages/ketcher-react/src/script/ui/data/schema/struct-schema.js",
         "packages/ketcher-react/src/script/ui/dialog/template/TemplateDialog.tsx",
@@ -390,12 +390,12 @@
         "packages/ketcher-react/src/script/ui/utils/index.ts",
         "packages/ketcher-react/src/script/ui/views/components/StructEditor/StructEditor.jsx",
         "packages/ketcher-react/src/script/ui/views/modal/Modal.container.ts",
-        "packages/ketcher-react/src/script/ui/views/modal/components/PeriodTable/PeriodTable.jsx",
+        "packages/ketcher-react/src/script/ui/views/modal/components/PeriodTable/PeriodTable.tsx",
         "packages/ketcher-react/src/script/ui/views/modal/components/PeriodTable/components/ElementsTable/components/Header.jsx",
         "packages/ketcher-react/src/script/ui/views/modal/components/Text/FontControl/FontControl.tsx",
-        "packages/ketcher-react/src/script/ui/views/modal/components/process/Analyse/Analyse.jsx",
+        "packages/ketcher-react/src/script/ui/views/modal/components/process/Analyse/Analyse.tsx",
         "packages/ketcher-react/src/script/ui/views/modal/components/process/Miew/Miew.tsx",
-        "packages/ketcher-react/src/script/ui/views/modal/components/process/Recognize/Recognize.jsx",
+        "packages/ketcher-react/src/script/ui/views/modal/components/process/Recognize/Recognize.tsx",
         "packages/ketcher-react/src/script/ui/views/modal/components/toolbox/Atom/ElementNumber/ElementNumber.tsx"
       ]
     },

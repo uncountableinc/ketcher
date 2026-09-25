@@ -63,7 +63,9 @@ const MonomerPreview = ({ className }: Props) => {
   }
 
   const isUnresolved = monomer.props.unresolved;
-  const monomerName = isUnresolved ? monomer.label : monomer.struct?.name;
+  const monomerName = isUnresolved
+    ? monomer.label
+    : monomer.struct?.name || monomer.label;
   const isMonomerPreviewPropertiesVisible =
     idtAliasesText || axoLabsAlias || aliasHelm || modificationTypes;
 
@@ -72,7 +74,7 @@ const MonomerPreview = ({ className }: Props) => {
       <Container
         className={className}
         data-testid="polymer-library-preview"
-        data-idtAliases={idtAliasesText ?? undefined}
+        data-idtaliases={idtAliasesText ?? undefined}
         data-axolabs={axoLabsAlias ?? undefined}
         data-helm={aliasHelm ?? undefined}
         data-modificationtype={

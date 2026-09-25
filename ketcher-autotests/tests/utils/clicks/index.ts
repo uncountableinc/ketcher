@@ -2,8 +2,6 @@
 /* eslint-disable no-magic-numbers */
 import { Locator, Page } from '@playwright/test';
 import { getAtomByIndex } from '@utils/canvas/atoms';
-import { getBondByIndex } from '@utils/canvas/bonds';
-import { BondType } from '..';
 import { AtomLabelType, MouseButton } from './types';
 import {
   waitForItemsToMergeInitialization,
@@ -12,6 +10,8 @@ import {
 import { getAtomById } from '@utils/canvas/atoms/getAtomByIndex/getAtomByIndex';
 import { KETCHER_CANVAS } from '@tests/pages/constants/canvas/Constants';
 import { ClickTarget } from '@tests/pages/constants/contextMenu/Constants';
+import { CommonLeftToolbar } from '@tests/pages/common/CommonLeftToolbar';
+import { SelectionToolType } from '@tests/pages/constants/areaSelectionTool/Constants';
 
 type BoundingBox = {
   width: number;
@@ -222,21 +222,16 @@ export async function dragMouseAndMoveTo(page: Page, shift: number) {
   await dragMouseTo(coordinatesWithShift, y, page);
 }
 
-export async function clickByLink(page: Page, url: string) {
-  await page.locator(`a[href="${url}"]`).first().click();
+export async function shiftCanvas(page: Page, xShift: number, yShift: number) {
+  await CommonLeftToolbar(page).handTool();
+  const { x, y } = await getCoordinatesOfTheMiddleOfTheScreen(page);
+  await page.mouse.move(x, y);
+  await dragMouseTo(x + xShift, y + yShift, page);
+  await CommonLeftToolbar(page).areaSelectionTool(SelectionToolType.Rectangle);
 }
 
-export async function clickOnBond(
-  page: Page,
-  bondType: BondType,
-  bondNumber: number,
-  buttonSelect?: MouseButton,
-) {
-  const point = await getBondByIndex(page, { type: bondType }, bondNumber);
-  await clickOnCanvas(page, point.x, point.y, {
-    button: buttonSelect,
-    from: 'pageTopLeft',
-  });
+export async function clickByLink(page: Page, url: string) {
+  await page.locator(`a[href="${url}"]`).first().click();
 }
 
 export async function clickOnAtom(

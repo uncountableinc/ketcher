@@ -1,6 +1,6 @@
 /* eslint-disable no-magic-numbers */
 import { test, expect } from '@playwright/test';
-import { clickOnAtom, selectUndoByKeyboard, waitForPageInit } from '@utils';
+import { clickOnAtom, undoByKeyboard, waitForPageInit } from '@utils';
 import { selectAllStructuresOnCanvas } from '@utils/canvas/selectSelection';
 import { CommonLeftToolbar } from '@tests/pages/common/CommonLeftToolbar';
 import { LeftToolbar } from '@tests/pages/molecules/LeftToolbar';
@@ -55,7 +55,7 @@ test.describe('SRU polymer undo', () => {
     });
     expect(await sgroupCount(page)).toBe(1);
 
-    await selectUndoByKeyboard(page);
+    await undoByKeyboard(page);
 
     expect(await sgroupCount(page)).toBe(0);
     expect(pageErrors).toEqual([]);

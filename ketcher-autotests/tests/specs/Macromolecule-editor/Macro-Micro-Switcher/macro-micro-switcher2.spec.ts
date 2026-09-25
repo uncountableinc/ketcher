@@ -17,9 +17,6 @@ import {
   moveMouseToTheMiddleOfTheScreen,
   clickOnCanvas,
   pasteFromClipboardByKeyboard,
-  copyToClipboardByIcon,
-  screenshotBetweenUndoRedo,
-  screenshotBetweenUndoRedoInMacro,
   copyToClipboardByKeyboard,
   takePageScreenshot,
   takeTopToolbarScreenshot,
@@ -113,30 +110,26 @@ test.describe('Macro-Micro-Switcher2', () => {
     await takeMonomerLibraryScreenshot(page);
   });
 
-  test.fail(
-    `Check that switching between Macro and Micro mode not crash application when opened DNA with modified monomer with modyfied monomer`,
-    async ({ page }) => {
-      // Works wrong because of https://github.com/epam/Indigo/issues/3047
-      /* 
+  test(`Check that switching between Macro and Micro mode not crash application when opened DNA with modified monomer with modyfied monomer`, async ({
+    page,
+  }) => {
+    /* 
         Test case: Macro-Micro-Switcher/#3747
         Description: Switching between Macro and Micro mode not crash application when opened DNA/RNA with modyfied monomer
         */
-      await openFileAndAddToCanvasMacro(
-        page,
-        'Molfiles-V3000/dna-mod-base-sugar-phosphate-example.mol',
-        MacroFileType.MOLv3000,
-      );
-      expect(await getMonomerLocator(page, {}).count()).toBeGreaterThan(0);
-      await CommonTopRightToolbar(page).turnOnMicromoleculesEditor();
-      await takeEditorScreenshot(page);
-      await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
-      await MacromoleculesTopToolbar(page).selectLayoutModeTool(
-        LayoutMode.Snake,
-      );
-      await moveMouseAway(page);
-      await takeEditorScreenshot(page);
-    },
-  );
+    await openFileAndAddToCanvasMacro(
+      page,
+      'Molfiles-V3000/dna-mod-base-sugar-phosphate-example.mol',
+      MacroFileType.MOLv3000,
+    );
+    expect(await getMonomerLocator(page, {}).count()).toBeGreaterThan(0);
+    await CommonTopRightToolbar(page).turnOnMicromoleculesEditor();
+    await takeEditorScreenshot(page);
+    await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
+    await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Snake);
+    await moveMouseAway(page);
+    await takeEditorScreenshot(page);
+  });
 
   test(`Check that switching between Macro and Micro mode not crash application when opened RNA with modified monomer with modyfied monomer`, async ({
     page,
@@ -277,7 +270,7 @@ test.describe('Macro-Micro-Switcher2', () => {
     await page.getByTestId('canvas').getByText('O').click();
     await takeEditorScreenshot(page);
     await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
-    await CommonLeftToolbar(page).selectBondTool(MacroBondType.Single);
+    await CommonLeftToolbar(page).bondTool(MacroBondType.Single);
     await getMonomerLocator(page, Chem.F1).hover();
     await MonomerPreviewTooltip(page).waitForBecomeVisible();
     await takeEditorScreenshot(page);
@@ -418,8 +411,7 @@ test.describe('Macro-Micro-Switcher2', () => {
     await SaveStructureDialog(page).chooseFileFormat(
       MoleculesFileFormatType.KetFormat,
     );
-    await moveMouseToTheMiddleOfTheScreen(page);
-    await copyToClipboardByIcon(page);
+    await SaveStructureDialog(page).copyToClipboard();
     await SaveStructureDialog(page).cancel();
     await pasteFromClipboardByKeyboard(page);
     await moveMouseAway(page);
@@ -628,7 +620,11 @@ test.describe('Macro-Micro-Switcher2', () => {
     await selectAllStructuresOnCanvas(page);
     await CommonLeftToolbar(page).erase();
     await takeEditorScreenshot(page);
-    await screenshotBetweenUndoRedo(page);
+    await CommonTopLeftToolbar(page).undo();
+    await takeEditorScreenshot(page, {
+      maxDiffPixels: 1,
+    });
+    await CommonTopLeftToolbar(page).redo();
     await takeEditorScreenshot(page);
     await CommonTopLeftToolbar(page).undo();
     await takeEditorScreenshot(page);
@@ -636,7 +632,9 @@ test.describe('Macro-Micro-Switcher2', () => {
     await selectAllStructuresOnCanvas(page);
     await CommonLeftToolbar(page).erase();
     await takeEditorScreenshot(page);
-    await screenshotBetweenUndoRedoInMacro(page);
+    await CommonTopLeftToolbar(page).undo();
+    await takeEditorScreenshot(page);
+    await CommonTopLeftToolbar(page).redo();
     await takeEditorScreenshot(page);
   });
 
@@ -666,7 +664,7 @@ test.describe('Macro-Micro-Switcher2', () => {
     await copyToClipboardByKeyboard(page);
     await clickOnCanvas(page, 600, 100, { from: 'pageTopLeft' });
     await pasteFromClipboardByKeyboard(page);
-    await CommonLeftToolbar(page).selectAreaSelectionTool();
+    await CommonLeftToolbar(page).areaSelectionTool();
     await takeEditorScreenshot(page);
   });
 

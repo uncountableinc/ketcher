@@ -52,7 +52,6 @@ import { LayoutMode } from '@tests/pages/constants/macromoleculesTopToolbar/Cons
 import { pageReload } from '@utils/common/helpers';
 import { MonomerPreviewTooltip } from '@tests/pages/macromolecules/canvas/MonomerPreviewTooltip';
 import { CalculateVariablesPanel } from '@tests/pages/macromolecules/CalculateVariablesPanel';
-// import { pageReload } from '@utils/common/helpers';
 
 let page: Page;
 
@@ -1038,7 +1037,7 @@ for (const monomer of monomerToDrag) {
      */
     await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Flex);
     await Library(page).dragMonomerOnCanvas(monomer, { x: 200, y: 200 });
-    await CommonLeftToolbar(page).selectBondTool(MacroBondType.Single);
+    await CommonLeftToolbar(page).bondTool(MacroBondType.Single);
     const monomerOnCanvas = getMonomerLocator(page, {});
     if (
       !Object.values(Preset).some((preset) => preset.alias === monomer.alias)
@@ -1077,7 +1076,7 @@ for (const monomer of monomerToDrag) {
      */
     await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Snake);
     await Library(page).dragMonomerOnCanvas(monomer, { x: 200, y: 200 });
-    await CommonLeftToolbar(page).selectBondTool(MacroBondType.Single);
+    await CommonLeftToolbar(page).bondTool(MacroBondType.Single);
     const monomerOnCanvas = getMonomerLocator(page, {});
     if (
       !Object.values(Preset).some((preset) => preset.alias === monomer.alias)

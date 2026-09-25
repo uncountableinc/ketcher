@@ -71,6 +71,14 @@ export const Peptide = createMonomerGroup(MonomerType.Peptide, {
     alias: 'Peptide',
     testId: 'Peptide___Peptide Test monomer',
   },
+  Peptide2: {
+    alias: 'Peptide2',
+    testId: 'Peptide2___Peptide2 Test monomer',
+  },
+  Peptide3: {
+    alias: 'Peptide3',
+    testId: 'Peptide3___Peptide3 Test monomer',
+  },
   Phe_ol: { alias: 'Phe-ol', testId: 'Phe-ol___L-phenylalaninol' },
   SertBu: {
     alias: 'SertBu',
@@ -113,6 +121,14 @@ export const Peptide = createMonomerGroup(MonomerType.Peptide, {
   _Peptide1: {
     alias: '_Peptide1',
     testId: '_Peptide1____Peptide1',
+  },
+  A2: {
+    alias: 'A2',
+    testId: 'A2___Ala',
+  },
+  PeptideX: {
+    alias: 'PeptideX',
+    testId: 'PeptideX___PeptideX',
   },
 });
 

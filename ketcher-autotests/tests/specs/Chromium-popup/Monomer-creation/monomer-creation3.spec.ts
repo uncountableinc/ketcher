@@ -27,7 +27,7 @@ import { ContextMenu } from '@tests/pages/common/ContextMenu';
 import { AttachmentPoint } from '@utils/macromolecules/monomer';
 import {
   AttachmentPointAtom,
-  AttachmentPointName,
+  AttachmentPointOption,
 } from '@tests/pages/molecules/canvas/createMonomer/constants/editConnectionPointPopup/Constants';
 import { NotificationMessageBanner } from '@tests/pages/molecules/canvas/createMonomer/NotificationMessageBanner';
 import { ErrorMessage } from '@tests/pages/constants/notificationMessageBanner/Constants';
@@ -856,14 +856,30 @@ test(`18. Check that for an already set APs the user can Delete the AP, by click
   const attachmentPointR7 = page.getByTestId(AttachmentPoint.R7).first();
   const attachmentPointR8 = page.getByTestId(AttachmentPoint.R8).first();
 
-  await CreateMonomerDialog(page).deleteAttachmentPoint(AttachmentPointName.R1);
-  await CreateMonomerDialog(page).deleteAttachmentPoint(AttachmentPointName.R2);
-  await CreateMonomerDialog(page).deleteAttachmentPoint(AttachmentPointName.R3);
-  await CreateMonomerDialog(page).deleteAttachmentPoint(AttachmentPointName.R4);
-  await CreateMonomerDialog(page).deleteAttachmentPoint(AttachmentPointName.R5);
-  await CreateMonomerDialog(page).deleteAttachmentPoint(AttachmentPointName.R6);
-  await CreateMonomerDialog(page).deleteAttachmentPoint(AttachmentPointName.R7);
-  await CreateMonomerDialog(page).deleteAttachmentPoint(AttachmentPointName.R8);
+  await CreateMonomerDialog(page).deleteAttachmentPoint(
+    AttachmentPointOption.R1,
+  );
+  await CreateMonomerDialog(page).deleteAttachmentPoint(
+    AttachmentPointOption.R2,
+  );
+  await CreateMonomerDialog(page).deleteAttachmentPoint(
+    AttachmentPointOption.R3,
+  );
+  await CreateMonomerDialog(page).deleteAttachmentPoint(
+    AttachmentPointOption.R4,
+  );
+  await CreateMonomerDialog(page).deleteAttachmentPoint(
+    AttachmentPointOption.R5,
+  );
+  await CreateMonomerDialog(page).deleteAttachmentPoint(
+    AttachmentPointOption.R6,
+  );
+  await CreateMonomerDialog(page).deleteAttachmentPoint(
+    AttachmentPointOption.R7,
+  );
+  await CreateMonomerDialog(page).deleteAttachmentPoint(
+    AttachmentPointOption.R8,
+  );
 
   await expect(attachmentPointR1).not.toBeVisible();
   await expect(attachmentPointR2).not.toBeVisible();
@@ -909,8 +925,8 @@ test(`19. Check that for an already set APs the user can change the R-group numb
   const attachmentPointR2 = page.getByTestId(AttachmentPoint.R2).first();
 
   await CreateMonomerDialog(page).changeAttachmentPointName({
-    oldName: AttachmentPointName.R2,
-    newName: AttachmentPointName.R1,
+    oldName: AttachmentPointOption.R2,
+    newName: AttachmentPointOption.R1,
   });
 
   await expect(attachmentPointR2).not.toBeVisible();
@@ -949,43 +965,43 @@ test(`20. Check that for an already set APs the user can change the LGA atom by 
   await dragMouseTo(425, 200, page);
 
   await CreateMonomerDialog(page).changeAttachmentPointAtom({
-    attachmentPointName: AttachmentPointName.R1,
+    attachmentPointName: AttachmentPointOption.R1,
     newAtom: AttachmentPointAtom.H,
   });
   await takeEditorScreenshot(page);
 
   await CreateMonomerDialog(page).changeAttachmentPointAtom({
-    attachmentPointName: AttachmentPointName.R1,
+    attachmentPointName: AttachmentPointOption.R1,
     newAtom: AttachmentPointAtom.OH,
   });
   await takeEditorScreenshot(page);
 
   await CreateMonomerDialog(page).changeAttachmentPointAtom({
-    attachmentPointName: AttachmentPointName.R1,
+    attachmentPointName: AttachmentPointOption.R1,
     newAtom: AttachmentPointAtom.NH2,
   });
   await takeEditorScreenshot(page);
 
   await CreateMonomerDialog(page).changeAttachmentPointAtom({
-    attachmentPointName: AttachmentPointName.R1,
+    attachmentPointName: AttachmentPointOption.R1,
     newAtom: AttachmentPointAtom.F,
   });
   await takeEditorScreenshot(page);
 
   await CreateMonomerDialog(page).changeAttachmentPointAtom({
-    attachmentPointName: AttachmentPointName.R1,
+    attachmentPointName: AttachmentPointOption.R1,
     newAtom: AttachmentPointAtom.Cl,
   });
   await takeEditorScreenshot(page);
 
   await CreateMonomerDialog(page).changeAttachmentPointAtom({
-    attachmentPointName: AttachmentPointName.R1,
+    attachmentPointName: AttachmentPointOption.R1,
     newAtom: AttachmentPointAtom.Br,
   });
   await takeEditorScreenshot(page);
 
   await CreateMonomerDialog(page).changeAttachmentPointAtom({
-    attachmentPointName: AttachmentPointName.R1,
+    attachmentPointName: AttachmentPointOption.R1,
     newAtom: AttachmentPointAtom.I,
   });
   await takeEditorScreenshot(page);
@@ -1103,8 +1119,8 @@ test(`23. Check that if the user clicks on Cancel all monomer information is rem
   await dragMouseTo(425, 200, page);
 
   await CreateMonomerDialog(page).changeAttachmentPointName({
-    oldName: AttachmentPointName.R2,
-    newName: AttachmentPointName.R3,
+    oldName: AttachmentPointOption.R2,
+    newName: AttachmentPointOption.R3,
   });
 
   await CommonLeftToolbar(page).erase();
@@ -1144,7 +1160,7 @@ test(`24. Check that if the user clicks on Summit, the new monomer (CHEM) gets s
   await dragMouseTo(425, 200, page);
 
   await CreateMonomerDialog(page).selectType(MonomerType.CHEM);
-  await CreateMonomerDialog(page).setSymbol('CHEM');
+  await CreateMonomerDialog(page).setSymbol(Chem.CHEM.alias);
   await CreateMonomerDialog(page).setName('CHEM Test monomer');
   await CreateMonomerDialog(page).submit();
 
@@ -1185,7 +1201,7 @@ test(`25. Check that if the user clicks on Summit, the new monomer (Peptide) get
   await dragMouseTo(425, 200, page);
 
   await CreateMonomerDialog(page).selectType(MonomerType.AminoAcid);
-  await CreateMonomerDialog(page).setSymbol('Peptide');
+  await CreateMonomerDialog(page).setSymbol(Peptide.Peptide.alias);
   await CreateMonomerDialog(page).setName('Peptide Test monomer');
   await CreateMonomerDialog(page).selectNaturalAnalogue(
     AminoAcidNaturalAnalogue.A,
@@ -1229,7 +1245,7 @@ test(`26. Check that if the user clicks on Summit, the new monomer (Base) gets s
   await dragMouseTo(425, 200, page);
 
   await CreateMonomerDialog(page).selectType(MonomerType.Base);
-  await CreateMonomerDialog(page).setSymbol('Base');
+  await CreateMonomerDialog(page).setSymbol(Base.Base.alias);
   await CreateMonomerDialog(page).setName('Base Test monomer');
   await CreateMonomerDialog(page).selectNaturalAnalogue(
     NucleotideNaturalAnalogue.A,
@@ -1273,7 +1289,7 @@ test(`27. Check that if the user clicks on Summit, the new monomer (Phosphate) g
   await dragMouseTo(425, 200, page);
 
   await CreateMonomerDialog(page).selectType(MonomerType.Phosphate);
-  await CreateMonomerDialog(page).setSymbol('Phosphate');
+  await CreateMonomerDialog(page).setSymbol(Phosphate.Phosphate.alias);
   await CreateMonomerDialog(page).setName('Phosphate Test monomer');
   await CreateMonomerDialog(page).submit({ ignoreWarning: true });
 
@@ -1314,11 +1330,10 @@ test(`28. Check that if the user clicks on Summit, the new monomer (Sugar) gets 
   await dragMouseTo(425, 200, page);
 
   await CreateMonomerDialog(page).selectType(MonomerType.Sugar);
-  await CreateMonomerDialog(page).setSymbol('Sugar');
+  await CreateMonomerDialog(page).setSymbol(Sugar.Sugar.alias);
   await CreateMonomerDialog(page).setName('Sugar Test monomer');
   await CreateMonomerDialog(page).submit({ ignoreWarning: true });
 
-  await takeEditorScreenshot(page);
   await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
   await Library(page).hoverMonomer(Sugar.Sugar);
   await MonomerPreviewTooltip(page).waitForBecomeVisible();
@@ -1354,8 +1369,8 @@ test(`29. Check that if the user clicks on Summit, the new monomer (Nucleotide) 
   await page.mouse.move(600, 200);
   await dragMouseTo(425, 200, page);
 
-  await CreateMonomerDialog(page).selectType(MonomerType.Nucleotide);
-  await CreateMonomerDialog(page).setSymbol('Nucleotide');
+  await CreateMonomerDialog(page).selectType(MonomerType.NucleotideMonomer);
+  await CreateMonomerDialog(page).setSymbol(Nucleotide.Nucleotide.alias);
   await CreateMonomerDialog(page).setName('Nucleotide Test monomer');
   await CreateMonomerDialog(page).selectNaturalAnalogue(
     NucleotideNaturalAnalogue.A,
