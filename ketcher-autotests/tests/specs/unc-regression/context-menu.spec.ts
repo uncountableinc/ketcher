@@ -39,15 +39,12 @@ test.describe('right-click inside the editor', () => {
     const atom = getAtomLocator(page, { atomLabel: 'C' }).first();
     await ContextMenu(page, atom).open();
 
-    const preventedInsideCanvas = await page.evaluate(() => {
-      const canvas = document.querySelector('[data-testid="canvas"]');
-      if (canvas === null) {
-        return null;
-      }
-      return !canvas.dispatchEvent(
-        new MouseEvent('contextmenu', { bubbles: true, cancelable: true }),
-      );
-    });
+    const preventedInsideCanvas = await atom.evaluate(
+      (element) =>
+        !element.dispatchEvent(
+          new MouseEvent('contextmenu', { bubbles: true, cancelable: true }),
+        ),
+    );
 
     expect(preventedInsideCanvas).toBe(true);
   });
