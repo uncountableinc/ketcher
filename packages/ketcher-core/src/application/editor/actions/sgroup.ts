@@ -29,6 +29,7 @@ import {
   BondDelete,
   BondAttr,
   BondAdd,
+  FragmentAdd,
 } from '../operations';
 import {
   BaseMonomer,
@@ -216,14 +217,7 @@ export function setExpandMonomerSGroup(
         continue;
       }
 
-      if (!attrs.expanded) {
-        action.addOp(new BondAttr(bondId, 'stereo', Bond.PATTERN.STEREO.NONE));
-        continue;
-      }
-
-      if (!otherSGroup.isExpanded()) {
-        continue;
-      }
+      const otherMonomerIsExpanded = otherSGroup.isExpanded();
 
       const currentMonomerAP = attachmentPoints.find(
         (ap) => ap.atomId === atomInsideCurrentMonomer,
@@ -255,32 +249,48 @@ export function setExpandMonomerSGroup(
       const hasOtherStereo =
         otherMonomerStereo !== null &&
         otherMonomerStereo !== Bond.PATTERN.STEREO.NONE;
+      const currentMonomerStereoValue =
+        currentMonomerStereo ?? Bond.PATTERN.STEREO.NONE;
+      const otherMonomerStereoValue =
+        otherMonomerStereo ?? Bond.PATTERN.STEREO.NONE;
 
-      if (hasCurrentStereo && !hasOtherStereo) {
+      let hasEffectiveCurrentStereo = hasCurrentStereo;
+      let hasEffectiveOtherStereo = hasOtherStereo;
+      if (attrs.expanded !== otherMonomerIsExpanded) {
+        if (attrs.expanded && hasCurrentStereo) {
+          hasEffectiveOtherStereo = false;
+        } else if (otherMonomerIsExpanded && hasOtherStereo) {
+          hasEffectiveCurrentStereo = false;
+        }
+      }
+
+      if (hasEffectiveCurrentStereo && !hasEffectiveOtherStereo) {
         if (bondToOutside.begin !== atomInsideCurrentMonomer) {
           action.mergeWith(
             fromMonomerBondFlipWithNewStereo(
               struct,
               bondId,
-              currentMonomerStereo,
+              currentMonomerStereoValue,
             ),
           );
         } else {
-          action.addOp(new BondAttr(bondId, 'stereo', currentMonomerStereo));
+          action.addOp(
+            new BondAttr(bondId, 'stereo', currentMonomerStereoValue),
+          );
         }
-      } else if (!hasCurrentStereo && hasOtherStereo) {
+      } else if (!hasEffectiveCurrentStereo && hasEffectiveOtherStereo) {
         if (bondToOutside.begin !== atomOutsideCurrentMonomer) {
           action.mergeWith(
             fromMonomerBondFlipWithNewStereo(
               struct,
               bondId,
-              otherMonomerStereo,
+              otherMonomerStereoValue,
             ),
           );
         } else {
-          action.addOp(new BondAttr(bondId, 'stereo', otherMonomerStereo));
+          action.addOp(new BondAttr(bondId, 'stereo', otherMonomerStereoValue));
         }
-      } else if (hasCurrentStereo && hasOtherStereo) {
+      } else if (hasEffectiveCurrentStereo && hasEffectiveOtherStereo) {
         action.addOp(new BondAttr(bondId, 'stereo', Bond.PATTERN.STEREO.NONE));
       }
     }
@@ -587,6 +597,7 @@ export function fromSgroupDeletion(restruct: Restruct, id, needPerform = true) {
     });
   }
 
+  let fragmentId;
   const atoms = SGroup.getAtoms(struct, sG);
   const attrs = sG?.getAttrs();
 
@@ -599,8 +610,24 @@ export function fromSgroupDeletion(restruct: Restruct, id, needPerform = true) {
 
   action.addOp(new SGroupRemoveFromHierarchy(id));
 
-  atoms.forEach((atom) => {
-    action.addOp(new SGroupAtomRemove(id, atom));
+  // when we delete SGroup, we need to create fragment for its atoms if they do not belong to another fragments
+  // because monomers has atoms with fragment = -1
+  const isMonomer = atoms.some((atomId) => {
+    const atom = struct.atoms.get(atomId);
+    return atom && atom.fragment < 0;
+  });
+
+  if (isMonomer) {
+    fragmentId = struct.frags.newId();
+    action.addOp(new FragmentAdd(fragmentId));
+  }
+
+  atoms.forEach((atomId) => {
+    action.addOp(new SGroupAtomRemove(id, atomId));
+    const atom = struct.atoms.get(atomId);
+    if (atom && atom.fragment < 0) {
+      action.addOp(new AtomAttr(atomId, 'fragment', fragmentId));
+    }
   });
 
   sG?.getAttachmentPoints().forEach((attachmentPoint) => {
