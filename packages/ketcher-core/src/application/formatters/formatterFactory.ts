@@ -65,6 +65,10 @@ export class FormatterFactory {
   create(
     format: SupportedFormat,
     options?: FormatterFactoryOptions,
+    // Accepted for upstream's callers only. server-format-routing sends every
+    // format except KET to the Indigo server, so the local molfile formatter
+    // this flag configured is gone and the value has nothing to affect.
+    _queryPropertiesAreUsed?: boolean,
   ): StructFormatter {
     const [, structServiceOptions] = this.separateOptions(options);
 
