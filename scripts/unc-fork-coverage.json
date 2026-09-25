@@ -1,5 +1,5 @@
 {
-  "mergeBase": "12b12c6cee58c4158f0c7e2f7bbc4f9dcb543170",
+  "mergeBase": "c9ec64c2151ef36b2b10863e6a243b87cd1b7d12",
   "forkRef": "master",
   "upstreamTag": "v3.18.0",
   "behaviours": [
@@ -120,7 +120,7 @@
       "files": [
         "packages/ketcher-core/src/application/editor/actions/action.ts",
         "packages/ketcher-core/src/application/editor/operations/CanvasLoad.ts",
-        "packages/ketcher-core/src/application/editor/operations/base.ts"
+        "packages/ketcher-core/src/application/editor/operations/BaseOperation.ts"
       ],
       "verdictNote": "reapply: the suite cannot load on vanilla because upstream moved operations/base.ts, so this verdict is from source inspection - isInvertible appears nowhere in v3.18.0."
     },
@@ -365,7 +365,7 @@
         "packages/ketcher-react/src/script/ui/data/convert/structconv.js",
         "packages/ketcher-react/src/script/ui/data/schema/struct-schema.js",
         "packages/ketcher-react/src/script/ui/dialog/template/TemplateDialog.tsx",
-        "packages/ketcher-react/src/script/ui/dialog/toolbox/labeledit.jsx",
+        "packages/ketcher-react/src/script/ui/dialog/toolbox/labeledit.tsx",
         "packages/ketcher-react/src/script/ui/state/action/index.js",
         "packages/ketcher-react/src/script/ui/state/editor/index.js",
         "packages/ketcher-react/src/script/ui/state/hotkeys.ts",
@@ -375,7 +375,7 @@
         "packages/ketcher-react/src/script/ui/state/templates/index.ts",
         "packages/ketcher-react/src/script/ui/state/toolbar/index.js",
         "packages/ketcher-react/src/script/ui/utils/index.ts",
-        "packages/ketcher-react/src/script/ui/views/components/StructEditor/StructEditor.jsx",
+        "packages/ketcher-react/src/script/ui/views/components/StructEditor/StructEditor.tsx",
         "packages/ketcher-react/src/script/ui/views/modal/Modal.container.ts",
         "packages/ketcher-react/src/script/ui/views/modal/components/PeriodTable/PeriodTable.tsx",
         "packages/ketcher-react/src/script/ui/views/modal/components/PeriodTable/components/ElementsTable/components/Header.jsx",
@@ -406,7 +406,7 @@
       "files": [
         "packages/ketcher-react/src/Editor.tsx",
         "packages/ketcher-react/src/script/ui/state/editor/index.js",
-        "packages/ketcher-react/src/script/ui/views/components/StructEditor/StructEditor.jsx"
+        "packages/ketcher-react/src/script/ui/views/components/StructEditor/StructEditor.tsx"
       ]
     },
     {
@@ -442,16 +442,6 @@
       "commits": ["1a41ba32e"],
       "files": [
         "packages/ketcher-core/src/application/editor/operations/atom/AtomAttr.ts"
-      ]
-    },
-    {
-      "key": "browser-safe-indigo-env",
-      "summary": "Read INDIGO_VERSION and INDIGO_MACHINE only where a process global exists.",
-      "verdict": "reapply",
-      "covered": "none: the failure only appears through main's vendored browser bundle, so it is covered by main's ketcher browser tests, not by a fork test; a fork-side bundle scan reports 23 false positives from the Node shims inside assert",
-      "commits": [],
-      "files": [
-        "packages/ketcher-macromolecules/src/state/common/editorSlice.ts"
       ]
     },
     {
