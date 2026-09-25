@@ -1,5 +1,5 @@
 import { ReStruct, Render } from 'application/render';
-import { RenderOptions } from 'application/render/render.types';
+import type { RenderOptions } from 'application/render/render.types';
 import { KetSerializer } from 'domain/serializers';
 
 /**

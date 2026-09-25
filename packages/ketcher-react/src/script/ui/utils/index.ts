@@ -18,7 +18,7 @@ import escapeRegExp from 'lodash/fp/escapeRegExp';
 import _filter from 'lodash/fp/filter';
 import flow from 'lodash/fp/flow';
 import reduce from 'lodash/fp/reduce';
-import { Option } from '../component/form/Select';
+import type { Option } from '../component/form/Select';
 
 const GREEK_SIMBOLS = {
   Alpha: 'A',

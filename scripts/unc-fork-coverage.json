@@ -1,5 +1,5 @@
 {
-  "mergeBase": "98dbc62d0776e4e53c6989709ddfa20dc4adcb72",
+  "mergeBase": "a3ad48c224b264b90dfa5f346eb5e8f6898ec02d",
   "forkRef": "master",
   "upstreamTag": "v3.18.0",
   "behaviours": [
@@ -356,7 +356,7 @@
         "packages/ketcher-react/src/script/ui/data/schema/struct-schema.ts",
         "packages/ketcher-react/src/script/ui/dialog/template/TemplateDialog.tsx",
         "packages/ketcher-react/src/script/ui/dialog/toolbox/labeledit.tsx",
-        "packages/ketcher-react/src/script/ui/state/action/index.js",
+        "packages/ketcher-react/src/script/ui/state/action/index.ts",
         "packages/ketcher-react/src/script/ui/state/editor/index.js",
         "packages/ketcher-react/src/script/ui/state/hotkeys.ts",
         "packages/ketcher-react/src/script/ui/state/index.js",
