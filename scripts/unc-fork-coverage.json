@@ -148,10 +148,8 @@
         "163120938",
         "5e1077347"
       ],
-      "files": [
-        "packages/ketcher-react/src/script/editor/tool/select/select.ts",
-        "packages/ketcher-react/src/script/editor/tool/sgroup.ts"
-      ]
+      "files": ["packages/ketcher-react/src/script/editor/tool/sgroup.ts"],
+      "verdictNote": "shrank at the v3.17.0 merge: upstream added its own guard in select.ts that skips the auto-expand to the enclosing s-group when the clicked item is already selected, the same intent as the fork's, checked through isItemSelected(selection, ci, ctab). Only the tool/sgroup.ts delta is still ours."
     },
     {
       "key": "clipboard-and-undo",
@@ -334,9 +332,9 @@
         "packages/ketcher-core/src/application/render/restruct/reatom.ts",
         "packages/ketcher-react/src/script/editor/tool/arrow/commonArrow.ts",
         "packages/ketcher-react/src/script/editor/tool/image.ts",
-        "packages/ketcher-react/src/script/editor/tool/reactionplus.ts",
-        "packages/ketcher-react/src/script/editor/tool/select/select.ts"
-      ]
+        "packages/ketcher-react/src/script/editor/tool/reactionplus.ts"
+      ],
+      "verdictNote": "shrank at the v3.17.0 merge: upstream's typing now covers render.paper.canvas at the handleMovingPosibilityCursor call, so select.ts needs no @ts-ignore. Measured, not assumed: the pair was left out of the merge and npm run test:types passes."
     },
     {
       "key": "lodash-fp-entrypoints",
