@@ -451,6 +451,17 @@
       "files": [
         "packages/ketcher-react/src/script/ui/views/toolbars/TopToolbar/SystemControls.test.tsx"
       ]
+    },
+    {
+      "key": "text-node-pos-geometry",
+      "summary": "Keep text nodes serializing data.pos, and do not crash on a text node with fewer points than a bounding box needs.",
+      "verdict": "reapply",
+      "verdictNote": "two deltas in one file, both added at the v3.18.0 merge. Upstream rewrote text serialization for lexical: it now writes geometry as boundingBox and drops data.pos, and it builds that box from pos[0], pos[1] and pos[2] before its own legacy-format check. First, a text node saved by an earlier ketcher can carry only two points, so pos[2].x threw and an existing structure with such text could not be serialized at all. Second, main reads text geometry from data.pos in three places: reaction diagram bounds in ketcher_layout.py, _extract_text_reagents in build_reaction_diagram_from_chem_struct.py, which drops a reagent whose coordinates are missing, and calculate_chemical_reaction_combiner.py. Writing only boundingBox loses text reagents from reaction diagrams with no error. This fork writes data.pos alongside upstream's boundingBox so the backend contract is unchanged. Expect a conflict here on every merge, since upstream is actively changing this file; the alternative is teaching those three consumers to read boundingBox, at which point this delta can go.",
+      "covered": "vitest main/site/js_test/materials/shared/chem_drawer/ketcher_fixture_round_trip.test.ts, which failed on both counts before this",
+      "commits": [],
+      "files": [
+        "packages/ketcher-core/src/domain/serializers/ket/toKet/textToKet.ts"
+      ]
     }
   ]
 }

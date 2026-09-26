@@ -133,8 +133,18 @@ function applyFontStyleOverrides(
 
 export function textToKet(textNode) {
   const convertToKET20Text = (source: TextNode['data']): KETText => {
-    // Calculate boundingBox from pos array
     const pos = source.pos;
+    // A text node saved by an earlier version can carry fewer than the three
+    // points the bounding box is built from. Return it unchanged rather than
+    // invent a box for it, which is what the legacy branch below does anyway.
+    if (!pos || pos.length < 3) {
+      return {
+        type: 'text',
+        data: source,
+      } as unknown as KETText;
+    }
+
+    // Calculate boundingBox from pos array
     const x = pos[0].x;
     const y = pos[0].y;
     const width = pos[2].x - pos[0].x;
@@ -155,8 +165,13 @@ export function textToKet(textNode) {
     const ketText: KETText = {
       type: 'text',
       boundingBox: { x, y, width, height },
+      // Keep the point array upstream replaced with boundingBox. Reaction
+      // diagrams in main read text geometry from data.pos, and the text
+      // reagent extractor drops a reagent whose coordinates are missing, so
+      // writing only boundingBox loses text reagents with no error.
+      data: { ...source },
       paragraphs: [],
-    };
+    } as KETText;
 
     // Copy optional root-level properties if present
     if (root.alignment !== undefined) ketText.alignment = root.alignment;
