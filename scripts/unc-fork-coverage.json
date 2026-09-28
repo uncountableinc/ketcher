@@ -462,6 +462,17 @@
       "files": [
         "packages/ketcher-core/src/domain/serializers/ket/toKet/textToKet.ts"
       ]
+    },
+    {
+      "key": "no-valence-mode-server-option",
+      "summary": "Stop sending the valence-mode option on server conversions.",
+      "verdict": "reapply",
+      "verdictNote": "interim, and removable on a known condition. Upstream added valence-mode at v3.18.0 (application/settings/schema.ts) and pickStandardServerOptions puts it in every convert request. The indigo-service deployed against this fork reports indigo 1.34.0 and answers that option with 500 {\"error\": \"'NoneType' object has no attribute 'loadMonomerLibrary'\"}, which fails every server-side conversion: getSmiles, every export, and the drawer's To Experiment path. The error names the monomer library and that is a red herring; monomerLibrary is sent by v3.10.0 too and removing it does not help. Measured by replaying the real 1.5MB request against the service and dropping one option at a time: struct alone returns 200, valence-mode alone reproduces the 500, and the full request with only valence-mode removed returns 200. REMOVE THIS DELTA once the deployed indigo-service reaches 1.45.0 or newer. valence-mode was added to indigo in 1.45.0: the option string is absent from the indigo-ketcher wasm at 1.38.0, 1.42.0 and 1.44.0, and present at 1.45.0, 1.45.1 and 1.46.0, which is the version ketcher v3.18.0 itself pins. Verify with the saved request before restoring the line.",
+      "covered": "none: proving this needs a live indigo-service, which neither the fork suite nor main's vitest talks to; replay a captured convert request against the running service instead",
+      "commits": [],
+      "files": [
+        "packages/ketcher-core/src/infrastructure/services/struct/remoteStructService.ts"
+      ]
     }
   ]
 }
