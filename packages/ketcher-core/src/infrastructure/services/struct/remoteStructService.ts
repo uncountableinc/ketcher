@@ -156,7 +156,11 @@ export function pickStandardServerOptions(
     'gross-formula-add-isotopes': options?.['gross-formula-add-isotopes'],
     'ignore-no-chiral-flag': ketcherInstance.editor.options().ignoreChiralFlag,
     'aromatize-skip-superatoms': true,
-    'valence-mode': options?.['valence-mode'],
+    // IMPROVE: restore once the deployed indigo-service reaches 1.45.0, the
+    // release that added valence-mode. Older builds answer it with a 500,
+    // 'NoneType' object has no attribute 'loadMonomerLibrary', which fails
+    // every server-side conversion.
+    // 'valence-mode': options?.['valence-mode'],
   };
 }
 
