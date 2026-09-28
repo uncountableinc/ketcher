@@ -165,11 +165,6 @@ export function textToKet(textNode) {
     const ketText: KETText = {
       type: 'text',
       boundingBox: { x, y, width, height },
-      // Keep the point array upstream replaced with boundingBox. Reaction
-      // diagrams in main read text geometry from data.pos, and the text
-      // reagent extractor drops a reagent whose coordinates are missing, so
-      // writing only boundingBox loses text reagents with no error.
-      data: { ...source },
       paragraphs: [],
     } as KETText;
 
