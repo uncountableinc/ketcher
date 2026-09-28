@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************/
-import { type FC, useCallback, useEffect } from 'react';
+import { type FC, useCallback, useEffect, useState } from 'react';
 import { type MenuProps, contextMenu, Menu } from 'react-contexify';
 import { useAppContext } from 'src/hooks';
 import type Editor from 'src/script/editor';
@@ -25,7 +25,10 @@ import FunctionalGroupMenuItems from './menuItems/FunctionalGroupMenuItems';
 import SelectionMenuItems from './menuItems/SelectionMenuItems';
 import RGroupAttachmentPointMenuItems from './menuItems/RGroupAttachmentPointMenuItems';
 import { createPortal } from 'react-dom';
-import { KETCHER_ROOT_NODE_CSS_SELECTOR } from 'src/constants';
+import {
+  KETCHER_ROOT_NODE_CSS_SELECTOR,
+  ketcherIdCssSelector,
+} from 'src/constants';
 import { MultitailArrowMenuItems } from './menuItems/MultitailArrowMenuItems';
 import MacromoleculeMenuItems from './menuItems/MacromoleculeMenuItems';
 import { ketcherProvider } from 'ketcher-core';
@@ -36,8 +39,21 @@ const props: Partial<MenuProps> = {
   className: styles.contextMenu,
 };
 
+const isFullScreen = () => document.fullscreenElement != null;
+
 const ContextMenu: FC = () => {
   const { ketcherId } = useAppContext();
+  const [isFullScreenActive, setIsFullScreenActive] = useState(isFullScreen);
+
+  useEffect(() => {
+    const handleFullScreenChange = () => setIsFullScreenActive(isFullScreen());
+
+    document.addEventListener('fullscreenchange', handleFullScreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullScreenChange);
+    };
+  }, []);
 
   useEffect(() => {
     const handleEscapeKeyDown = (event: KeyboardEvent) => {
@@ -187,6 +203,9 @@ const ContextMenu: FC = () => {
   const ketcherEditorRootElement = document.querySelector(
     KETCHER_ROOT_NODE_CSS_SELECTOR,
   );
+  const menuContainer = isFullScreenActive
+    ? document.querySelector(ketcherIdCssSelector(ketcherId)) ?? document.body
+    : document.body;
 
   return ketcherEditorRootElement
     ? createPortal(
@@ -289,7 +308,7 @@ const ContextMenu: FC = () => {
             <AttachmentPointLabelMenuItems />
           </Menu>
         </>,
-        document.body,
+        menuContainer,
       )
     : null;
 };

@@ -262,12 +262,13 @@
     },
     {
       "key": "fullscreen-dropdown-container",
-      "summary": "Portal dropdowns into the element the user can see.",
+      "summary": "Portal dropdowns and the molecule context menu into the element the user can see (MAT-89356 for the context menu).",
       "verdict": "reapply",
       "covered": "playwright tests/specs/unc-regression/fullscreen-dropdown-container.spec.ts",
       "commits": ["3d3b76a6c", "83730d640"],
       "files": [
         "packages/ketcher-react/src/script/ui/component/form/Select/Select.tsx",
+        "packages/ketcher-react/src/script/ui/views/components/ContextMenu/ContextMenu.tsx",
         "packages/ketcher-react/src/script/ui/views/toolbars/TopToolbar/ZoomControls.tsx"
       ]
     },
