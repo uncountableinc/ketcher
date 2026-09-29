@@ -81,6 +81,10 @@ interface LexicalParagraph {
   children?: LexicalTextChild[];
 }
 
+// Lexical content is always written as JSON.stringify of a root node, so it
+// always opens with a "root" key. Anything else is the typed string itself.
+const SERIALISED_LEXICAL_CONTENT = /^\s*\{\s*"root"\s*:/;
+
 const IS_BOLD = 1;
 const IS_ITALIC = 2;
 const IS_SUBSCRIPT = 32;
@@ -149,6 +153,17 @@ export function textToKet(textNode) {
     const y = pos[0].y;
     const width = pos[2].x - pos[0].x;
     const height = Math.abs(pos[1].y - pos[0].y);
+
+    // A text node written by an earlier version, or one that has been through
+    // Indigo, carries the typed string rather than serialised Lexical, and
+    // Indigo always writes four pos points so the guard above does not catch
+    // it. Hand those to the legacy branch instead of parsing prose as JSON.
+    if (!SERIALISED_LEXICAL_CONTENT.test(source.content)) {
+      return {
+        type: 'text',
+        data: source,
+      } as unknown as KETText;
+    }
 
     // Parse content – may be Lexical (has "root") or legacy Draft.js format
     const textContent = JSON.parse(source.content);
