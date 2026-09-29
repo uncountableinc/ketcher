@@ -159,7 +159,9 @@ export function pickStandardServerOptions(
     // IMPROVE: restore once the deployed indigo-service reaches 1.45.0, the
     // release that added valence-mode. Older builds answer it with a 500,
     // 'NoneType' object has no attribute 'loadMonomerLibrary', which fails
-    // every server-side conversion.
+    // every server-side conversion. The Settings selector that sets this was
+    // removed while the option is dropped, because it silently did nothing;
+    // restore both together.
     // 'valence-mode': options?.['valence-mode'],
   };
 }
