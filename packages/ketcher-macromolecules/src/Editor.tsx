@@ -345,12 +345,7 @@ function Editor({
         <Layout.Top
           shortened={!isMonomerLibraryHidden}
           data-testid="top-toolbar"
-        >
-          <TopMenuComponent />
-          <TopMenuRightWrapper>
-            <SequenceSyncEditModeButton />
-            <LayoutModeButton />
-            <SequenceTypeGroupButton />
+          pinnedEnd={
             <TogglerComponentWrapper
               className={
                 isSequenceEditInRNABuilderMode
@@ -360,6 +355,13 @@ function Editor({
             >
               {togglerComponent}
             </TogglerComponentWrapper>
+          }
+        >
+          <TopMenuComponent />
+          <TopMenuRightWrapper>
+            <SequenceSyncEditModeButton />
+            <LayoutModeButton />
+            <SequenceTypeGroupButton />
             <VerticalDivider />
             <ButtonsComponents />
             <FullscreenButton />

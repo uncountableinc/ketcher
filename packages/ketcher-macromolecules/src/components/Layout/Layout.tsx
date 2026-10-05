@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************/
 
-import React, { RefObject, useRef } from 'react';
+import React, { ReactNode, RefObject, useRef } from 'react';
 import styled from '@emotion/styled';
 import { MONOMER_HIDE_LIBRARY_BUTTON_WIDTH } from 'components/monomerLibrary/styles';
 import { useInView } from 'react-intersection-observer';
@@ -108,6 +108,18 @@ const StyledArrowScrollWrapper = styled.div`
   border-radius: 4px;
 `;
 
+const StyledPinnedEnd = styled.div`
+  height: 36px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-left: 3px;
+  padding: 0 4px;
+  background: white;
+  box-shadow: ${({ theme }) => theme.ketcher.shadow.mainLayoutBlocks};
+  border-radius: 4px;
+`;
+
 const Bottom = styled.div`
   &:not(:empty) {
     margin-bottom: 15px;
@@ -136,11 +148,14 @@ type LayoutSection =
   | 'InsideRoot';
 
 const Top = (
-  props: React.HTMLAttributes<HTMLDivElement> & { shortened?: boolean },
+  props: React.HTMLAttributes<HTMLDivElement> & {
+    shortened?: boolean;
+    pinnedEnd?: ReactNode;
+  },
 ) => {
   const [startRef, startInView] = useInView({ threshold: 1 });
   const [endRef, endInView] = useInView({ threshold: 1 });
-  const { children, ...otherProps } = props;
+  const { children, pinnedEnd, ...otherProps } = props;
   const scrollRef = useRef(null) as RefObject<HTMLDivElement | null>;
 
   const SCROLL_PX_PER_SEC = 300;
@@ -179,6 +194,11 @@ const Top = (
           />
         </StyledArrowScrollWrapper>
       ) : null}
+      {pinnedEnd != null && (
+        <StyledPinnedEnd data-testid="top-toolbar-pinned-end">
+          {pinnedEnd}
+        </StyledPinnedEnd>
+      )}
     </div>
   );
 };
