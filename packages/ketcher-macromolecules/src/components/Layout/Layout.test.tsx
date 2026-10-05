@@ -60,6 +60,30 @@ describe('Layout', () => {
     expect(leftElement).toBeVisible();
   });
 
+  it('should render the pinned end outside the scrolling top toolbar', () => {
+    render(
+      withThemeProvider(
+        <Layout>
+          <Layout.Top
+            data-testid="top-toolbar"
+            pinnedEnd={<div>mode switch</div>}
+          >
+            <TopElementMock />
+          </Layout.Top>
+          <Layout.Main>
+            <MainElementMock />
+          </Layout.Main>
+        </Layout>,
+      ),
+    );
+
+    const pinnedEnd = screen.getByTestId('top-toolbar-pinned-end');
+
+    expect(screen.getByText('mode switch')).toBeVisible();
+    expect(pinnedEnd).toContainElement(screen.getByText('mode switch'));
+    expect(screen.getByTestId('top-toolbar')).not.toContainElement(pinnedEnd);
+  });
+
   it('should render all subcomponents correctly', () => {
     render(
       withThemeProvider(

@@ -475,6 +475,19 @@
         "packages/ketcher-core/src/infrastructure/services/struct/remoteStructService.ts",
         "packages/ketcher-react/src/script/ui/views/modal/components/meta/Settings/Settings.tsx"
       ]
+    },
+    {
+      "key": "pinned-macro-mode-switch",
+      "summary": "Keep the Molecules/Macromolecules switch in a pinned slot of the macromolecules top toolbar, outside the part that scrolls.",
+      "verdict": "reapply",
+      "verdictNote": "In a narrow editor the macromolecules top toolbar overflows and scrolls sideways, and the mode switch was its last group but one, so it scrolled out of view under the monomer library. In a 360px inline drawer the user could not switch back to Molecules mode without closing the drawer. Layout.Top gained a pinnedEnd slot drawn next to the scroll arrows, and Editor passes the switch to it.",
+      "covered": "jest packages/ketcher-macromolecules/src/components/Layout/Layout.test.tsx",
+      "commits": [],
+      "files": [
+        "packages/ketcher-macromolecules/src/Editor.tsx",
+        "packages/ketcher-macromolecules/src/components/Layout/Layout.test.tsx",
+        "packages/ketcher-macromolecules/src/components/Layout/Layout.tsx"
+      ]
     }
   ]
 }
