@@ -109,16 +109,33 @@ export abstract class BaseSequenceItemRenderer extends BaseSequenceRenderer {
   public get scaledMonomerPositionForSequence() {
     const lineLength = SettingsManager.editorLineLength['sequence-layout-mode'];
     const indexInRow = this.monomerIndexInChain % lineLength;
-    const rowIndex = Math.floor(this.monomerIndexInChain / lineLength);
+    const rowIndex = this.sequenceRowIndex;
+    const columnIndex = this.shouldReverseSequenceRow(rowIndex)
+      ? lineLength - indexInRow - 1
+      : indexInRow;
 
     return new Vec2(
       this.firstNodeInChainPosition.x +
-        indexInRow * 20 +
-        Math.floor(indexInRow / this.nthSeparationInRow) * 10,
+        columnIndex * 20 +
+        Math.floor(columnIndex / this.nthSeparationInRow) * 10,
       this.firstNodeInChainPosition.y +
         47 * rowIndex +
         53 * this.previousRowsWithAntisense,
     );
+  }
+
+  protected shouldReverseSequenceRow(_rowIndex: number) {
+    return false;
+  }
+
+  private get sequenceRowIndex() {
+    const lineLength = SettingsManager.editorLineLength['sequence-layout-mode'];
+
+    return Math.floor(this.monomerIndexInChain / lineLength);
+  }
+
+  private get isCurrentSequenceRowReversed() {
+    return this.shouldReverseSequenceRow(this.sequenceRowIndex);
   }
 
   public get center() {
@@ -589,7 +606,11 @@ export abstract class BaseSequenceItemRenderer extends BaseSequenceRenderer {
       : (this.monomerIndexInChain + 1) % this.nthSeparationInRow === 0;
   }
 
-  public showCaret(xOffset = CARET_X_OFFSET_BEFORE_NODE) {
+  public showCaret(
+    xOffset = this.isCurrentSequenceRowReversed
+      ? CARET_X_OFFSET_AFTER_NODE
+      : CARET_X_OFFSET_BEFORE_NODE,
+  ) {
     this.caretElement = this.spacerElement?.append('g');
 
     if (this.isSyncEditMode && this.isAntisenseNode) {
@@ -628,7 +649,11 @@ export abstract class BaseSequenceItemRenderer extends BaseSequenceRenderer {
   }
 
   public showCaretAfterNode() {
-    this.showCaret(CARET_X_OFFSET_AFTER_NODE);
+    this.showCaret(
+      this.isCurrentSequenceRowReversed
+        ? CARET_X_OFFSET_BEFORE_NODE
+        : CARET_X_OFFSET_AFTER_NODE,
+    );
   }
 
   public removeCaret() {

@@ -6,6 +6,9 @@ import type { Vec2 } from 'domain/entities/vec2';
 import type { Chain } from 'domain/entities/monomer-chains/Chain';
 import type { ITwoStrandedChainItem } from 'domain/entities/monomer-chains/ChainsCollection';
 
+const ROWS_PER_DIRECTION_CYCLE = 2;
+const REVERSED_ROW_INDEX_IN_DIRECTION_CYCLE = 1;
+
 export abstract class RNASequenceItemRenderer extends BaseSequenceItemRenderer {
   constructor(
     public node: Nucleoside | Nucleotide,
@@ -32,6 +35,14 @@ export abstract class RNASequenceItemRenderer extends BaseSequenceItemRenderer {
       scaledMonomerPosition,
       _twoStrandedNode,
       _previousRowsWithAntisense,
+    );
+  }
+
+  protected override shouldReverseSequenceRow(rowIndex: number) {
+    return (
+      this.isSequenceEditInRnaBuilderModeTurnedOn &&
+      rowIndex % ROWS_PER_DIRECTION_CYCLE ===
+        REVERSED_ROW_INDEX_IN_DIRECTION_CYCLE
     );
   }
 

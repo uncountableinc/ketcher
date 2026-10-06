@@ -1,4 +1,5 @@
 /* eslint-disable no-magic-numbers */
+import { expect } from '@playwright/test';
 import { test } from '@fixtures';
 import {
   takeEditorScreenshot,
@@ -30,6 +31,10 @@ import { MacromoleculesTopToolbar } from '@tests/pages/macromolecules/Macromolec
 import { LayoutMode } from '@tests/pages/constants/macromoleculesTopToolbar/Constants';
 import { MonomerPreviewTooltip } from '@tests/pages/macromolecules/canvas/MonomerPreviewTooltip';
 import { UpdateSequenceDialog } from '@tests/pages/macromolecules/library/UpdateSequenceDialog';
+
+const SEQUENCE_ROW_LENGTH = 30;
+const SEQUENCE_ROW_COUNT = 3;
+const LAST_ROW_ITEM_COUNT = 5;
 
 test.describe('Sequence mode edit in RNA Builder', () => {
   test.beforeEach(async ({ page }) => {
@@ -199,6 +204,49 @@ test.describe('Modify nucleotides from sequence in RNA builder', () => {
     await symbolG.click();
     await modifyInRnaBuilder(page, symbolG);
     await takePageScreenshot(page);
+  });
+
+  test('RNA Builder sequence rows follow a snake pattern', async ({ page }) => {
+    await keyboardTypeOnCanvas(
+      page,
+      'a'.repeat(
+        SEQUENCE_ROW_LENGTH * (SEQUENCE_ROW_COUNT - 1) + LAST_ROW_ITEM_COUNT,
+      ),
+    );
+    await keyboardPressOnCanvas(page, 'Escape');
+    const symbolA = getSymbolLocator(page, { symbolAlias: 'A' }).first();
+    await symbolA.click();
+    await modifyInRnaBuilder(page, symbolA);
+
+    const positions = await page
+      .locator('.sequence-item[data-symbol-alias="A"]')
+      .evaluateAll((sequenceItems) =>
+        sequenceItems.map((sequenceItem) => {
+          if (!(sequenceItem instanceof SVGGraphicsElement)) {
+            throw new Error('Sequence item is not an SVG graphics element.');
+          }
+          const matrix = sequenceItem.transform.baseVal.getItem(0).matrix;
+
+          return { x: matrix.e, y: matrix.f };
+        }),
+      );
+    const rows: Array<Array<{ x: number; y: number }>> = [];
+
+    for (const position of positions) {
+      const currentRow = rows[rows.length - 1];
+
+      if (currentRow === undefined || currentRow[0].y !== position.y) {
+        rows.push([position]);
+      } else {
+        currentRow.push(position);
+      }
+    }
+
+    expect(rows).toHaveLength(SEQUENCE_ROW_COUNT);
+    expect(rows[0][0].x).toBeLessThan(rows[0][rows[0].length - 1].x);
+    expect(rows[1][0].x).toBeGreaterThan(rows[1][rows[1].length - 1].x);
+    expect(rows[1][rows[1].length - 1].x).toBe(rows[2][0].x);
+    expect(rows[2][0].x).toBeLessThan(rows[2][rows[2].length - 1].x);
   });
 
   test('Check that if sugar has no R2 or R3, it is disabled in RNA Builder', async ({

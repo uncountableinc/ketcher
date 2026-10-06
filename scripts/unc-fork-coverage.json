@@ -4,6 +4,17 @@
   "upstreamTag": "v3.18.0",
   "behaviours": [
     {
+      "key": "rna-builder-snake-sequence-layout",
+      "summary": "Render RNA Builder sequence rows in an alternating left-to-right pattern.",
+      "verdict": "reapply",
+      "covered": "ketcher-autotests/tests/specs/Macromolecule-editor/Sequence-Mode/sequence-mode-edit-in-rna-builder.spec.ts",
+      "commits": [],
+      "files": [
+        "packages/ketcher-core/src/application/render/renderers/sequence/BaseSequenceItemRenderer.ts",
+        "packages/ketcher-core/src/application/render/renderers/sequence/RNASequenceItemRenderer.ts"
+      ]
+    },
+    {
       "key": "cip-descriptors",
       "summary": "Accept the RS, M and P CIP descriptors Indigo emits.",
       "verdict": "reapply",
