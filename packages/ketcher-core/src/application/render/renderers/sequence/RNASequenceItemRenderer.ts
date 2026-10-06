@@ -40,9 +40,8 @@ export abstract class RNASequenceItemRenderer extends BaseSequenceItemRenderer {
 
   protected override shouldReverseSequenceRow(rowIndex: number) {
     return (
-      this.isSequenceEditInRnaBuilderModeTurnedOn &&
       rowIndex % ROWS_PER_DIRECTION_CYCLE ===
-        REVERSED_ROW_INDEX_IN_DIRECTION_CYCLE
+      REVERSED_ROW_INDEX_IN_DIRECTION_CYCLE
     );
   }
 

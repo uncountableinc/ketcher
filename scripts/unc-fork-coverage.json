@@ -4,10 +4,10 @@
   "upstreamTag": "v3.18.0",
   "behaviours": [
     {
-      "key": "rna-builder-snake-sequence-layout",
-      "summary": "Render RNA Builder sequence rows in an alternating left-to-right pattern.",
+      "key": "nucleotide-snake-sequence-layout",
+      "summary": "Render nucleotide sequence rows in an alternating direction pattern.",
       "verdict": "reapply",
-      "covered": "ketcher-autotests/tests/specs/Macromolecule-editor/Sequence-Mode/sequence-mode-edit-in-rna-builder.spec.ts",
+      "covered": "ketcher-autotests/tests/specs/Macromolecule-editor/Sequence-Mode/sequence-mode-snake-layout.spec.ts",
       "commits": [],
       "files": [
         "packages/ketcher-core/src/application/render/renderers/sequence/BaseSequenceItemRenderer.ts",
