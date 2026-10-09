@@ -47,8 +47,18 @@ export abstract class BaseSequenceItemRenderer extends BaseSequenceRenderer {
     public readonly scaledMonomerPosition: Vec2,
     public readonly twoStrandedNode: ITwoStrandedChainItem,
     private readonly previousRowsWithAntisense = 0,
+    public readonly isRowReversed = false,
   ) {
     super(node.monomer);
+  }
+
+  public static mirrorPositionInRow(
+    positionInRow: number,
+    isRowReversed: boolean,
+  ) {
+    const lineLength = SettingsManager.editorLineLength['sequence-layout-mode'];
+
+    return isRowReversed ? lineLength - 1 - positionInRow : positionInRow;
   }
 
   abstract get symbolToDisplay(): string;
@@ -108,13 +118,16 @@ export abstract class BaseSequenceItemRenderer extends BaseSequenceRenderer {
 
   public get scaledMonomerPositionForSequence() {
     const lineLength = SettingsManager.editorLineLength['sequence-layout-mode'];
-    const indexInRow = this.monomerIndexInChain % lineLength;
+    const columnIndex = BaseSequenceItemRenderer.mirrorPositionInRow(
+      this.monomerIndexInChain % lineLength,
+      this.isRowReversed,
+    );
     const rowIndex = Math.floor(this.monomerIndexInChain / lineLength);
 
     return new Vec2(
       this.firstNodeInChainPosition.x +
-        indexInRow * 20 +
-        Math.floor(indexInRow / this.nthSeparationInRow) * 10,
+        columnIndex * 20 +
+        Math.floor(columnIndex / this.nthSeparationInRow) * 10,
       this.firstNodeInChainPosition.y +
         47 * rowIndex +
         53 * this.previousRowsWithAntisense,
@@ -589,7 +602,11 @@ export abstract class BaseSequenceItemRenderer extends BaseSequenceRenderer {
       : (this.monomerIndexInChain + 1) % this.nthSeparationInRow === 0;
   }
 
-  public showCaret(xOffset = CARET_X_OFFSET_BEFORE_NODE) {
+  public showCaret(
+    xOffset = this.isRowReversed
+      ? CARET_X_OFFSET_AFTER_NODE
+      : CARET_X_OFFSET_BEFORE_NODE,
+  ) {
     this.caretElement = this.spacerElement?.append('g');
 
     if (this.isSyncEditMode && this.isAntisenseNode) {
@@ -628,7 +645,11 @@ export abstract class BaseSequenceItemRenderer extends BaseSequenceRenderer {
   }
 
   public showCaretAfterNode() {
-    this.showCaret(CARET_X_OFFSET_AFTER_NODE);
+    this.showCaret(
+      this.isRowReversed
+        ? CARET_X_OFFSET_BEFORE_NODE
+        : CARET_X_OFFSET_AFTER_NODE,
+    );
   }
 
   public removeCaret() {

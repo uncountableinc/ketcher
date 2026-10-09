@@ -495,10 +495,12 @@ export class SequenceMode extends BaseMode {
         ? event.clientX >
           sequenceItemBoundingBox.x + sequenceItemBoundingBox.width / 2
         : false;
+      const isClickAfterItemInSequence =
+        isRightSideOfSequenceItemClicked !== eventData.isRowReversed;
 
       SequenceRenderer.setCaretPositionByMonomer(eventData.node.monomer);
 
-      if (isRightSideOfSequenceItemClicked) {
+      if (isClickAfterItemInSequence) {
         SequenceRenderer.moveCaretForwardOrToRowEnd();
       }
 

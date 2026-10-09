@@ -1,5 +1,15 @@
 import type { ITwoStrandedChainItem } from 'domain/entities/monomer-chains/ChainsCollection';
 import { EmptySequenceNode } from 'domain/entities/EmptySequenceNode';
+import { Nucleoside } from 'domain/entities/Nucleoside';
+import { Nucleotide } from 'domain/entities/Nucleotide';
+import type { SequenceNode } from 'domain/entities/monomer-chains/types';
+
+const ROWS_PER_SNAKE_CYCLE = 2;
+const REVERSED_ROW_INDEX_IN_SNAKE_CYCLE = 1;
+
+function isNucleicAcidNode(node?: SequenceNode) {
+  return node instanceof Nucleotide || node instanceof Nucleoside;
+}
 
 export interface ISequenceViewModelRow {
   sequenceViewModelItems: ITwoStrandedChainItem[];
@@ -50,6 +60,23 @@ export class SequenceViewModelChain {
   public get isNewSequenceChain() {
     return (
       this.length === 1 && this.firstNode.senseNode instanceof EmptySequenceNode
+    );
+  }
+
+  private get isNucleicAcidChain() {
+    return this.rows.some((row) =>
+      row.sequenceViewModelItems.some(
+        (node) =>
+          isNucleicAcidNode(node.senseNode) ||
+          isNucleicAcidNode(node.antisenseNode),
+      ),
+    );
+  }
+
+  public isRowReversed(rowIndex: number) {
+    return (
+      this.isNucleicAcidChain &&
+      rowIndex % ROWS_PER_SNAKE_CYCLE === REVERSED_ROW_INDEX_IN_SNAKE_CYCLE
     );
   }
 

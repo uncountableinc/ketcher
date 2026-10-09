@@ -19,6 +19,7 @@ export abstract class RNASequenceItemRenderer extends BaseSequenceItemRenderer {
     public scaledMonomerPosition: Vec2,
     _twoStrandedNode: ITwoStrandedChainItem,
     _previousRowsWithAntisense = 0,
+    _isRowReversed = false,
   ) {
     super(
       node,
@@ -32,6 +33,7 @@ export abstract class RNASequenceItemRenderer extends BaseSequenceItemRenderer {
       scaledMonomerPosition,
       _twoStrandedNode,
       _previousRowsWithAntisense,
+      _isRowReversed,
     );
   }
 

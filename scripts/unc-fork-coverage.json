@@ -475,6 +475,21 @@
         "packages/ketcher-core/src/infrastructure/services/struct/remoteStructService.ts",
         "packages/ketcher-react/src/script/ui/views/modal/components/meta/Settings/Settings.tsx"
       ]
+    },
+    {
+      "key": "nucleic-acid-snake-sequence-rows",
+      "summary": "Alternate the direction of wrapped nucleic acid rows in sequence mode, so the sequence reads as a snake (MAT-91342).",
+      "verdict": "reapply",
+      "covered": "jest __tests__/unc-regression/sequence-snake-rows.test.ts",
+      "commits": [],
+      "files": [
+        "packages/ketcher-core/src/application/editor/modes/SequenceMode.ts",
+        "packages/ketcher-core/src/application/render/renderers/sequence/BaseSequenceItemRenderer.ts",
+        "packages/ketcher-core/src/application/render/renderers/sequence/RNASequenceItemRenderer.ts",
+        "packages/ketcher-core/src/application/render/renderers/sequence/SequenceNodeRendererFactory.ts",
+        "packages/ketcher-core/src/application/render/renderers/sequence/SequenceRenderer.ts",
+        "packages/ketcher-core/src/application/render/renderers/sequence/SequenceViewModel/SequenceViewModelChain.ts"
+      ]
     }
   ]
 }
