@@ -189,8 +189,9 @@ export class SequenceRenderer {
 
     sequenceViewModel.chains.forEach((chain, chainIndex) => {
       currentMonomerIndexInChain = 0;
-      chain.forEachRow((row) => {
+      chain.forEachRow((row, rowIndex) => {
         hasAntisenseInRow = false;
+        const isRowReversed = chain.isRowReversed(rowIndex);
 
         row.sequenceViewModelItems.forEach((chainItem) => {
           const node = chainItem.senseNode;
@@ -216,6 +217,7 @@ export class SequenceRenderer {
               chainItem,
               chainItem.antisenseNode?.monomer?.renderer,
               previousRowsWithAntisense,
+              isRowReversed,
             );
 
             antisenseNodeRenderer.show();
@@ -253,6 +255,7 @@ export class SequenceRenderer {
             chainItem,
             node.monomer.renderer,
             previousRowsWithAntisense,
+            isRowReversed,
           );
 
           renderer.show();
@@ -649,18 +652,43 @@ export class SequenceRenderer {
     return finalArray;
   }
 
-  private static getNodeIndexInRowByGlobalIndex(nodeIndexOverall: number) {
+  private static isRowOfNodesReversed(rowOfNodes: ITwoStrandedChainItem[]) {
+    const lineLength = SettingsManager.editorLineLength['sequence-layout-mode'];
+    let isRowReversed = false;
+
+    SequenceRenderer.forEachNode(({ chain, nodeIndex, twoStrandedNode }) => {
+      if (twoStrandedNode === rowOfNodes[0]) {
+        isRowReversed = chain.isRowReversed(Math.floor(nodeIndex / lineLength));
+      }
+    });
+
+    return isRowReversed;
+  }
+
+  private static getColumnIndexByGlobalIndex(nodeIndexOverall: number) {
     let restNodes = nodeIndexOverall;
-    let nodeIndexInRow;
+    let columnIndex: number | undefined;
 
     this.nodesGroupedByRows.forEach((row) => {
-      if (nodeIndexInRow === undefined && restNodes - row.length < 0) {
-        nodeIndexInRow = restNodes;
+      if (columnIndex === undefined && restNodes - row.length < 0) {
+        columnIndex = BaseSequenceItemRenderer.mirrorPositionInRow(
+          restNodes,
+          this.isRowOfNodesReversed(row),
+        );
       }
       restNodes -= row.length;
     });
 
-    return nodeIndexInRow;
+    return columnIndex;
+  }
+
+  private static getLastUserDefinedCaretIndexInRow(
+    rowOfNodes: ITwoStrandedChainItem[],
+  ) {
+    return BaseSequenceItemRenderer.mirrorPositionInRow(
+      this.getColumnIndexByGlobalIndex(this.lastUserDefinedCaretPosition) ?? 0,
+      this.isRowOfNodesReversed(rowOfNodes),
+    );
   }
 
   private static get currentChainRow() {
@@ -719,8 +747,7 @@ export class SequenceRenderer {
     let newCaretPosition = this.caretPosition;
     const symbolsBeforeCaretInCurrentRow = currentNodeIndexInRow;
     const lastUserDefinedCursorPositionInRow =
-      this.getNodeIndexInRowByGlobalIndex(this.lastUserDefinedCaretPosition) ??
-      0;
+      this.getLastUserDefinedCaretIndexInRow(this.previousRowOfNodes);
 
     newCaretPosition -= symbolsBeforeCaretInCurrentRow;
     newCaretPosition -= Math.max(
@@ -743,8 +770,7 @@ export class SequenceRenderer {
 
     let newCaretPosition = this.caretPosition;
     const lastUserDefinedCursorPositionInRow =
-      this.getNodeIndexInRowByGlobalIndex(this.lastUserDefinedCaretPosition) ??
-      0;
+      this.getLastUserDefinedCaretIndexInRow(this.nextRowOfNodes);
     const symbolsAfterCaretInCurrentRow =
       this.currentChainRow.length - currentNodeIndexInRow;
 

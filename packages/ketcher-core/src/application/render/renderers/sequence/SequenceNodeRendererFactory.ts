@@ -38,6 +38,7 @@ export class SequenceNodeRendererFactory {
     twoStrandedNode: ITwoStrandedChainItem,
     renderer?: BaseMonomerRenderer | BaseSequenceItemRenderer,
     previousRowsWithAntisense = 0,
+    isRowReversed = false,
   ): BaseSequenceItemRenderer {
     let RendererClass;
 
@@ -93,6 +94,7 @@ export class SequenceNodeRendererFactory {
       renderer?.scaledMonomerPosition,
       twoStrandedNode,
       previousRowsWithAntisense,
+      isRowReversed,
     );
   }
 }
