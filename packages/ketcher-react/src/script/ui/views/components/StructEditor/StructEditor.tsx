@@ -148,7 +148,9 @@ class StructEditor extends Component<StructEditorProps, StructEditorState> {
       this.scrollCanvas(event);
       this.editor.rotateController.updateFloatingToolsPosition();
       this.editor.hoverIcon.updatePosition();
-      this.editor.tool()?.mousemove?.(this.editor.lastEvent);
+      if (this.editor.lastEvent) {
+        this.editor.tool()?.mousemove?.(this.editor.lastEvent);
+      }
     }
   };
 
