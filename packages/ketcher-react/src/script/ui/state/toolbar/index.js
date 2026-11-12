@@ -56,6 +56,10 @@ export function initResize() {
       dispatch({ type: 'CLEAR_VISIBLE', data: state.actionState.activeTool });
     });
     addEventListener('resize', onResize); // eslint-disable-line
+    return function () {
+      onResize.cancel();
+      removeEventListener('resize', onResize); // eslint-disable-line
+    };
   };
 }
 

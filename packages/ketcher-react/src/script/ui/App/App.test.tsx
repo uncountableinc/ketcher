@@ -1,7 +1,10 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { App } from './App';
 
-const mockDispatch = jest.fn();
+const mockRemoveResizeListener = jest.fn();
+const mockDispatch = jest.fn((action: { type: string }) =>
+  action.type === 'INIT_RESIZE' ? mockRemoveResizeListener : undefined,
+);
 const mockUseSelector = jest.fn();
 const mockRemoveKetcherInstance = jest.fn();
 
@@ -62,6 +65,10 @@ jest.mock('../state/saltsAndSolvents', () => ({
   initSaltsAndSolventsTemplates: jest.fn(() => ({
     type: 'INIT_SALTS_AND_SOLVENTS_TEMPLATES',
   })),
+}));
+
+jest.mock('../state/toolbar', () => ({
+  initResize: jest.fn(() => ({ type: 'INIT_RESIZE' })),
 }));
 
 jest.mock('../state/templates/init-lib', () => ({
@@ -126,5 +133,25 @@ describe('App notification banner', () => {
     expect(mockDispatch).toHaveBeenCalledWith({
       type: 'HIDE_SNACKBAR_NOTIFICATION',
     });
+  });
+});
+
+describe('App toolbar resize listener', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseSelector.mockImplementation((selector) =>
+      selector({ notifications: { snackbarNotificationText: '' } }),
+    );
+  });
+
+  it('removes the window resize listener when the app unmounts', () => {
+    const { unmount } = render(<App checkServer={jest.fn()} />);
+
+    expect(mockDispatch).toHaveBeenCalledWith({ type: 'INIT_RESIZE' });
+    expect(mockRemoveResizeListener).not.toHaveBeenCalled();
+
+    unmount();
+
+    expect(mockRemoveResizeListener).toHaveBeenCalledTimes(1);
   });
 });

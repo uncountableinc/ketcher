@@ -26,7 +26,6 @@ import { Provider } from 'react-redux';
 import type { Root } from 'react-dom/client';
 import createStore, { setServer } from '../state';
 import { initKeydownListener, removeKeydownListener } from '../state/hotkeys';
-import { initResize } from '../state/toolbar';
 import { initMouseListener, removeMouseListeners } from '../state/mouse';
 
 function initApp(
@@ -62,7 +61,6 @@ function initApp(
 
   store.dispatch(initKeydownListener(element));
   store.dispatch(initMouseListener(element));
-  store.dispatch(initResize());
 
   appRoot.render(
     <Provider store={store}>

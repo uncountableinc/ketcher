@@ -32,6 +32,7 @@ import {
   initSaltsAndSolvents,
   initSaltsAndSolventsTemplates,
 } from '../state/saltsAndSolvents';
+import { initResize } from '../state/toolbar';
 import {
   useAppContext,
   useSubscriptionOnEvents,
@@ -88,8 +89,13 @@ const App = (props: Props) => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     dispatch(initSaltsAndSolventsTemplates());
+    // TODO suppressed after upgrade to react 19. Need to fix
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const removeResizeListener: () => void = dispatch(initResize());
 
     return () => {
+      removeResizeListener();
       dispatch(initLib([]));
       dispatch(initSaltsAndSolvents([]));
       dispatch(initFGroups([]));
