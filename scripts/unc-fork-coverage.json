@@ -475,6 +475,20 @@
         "packages/ketcher-core/src/infrastructure/services/struct/remoteStructService.ts",
         "packages/ketcher-react/src/script/ui/views/modal/components/meta/Settings/Settings.tsx"
       ]
+    },
+    {
+      "key": "toolbar-resize-listener-lifetime",
+      "summary": "Register the toolbar window resize listener after the editor initializes, and remove it when the app unmounts (MAT-102140).",
+      "verdict": "reapply",
+      "verdictNote": "Upstream initApp registers the listener before StructEditor dispatches INIT, so a window resize in that gap reads render off a null state.editor and throws. Upstream also never removes the listener, so each closed editor stays attached to window. The App mount effect runs after INIT, and its cleanup cancels the throttle and removes the listener. Drop this delta when upstream ties the listener to the editor lifetime.",
+      "covered": "jest packages/ketcher-react/src/script/ui/App/App.test.tsx, which checks that the app unmount removes the listener; the order against INIT needs a mounted editor, and uncountableinc/main#290428 records a browser reproduction of the error before and after this change",
+      "commits": [],
+      "files": [
+        "packages/ketcher-react/src/script/ui/App/App.test.tsx",
+        "packages/ketcher-react/src/script/ui/App/App.tsx",
+        "packages/ketcher-react/src/script/ui/App/initApp.tsx",
+        "packages/ketcher-react/src/script/ui/state/toolbar/index.js"
+      ]
     }
   ]
 }
