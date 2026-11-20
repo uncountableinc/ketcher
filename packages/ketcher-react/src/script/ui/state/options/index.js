@@ -50,6 +50,7 @@ export function initOptionsState() {
       checkOptions: [
         'valence',
         'radicals',
+        'isotopes',
         'pseudoatoms',
         'stereo',
         'query',

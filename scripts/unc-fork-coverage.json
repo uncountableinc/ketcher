@@ -1,7 +1,7 @@
 {
-  "mergeBase": "f4f013e1855b71b0cbd37fc79d55b0cbe51c2371",
+  "mergeBase": "c27bdd4add39dfdec0ef2dc42016982e9ac9179c",
   "forkRef": "master",
-  "upstreamTag": "v3.18.0",
+  "upstreamTag": "v3.19.0-rc.1",
   "behaviours": [
     {
       "key": "cip-descriptors",
@@ -18,6 +18,7 @@
       "key": "contracted-abbreviation-anchor",
       "summary": "Draw a contracted abbreviation at its group centre (MAT-77406).",
       "verdict": "reapply",
+      "verdictNote": "upstream converged at the v3.19.0-rc.1 merge: #5857 (21a558872) makes getContractedPosition return the group centre for every contracted group, and ReBond draws a bond to a contracted group from that position. The fork's sgroup.ts change is gone, because upstream's centre covers the standalone case MAT-77406 fixed. The test's two bonded cases now assert the centre, which is where the bond ends. reatom.ts keeps only the null guard that replaces upstream's sgroup! assertion.",
       "covered": "jest __tests__/unc-regression/contracted-abbreviation-anchor.test.ts",
       "commits": ["9f488c2d0", "7ac136ed9", "1edf96074", "1fa3d4cb4"],
       "files": [
@@ -474,6 +475,18 @@
       "files": [
         "packages/ketcher-core/src/infrastructure/services/struct/remoteStructService.ts",
         "packages/ketcher-react/src/script/ui/views/modal/components/meta/Settings/Settings.tsx"
+      ]
+    },
+    {
+      "key": "release-branch-dragctx-fix",
+      "summary": "Keep upstream's v3.18.0 release-branch fix for the Reaction Plus tool console errors (#11335).",
+      "verdict": "drop",
+      "verdictNote": "not a fork behaviour: upstream fixed #11335 on the v3.18.0 release branch after v3.19.0-rc.1 was cut, so the merge keeps the release-branch form of both files. Upstream master carries the same fix from v3.20.0-rc.1, so both files return to upstream at that merge, and this entry goes with them.",
+      "covered": "none: an upstream fix, which upstream's own tests cover",
+      "commits": ["16fd54cf4"],
+      "files": [
+        "packages/ketcher-react/src/script/editor/tool/bond.ts",
+        "packages/ketcher-react/src/script/editor/tool/reactionmap.ts"
       ]
     }
   ]
