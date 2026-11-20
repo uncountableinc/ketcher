@@ -81,9 +81,11 @@ describe('getLabelRenderModeForIndigo', () => {
       expect(getLabelRenderModeForIndigo(KETCHER_ID)).toBe('all');
     });
 
-    it('falls back to "none" for an unknown showHydrogenLabels value', () => {
+    // The fork falls back to terminal-hetero, not none
+    // (indigo-hydrogen-label-default).
+    it('falls back to "terminal-hetero" for an unknown showHydrogenLabels value', () => {
       mockEditorOptions(false, 'unknown-value' as ShowHydrogenLabels);
-      expect(getLabelRenderModeForIndigo(KETCHER_ID)).toBe('none');
+      expect(getLabelRenderModeForIndigo(KETCHER_ID)).toBe('terminal-hetero');
     });
   });
 });

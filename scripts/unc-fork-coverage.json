@@ -1,7 +1,7 @@
 {
-  "mergeBase": "c27bdd4add39dfdec0ef2dc42016982e9ac9179c",
+  "mergeBase": "e5cef1f655d245ad09d3e3e392c677e970896658",
   "forkRef": "master",
-  "upstreamTag": "v3.19.0-rc.1",
+  "upstreamTag": "v3.20.0-rc.1",
   "behaviours": [
     {
       "key": "cip-descriptors",
@@ -77,7 +77,10 @@
       "verdict": "reapply",
       "covered": "jest __tests__/unc-regression/indigo-hydrogen-label-default.test.ts",
       "commits": ["446e1cf11", "b9a5d436d"],
-      "files": ["packages/ketcher-core/src/infrastructure/services/helpers.ts"]
+      "files": [
+        "packages/ketcher-core/src/infrastructure/services/helpers.ts",
+        "packages/ketcher-core/src/infrastructure/services/__tests__/helpers.test.ts"
+      ]
     },
     {
       "key": "data-sgroup-bracket-pos",
@@ -97,7 +100,7 @@
       "files": [
         "packages/ketcher-core/src/application/formatters/formatterFactory.ts"
       ],
-      "verdictNote": "reapply: measured 0/9 on vanilla v3.18.0. Vanilla converts MOL in the browser."
+      "verdictNote": "reapply: measured 0/9 on vanilla v3.18.0. Vanilla converts MOL in the browser. At the v3.20.0-rc.1 merge, upstream (#6142) sends a MOL structure above the V2000 limit to Indigo in auto mode. The fork keeps that rule and sends every other MOL request to Indigo as plain V2000. Upstream's two tests that expect the JS formatter for a structure within the limit now expect the server conversion, with a comment that names this behaviour."
     },
     {
       "key": "external-zoom-scale",
@@ -481,13 +484,10 @@
       "key": "release-branch-dragctx-fix",
       "summary": "Keep upstream's v3.18.0 release-branch fix for the Reaction Plus tool console errors (#11335).",
       "verdict": "drop",
-      "verdictNote": "not a fork behaviour: upstream fixed #11335 on the v3.18.0 release branch after v3.19.0-rc.1 was cut, so the merge keeps the release-branch form of both files. Upstream master carries the same fix from v3.20.0-rc.1, so both files return to upstream at that merge, and this entry goes with them.",
+      "verdictNote": "not a fork behaviour: upstream fixed #11335 on the v3.18.0 release branch after v3.19.0-rc.1 was cut, so the v3.19.0-rc.1 merge kept the release-branch form of both files. Dropped at the v3.20.0-rc.1 merge: upstream master carries the same fix, so bond.ts and reactionmap.ts are now byte-identical to upstream.",
       "covered": "none: an upstream fix, which upstream's own tests cover",
       "commits": ["16fd54cf4"],
-      "files": [
-        "packages/ketcher-react/src/script/editor/tool/bond.ts",
-        "packages/ketcher-react/src/script/editor/tool/reactionmap.ts"
-      ]
+      "files": []
     }
   ]
 }

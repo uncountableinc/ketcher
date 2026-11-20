@@ -52,17 +52,25 @@ describe('exceedsMolfileV2000Limit', () => {
 });
 
 describe('FormatterFactory: MDL Molfile V2000', () => {
-  it('creates the JS V2000 formatter for a structure within the limit', () => {
-    const { structService } = createStructServiceMock();
+  // The fork converts MOL on the Indigo server at every size
+  // (server-format-routing), so a structure within the limit gets a plain
+  // V2000 server conversion where upstream uses its JS formatter.
+  it('converts a structure within the limit on the server as plain V2000', async () => {
+    const { convert, structService } = createStructServiceMock();
+    const struct = createStruct(MOLFILE_V2000_ATOM_BOND_LIMIT);
 
     const formatter = new FormatterFactory(structService).create(
       SupportedFormat.mol,
       {},
       false,
-      createStruct(MOLFILE_V2000_ATOM_BOND_LIMIT),
+      struct,
     );
 
-    expect(formatter).toBeInstanceOf(MolfileV2000Formatter);
+    expect(formatter).not.toBeInstanceOf(MolfileV2000Formatter);
+    await expect(formatter.getStringFromStructureAsync(struct)).resolves.toBe(
+      'SERVER-OUTPUT',
+    );
+    expect(convert.mock.calls[0][1]).not.toHaveProperty('molfile-saving-mode');
   });
 
   it('creates a single server formatter in auto mode for an oversized structure', async () => {

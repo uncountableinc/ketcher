@@ -1447,6 +1447,9 @@ export class Struct {
   }
 
   getGroupIdsFromAtomId(atomId: number | undefined): number[] {
+    if (atomId === undefined) {
+      return [];
+    }
     const sgroupIds: number[] = [];
     for (const [groupId, sgroup] of Array.from(this.sgroups)) {
       if (sgroup.atoms.includes(atomId)) sgroupIds.push(groupId);

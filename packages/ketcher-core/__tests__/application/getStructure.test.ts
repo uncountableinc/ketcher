@@ -52,7 +52,10 @@ describe('getStructure: MDL Molfile V2000 size handling', () => {
     });
   });
 
-  it('keeps using the JS serializer for a structure within the limit', async () => {
+  // The fork converts MOL on the Indigo server at every size
+  // (server-format-routing), so a structure within the limit also goes to the
+  // server, as a plain V2000 conversion.
+  it('saves a structure within the limit through the server as plain V2000', async () => {
     const convert = jest.fn().mockResolvedValue({ struct: 'SERVER-OUTPUT' });
     const factory = new FormatterFactory({
       convert,
@@ -66,7 +69,7 @@ describe('getStructure: MDL Molfile V2000 size handling', () => {
       SupportedFormat.mol,
     );
 
-    expect(convert).not.toHaveBeenCalled();
-    expect(result).toContain('V2000');
+    expect(result).toBe('SERVER-OUTPUT');
+    expect(convert.mock.calls[0][1]).not.toHaveProperty('molfile-saving-mode');
   });
 });

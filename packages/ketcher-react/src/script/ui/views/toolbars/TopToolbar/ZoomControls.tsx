@@ -183,7 +183,7 @@ export const ZoomControls = ({
         anchorEl={anchorEl}
         container={
           isFullScreen()
-            ? (containerRef.current?.closest(KETCHER_ROOT_NODE_CSS_SELECTOR) ??
+            ? (anchorEl?.closest(KETCHER_ROOT_NODE_CSS_SELECTOR) ??
               document.body)
             : undefined
         }

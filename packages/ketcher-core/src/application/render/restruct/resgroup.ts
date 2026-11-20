@@ -138,7 +138,7 @@ class ReSGroup extends ReObject {
           const connectivity: string = sgroup.data.connectivity || 'eu';
           SGroupdrawBracketsOptions.upperIndexText = connectivity.toUpperCase();
           const subtype = sgroup.data.subtype;
-          if (sgroup.data.subtype) {
+          if (subtype) {
             SGroupdrawBracketsOptions.lowerIndexText = subtype.toLowerCase();
           } else {
             SGroupdrawBracketsOptions.lowerIndexText = 'co';
@@ -156,7 +156,7 @@ class ReSGroup extends ReObject {
         }
         case 'COM': {
           const subscript = sgroup.data.subscript || 'c';
-          const compno = sgroup.data.compno || 'X';
+          const compno = sgroup.data.compno ? String(sgroup.data.compno) : 'X';
           SGroupdrawBracketsOptions.lowerIndexText = subscript;
           SGroupdrawBracketsOptions.upperIndexText = compno;
           break;

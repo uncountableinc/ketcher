@@ -88,6 +88,7 @@ interface SGroupData {
   context?: SGroupContext;
   subtype?: string;
   class?: SUPERATOM_CLASS | string;
+  compno?: number;
 }
 
 type AtomIdRemap = Record<number, number> | number[];
