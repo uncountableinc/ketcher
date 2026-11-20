@@ -132,6 +132,7 @@ export const ZoomControls = ({
   shortcuts,
 }: ZoomProps) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -155,9 +156,11 @@ export const ZoomControls = ({
       onZoomSubmit();
     }
     setIsExpanded(false);
+    setAnchorEl(null);
   };
 
   const onExpand = () => {
+    setAnchorEl(containerRef.current);
     setIsExpanded(true);
   };
 
@@ -177,11 +180,11 @@ export const ZoomControls = ({
       <Dropdown
         open={isExpanded}
         onClose={onClose}
-        anchorEl={containerRef.current}
+        anchorEl={anchorEl}
         container={
           isFullScreen()
-            ? containerRef.current?.closest(KETCHER_ROOT_NODE_CSS_SELECTOR) ??
-              document.body
+            ? (anchorEl?.closest(KETCHER_ROOT_NODE_CSS_SELECTOR) ??
+              document.body)
             : undefined
         }
         anchorOrigin={{

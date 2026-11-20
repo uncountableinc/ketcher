@@ -41,6 +41,69 @@ const props: Partial<MenuProps> = {
 
 const isFullScreen = () => document.fullscreenElement != null;
 
+// Takes ketcherId as an argument instead of closing over it, so it stays out of
+// the render scope and callbacks using it do not have to depend on it.
+const resetMenuPosition = (menuElement: HTMLElement, ketcherId: string) => {
+  const contextMenuElement = menuElement;
+  const ketcherRootElement = document.querySelectorAll(
+    KETCHER_ROOT_NODE_CSS_SELECTOR,
+  )[ketcherProvider.getIndexById(ketcherId)];
+
+  if (!contextMenuElement || !ketcherRootElement) {
+    return;
+  }
+
+  const contextMenuElementBoundingBox =
+    contextMenuElement.getBoundingClientRect();
+  const ketcherRootElementBoundingBox =
+    ketcherRootElement.getBoundingClientRect();
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+
+  if (!contextMenuElementBoundingBox || !ketcherRootElementBoundingBox) {
+    return;
+  }
+
+  let left = contextMenuElementBoundingBox.left;
+  let top = contextMenuElementBoundingBox.top;
+
+  // Ensure the menu is within the Ketcher root element
+  if (
+    contextMenuElementBoundingBox.right > ketcherRootElementBoundingBox.right
+  ) {
+    left =
+      ketcherRootElementBoundingBox.right - contextMenuElementBoundingBox.width;
+  }
+
+  if (
+    contextMenuElementBoundingBox.bottom > ketcherRootElementBoundingBox.bottom
+  ) {
+    top =
+      ketcherRootElementBoundingBox.bottom -
+      contextMenuElementBoundingBox.height;
+  }
+
+  // Ensure the menu is within the viewport
+  if (left < 0) {
+    left = 0;
+  }
+
+  if (top < 0) {
+    top = 0;
+  }
+
+  if (contextMenuElementBoundingBox.right > viewportWidth) {
+    left = viewportWidth - contextMenuElementBoundingBox.width - 10;
+  }
+
+  if (contextMenuElementBoundingBox.bottom > viewportHeight) {
+    top = viewportHeight - contextMenuElementBoundingBox.height - 10;
+  }
+
+  contextMenuElement.style.left = `${left}px`;
+  contextMenuElement.style.top = `${top}px`;
+};
+
 const ContextMenu: FC = () => {
   const { ketcherId } = useAppContext();
   const [isFullScreenActive, setIsFullScreenActive] = useState(isFullScreen);
@@ -110,69 +173,6 @@ const ContextMenu: FC = () => {
     }
   };
 
-  const resetMenuPosition = (menuElement: HTMLElement) => {
-    const contextMenuElement = menuElement;
-    const ketcherRootElement = document.querySelectorAll(
-      KETCHER_ROOT_NODE_CSS_SELECTOR,
-    )[ketcherProvider.getIndexById(ketcherId)];
-
-    if (!contextMenuElement || !ketcherRootElement) {
-      return;
-    }
-
-    const contextMenuElementBoundingBox =
-      contextMenuElement.getBoundingClientRect();
-    const ketcherRootElementBoundingBox =
-      ketcherRootElement.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    if (!contextMenuElementBoundingBox || !ketcherRootElementBoundingBox) {
-      return;
-    }
-
-    let left = contextMenuElementBoundingBox.left;
-    let top = contextMenuElementBoundingBox.top;
-
-    // Ensure the menu is within the Ketcher root element
-    if (
-      contextMenuElementBoundingBox.right > ketcherRootElementBoundingBox.right
-    ) {
-      left =
-        ketcherRootElementBoundingBox.right -
-        contextMenuElementBoundingBox.width;
-    }
-
-    if (
-      contextMenuElementBoundingBox.bottom >
-      ketcherRootElementBoundingBox.bottom
-    ) {
-      top =
-        ketcherRootElementBoundingBox.bottom -
-        contextMenuElementBoundingBox.height;
-    }
-
-    // Ensure the menu is within the viewport
-    if (left < 0) {
-      left = 0;
-    }
-
-    if (top < 0) {
-      top = 0;
-    }
-
-    if (contextMenuElementBoundingBox.right > viewportWidth) {
-      left = viewportWidth - contextMenuElementBoundingBox.width - 10;
-    }
-
-    if (contextMenuElementBoundingBox.bottom > viewportHeight) {
-      top = viewportHeight - contextMenuElementBoundingBox.height - 10;
-    }
-
-    contextMenuElement.style.left = `${left}px`;
-    contextMenuElement.style.top = `${top}px`;
-  };
-
   const trackVisibility = useCallback(
     (id: string, visible: boolean) => {
       const editor = ketcherProvider.getKetcher(ketcherId).editor as Editor;
@@ -186,7 +186,7 @@ const ContextMenu: FC = () => {
         if (contextMenuElement) {
           // Timeout is needed to ensure that the context menu is rendered by react-contexify library.
           // Without timeout library overrides the position of the context menu which we set.
-          setTimeout(() => resetMenuPosition(contextMenuElement), 0);
+          setTimeout(() => resetMenuPosition(contextMenuElement, ketcherId), 0);
         }
 
         if (submenuElements.length) {
@@ -204,7 +204,7 @@ const ContextMenu: FC = () => {
     KETCHER_ROOT_NODE_CSS_SELECTOR,
   );
   const menuContainer = isFullScreenActive
-    ? document.querySelector(ketcherIdCssSelector(ketcherId)) ?? document.body
+    ? (document.querySelector(ketcherIdCssSelector(ketcherId)) ?? document.body)
     : document.body;
 
   return ketcherEditorRootElement

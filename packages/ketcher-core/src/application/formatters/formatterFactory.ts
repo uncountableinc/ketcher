@@ -22,8 +22,10 @@ import {
 import { KetSerializer } from 'domain/serializers/ket/ketSerializer';
 import type { MolSerializerOptions } from 'domain/serializers/mol/mol.types';
 import type { StructService, StructServiceOptions } from 'domain/services';
+import type { Struct } from 'domain/entities/struct';
 import { KetFormatter } from './ketFormatter';
 import { ServerFormatter } from './serverFormatter';
+import { exceedsMolfileV2000Limit } from './constants';
 
 export class FormatterFactory {
   readonly #structService: StructService;
@@ -66,10 +68,8 @@ export class FormatterFactory {
   create(
     format: SupportedFormat,
     options?: FormatterFactoryOptions,
-    // Accepted for upstream's callers only. server-format-routing sends every
-    // format except KET to the Indigo server, so the local molfile formatter
-    // this flag configured is gone and the value has nothing to affect.
-    _queryPropertiesAreUsed?: boolean,
+    queryPropertiesAreUsed?: boolean,
+    struct?: Struct,
   ): StructFormatter {
     const [, structServiceOptions] = this.separateOptions(options);
 
@@ -77,6 +77,23 @@ export class FormatterFactory {
     switch (format) {
       case SupportedFormat.ket: {
         formatter = new KetFormatter(new KetSerializer());
+        break;
+      }
+      case SupportedFormat.mol: {
+        // server-format-routing: the fork converts MOL on the Indigo server at
+        // every size, where upstream uses its JS V2000 formatter. V2000 cannot
+        // address more than 999 atoms/bonds, so an oversized structure goes to
+        // Indigo in auto mode, which upgrades it to V3000.
+        const isOversized =
+          !queryPropertiesAreUsed &&
+          struct !== undefined &&
+          exceedsMolfileV2000Limit(struct);
+        formatter = new ServerFormatter(
+          this.#structService,
+          new KetSerializer(),
+          isOversized ? SupportedFormat.molAuto : format,
+          structServiceOptions,
+        );
         break;
       }
       default:

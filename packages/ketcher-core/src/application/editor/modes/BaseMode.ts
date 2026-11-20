@@ -10,6 +10,7 @@ import {
   getStructStringFromClipboardData,
   initHotKeys,
   isClipboardAPIAvailable,
+  isSelectionOutsideElement,
   KetcherLogger,
   keyNorm,
   legacyCopy,
@@ -64,6 +65,7 @@ export abstract class BaseMode {
     needRemoveSelection = true,
     _isUndo = false,
     _needReArrangeChains = false,
+    _forceRecalculateAntisense = false,
   ): Command {
     const command = new Command();
     const editor = provideEditorInstance();
@@ -135,7 +137,10 @@ export abstract class BaseMode {
   abstract scrollForView(): void | Promise<void>;
 
   onCopy(event?: ClipboardEvent): void {
-    if (event && this.checkIfTargetIsInput(event)) {
+    if (
+      event &&
+      (this.checkIfTargetIsInput(event) || this.isSelectionOutsideCanvas())
+    ) {
       return;
     }
     const editor = provideEditorInstance();
@@ -157,7 +162,10 @@ export abstract class BaseMode {
   }
 
   onCut(event?: ClipboardEvent): void {
-    if (event && this.checkIfTargetIsInput(event)) {
+    if (
+      event &&
+      (this.checkIfTargetIsInput(event) || this.isSelectionOutsideCanvas())
+    ) {
       return;
     }
 
@@ -341,6 +349,10 @@ export abstract class BaseMode {
         event.target?.nodeName === 'TEXTAREA' ||
         event.target.contentEditable === 'true')
     );
+  }
+
+  private isSelectionOutsideCanvas(): boolean {
+    return isSelectionOutsideElement(provideEditorInstance().canvas);
   }
 
   public destroy(): void {

@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
-/* eslint-disable no-magic-numbers */
 import { Page, test, expect } from '@fixtures';
 import {
   takeEditorScreenshot,
@@ -36,7 +34,7 @@ import {
 import { MacromoleculesTopToolbar } from '@tests/pages/macromolecules/MacromoleculesTopToolbar';
 import { LayoutMode } from '@tests/pages/constants/macromoleculesTopToolbar/Constants';
 import { AttachmentPointsDialog } from '@tests/pages/macromolecules/canvas/AttachmentPointsDialog';
-import { NotificationBanner } from '@tests/pages/macromolecules/canvas/NotificationBanner';
+import { NotificationBannerOnMacro } from '@tests/pages/macromolecules/canvas/NotificationBannerOnMacro';
 import { getAtomLocator } from '@utils/canvas/atoms/getAtomLocator/getAtomLocator';
 import { getAbbreviationLocator } from '@utils/canvas/s-group-signes/getAbbreviationLocator';
 
@@ -333,7 +331,7 @@ Object.values(monomersWithNoFreeAttachmentPoint).forEach((leftMonomer) => {
      *              3. Establish hydrogen connection between %leftMonomer%(center) and %rightMonomer%(center)
      *              4. Take screenshot to witness established connection
      */
-    // eslint-disable-next-line max-len
+
     test(`2. Connect with hydrogen bond ${leftMonomer.monomerType}(${leftMonomer.alias}) and ${rightMonomer.monomerType}(${rightMonomer.alias}) having them no free connection points`, async () => {
       test.setTimeout(25000);
 
@@ -401,7 +399,7 @@ test.describe('', () => {
           MacroBondTool.Hydrogen,
         );
 
-        const banner = NotificationBanner(page);
+        const banner = NotificationBannerOnMacro(page);
         const notificationAppeared = banner.waitForBecomeVisible();
 
         await bondTwoMonomers(
@@ -447,11 +445,11 @@ Object.values(monomers).forEach((leftMonomer) => {
      *              5. Establish hydrogen connection between %leftMonomer%(center) and %rightMonomer%(center)
      *              5. Validate error message
      */
-    // eslint-disable-next-line max-len
+
     test(`4. Connect with hydrogen bond ${leftMonomer.monomerType}(${leftMonomer.alias}) and ${rightMonomer.monomerType}(${rightMonomer.alias}) already connected with single bond`, async () => {
       test.setTimeout(35000);
 
-      const errorTooltip = NotificationBanner(page);
+      const errorTooltip = NotificationBannerOnMacro(page);
 
       await loadTwoMonomers(page, leftMonomer, rightMonomer);
 
@@ -827,6 +825,7 @@ test(`10. Verify switch to flex/snake/sequence modes functionality of hydrogen b
   await takeEditorScreenshot(page);
 
   await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Snake);
+  await moveMouseAway(page);
   await takeEditorScreenshot(page);
 
   await MacromoleculesTopToolbar(page).selectLayoutModeTool(
@@ -892,6 +891,7 @@ test(`12. Verify that hydrogen bonds cannot be established between small molecul
   await takeEditorScreenshot(page);
 
   await MacromoleculesTopToolbar(page).selectLayoutModeTool(LayoutMode.Snake);
+  await moveMouseAway(page);
   await takeEditorScreenshot(page);
 
   await MacromoleculesTopToolbar(page).selectLayoutModeTool(

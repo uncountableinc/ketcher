@@ -27,6 +27,7 @@ interface EnhancedStereoResult {
   andNumber: number;
   orNumber: number;
   type: StereoLabel;
+  [key: string]: unknown;
 }
 
 type EnhancedStereoFormState = FormState<EnhancedStereoResult>;
@@ -86,9 +87,9 @@ const EnhancedStereo: FC<Props> = (props) => {
     >
       <Form schema={enhancedStereoSchema} init={init} {...formState}>
         <fieldset>
-          {/* eslint-disable jsx-a11y/label-has-associated-control */}
+          {}
           <label>
-            {/* eslint-enable jsx-a11y/label-has-associated-control */}
+            {}
             <Field
               name="type"
               labelPos={false}
@@ -101,7 +102,7 @@ const EnhancedStereo: FC<Props> = (props) => {
           </label>
           {maxAnd !== 0 && (
             <label>
-              {/* eslint-disable jsx-a11y/label-has-associated-control */}
+              {}
               <Field
                 name="type"
                 labelPos={false}
@@ -123,7 +124,7 @@ const EnhancedStereo: FC<Props> = (props) => {
           )}
           {maxOr !== 0 && (
             <label>
-              {/* eslint-disable jsx-a11y/label-has-associated-control */}
+              {}
               <Field
                 name="type"
                 labelPos={false}
@@ -144,7 +145,7 @@ const EnhancedStereo: FC<Props> = (props) => {
             </label>
           )}
           <label>
-            {/* eslint-disable jsx-a11y/label-has-associated-control */}
+            {}
             <Field
               name="type"
               labelPos={false}
@@ -156,7 +157,7 @@ const EnhancedStereo: FC<Props> = (props) => {
             Create new AND Group
           </label>
           <label>
-            {/* eslint-disable jsx-a11y/label-has-associated-control */}
+            {}
             <Field
               name="type"
               labelPos={false}

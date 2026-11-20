@@ -80,7 +80,7 @@ export const SystemControls = ({
   const { ketcherId } = useAppContext();
   const onFullscreenCallback = useCallback(() => {
     onFullscreen(ketcherId);
-  }, [ketcherId]);
+  }, [ketcherId, onFullscreen]);
   return (
     <ControlsPanel className={className}>
       {/* Uncomment upon History log implementation */}

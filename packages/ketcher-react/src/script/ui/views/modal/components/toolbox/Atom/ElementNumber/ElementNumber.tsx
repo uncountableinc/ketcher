@@ -28,7 +28,6 @@ const ElementNumber = (props: Props) => {
 
   return (
     <label>
-      {/* eslint-disable jsx-a11y/label-has-associated-control */}
       <span>Number</span>
       <input
         type="text"
@@ -36,7 +35,6 @@ const ElementNumber = (props: Props) => {
         value={value}
         data-testid={'element-number'}
       />
-      {/* eslint-enable jsx-a11y/label-has-associated-control */}
     </label>
   );
 };
