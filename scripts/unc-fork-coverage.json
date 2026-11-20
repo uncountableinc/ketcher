@@ -475,6 +475,16 @@
         "packages/ketcher-core/src/infrastructure/services/struct/remoteStructService.ts",
         "packages/ketcher-react/src/script/ui/views/modal/components/meta/Settings/Settings.tsx"
       ]
+    },
+    {
+      "key": "template-library-chevron-direction",
+      "summary": "Point the Template Library accordion chevrons right when closed and down when open, as the host platform accordions do (MAT-104727).",
+      "verdict": "reapply",
+      "covered": "none: a style rule with no logic, and jsdom computes no transform from a CSS module; check the Structure Library dialog in the host application",
+      "commits": [],
+      "files": [
+        "packages/ketcher-react/src/script/ui/dialog/template/template-lib.module.less"
+      ]
     }
   ]
 }
