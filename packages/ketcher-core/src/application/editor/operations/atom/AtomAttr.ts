@@ -42,10 +42,7 @@ export class AtomAttr extends BaseOperation {
       }
 
       const atom = restruct.molecule.atoms.get(aid);
-      if (!atom) {
-        return;
-      }
-
+      if (!atom) return;
       if (!this.data2) {
         this.data2 = {
           aid,

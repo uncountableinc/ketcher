@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /****************************************************************************
  * Copyright 2021 EPAM Systems
  *
@@ -80,6 +81,7 @@ function removeNotRenderedStruct(actionTool, group, dispatch) {
 let abbreviationLookupTimeoutId: number | undefined;
 const ABBREVIATION_LOOKUP_TYPING_TIMEOUT = 1000;
 const shortcutKeys = [
+  '0',
   '1',
   '2',
   '3',
@@ -98,12 +100,14 @@ const shortcutKeys = [
 ];
 
 function shouldIgnoreKeyEvent(state, event): boolean {
+  if (window.isPolymerEditorTurnedOn) {
+    return true;
+  }
   if (state.modal || selectIsAbbreviationLookupOpen(state)) {
     return true;
   }
   // TODO: It is done to intercept hotkeys when editing inputs in monomer creation wizard
   // It targets plain inputs only, ideally it has to be incorporated with ClipArea functionality
-  // Ideally x2 – create a common event interception layer for both micro and macro editors
   return isEditableInputTarget(event.target);
 }
 
@@ -187,8 +191,8 @@ function shouldHandleItemDirectly(
 ): hoveredItem is Record<string, number> {
   return Boolean(
     hoveredItem &&
-      newAction.tool !== 'select' &&
-      newAction.dialog !== 'templates',
+    newAction.tool !== 'select' &&
+    newAction.dialog !== 'templates',
   );
 }
 
@@ -388,7 +392,7 @@ export function initClipboard(dispatch, getState) {
     formats,
     focused() {
       const state = getState();
-      return !state.modal;
+      return !state.modal && !window.isPolymerEditorTurnedOn;
     },
     onLegacyCopy() {
       const state = getState();

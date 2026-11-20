@@ -22,6 +22,7 @@ import {
 import { KetSerializer } from 'domain/serializers/ket/ketSerializer';
 import type { MolSerializerOptions } from 'domain/serializers/mol/mol.types';
 import type { StructService, StructServiceOptions } from 'domain/services';
+import type { Struct } from 'domain/entities/struct';
 import { KetFormatter } from './ketFormatter';
 import { ServerFormatter } from './serverFormatter';
 
@@ -68,8 +69,11 @@ export class FormatterFactory {
     options?: FormatterFactoryOptions,
     // Accepted for upstream's callers only. server-format-routing sends every
     // format except KET to the Indigo server, so the local molfile formatter
-    // this flag configured is gone and the value has nothing to affect.
+    // these values configured is gone and they have nothing to affect. The
+    // server's default molfile saving mode already writes V3000 for a
+    // structure above the V2000 limit.
     _queryPropertiesAreUsed?: boolean,
+    _struct?: Struct,
   ): StructFormatter {
     const [, structServiceOptions] = this.separateOptions(options);
 
