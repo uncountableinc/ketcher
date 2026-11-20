@@ -17,9 +17,15 @@ import {
  * structure. The label was then drawn up to one molecule-radius away from the
  * structure it names, and the error grew with the molecule.
  *
- * The fix returns the group centre from the atoms[0] fallback ONLY. The
- * attachment-point and crossing-bond branches must keep their old anchors, so a
- * bonded abbreviation such as B(OH)2 still meets its bond.
+ * The fix returned the group centre from the atoms[0] fallback only, so a
+ * bonded abbreviation such as B(OH)2 still met its bond.
+ *
+ * Upstream v3.19.0-rc.1 (#5857, 21a558872) now returns the group centre for
+ * every contracted group, and ReBond draws a bond to a contracted group from
+ * that same position. A bonded abbreviation therefore still meets its bond, and
+ * the fork's own change to getContractedPosition is no longer needed. These
+ * tests pin the merged behaviour: the standalone case the fork fixed, and the
+ * label atom that each bonded case keeps.
  */
 
 // A square: centre (1, 1), first member at (0, 0). The two differ, so a test
@@ -82,7 +88,7 @@ describe('contracted abbreviation anchor', () => {
     expect(position.y).not.toBeCloseTo(firstMember.y);
   });
 
-  it('still anchors a bonded abbreviation at its crossing-bond atom', () => {
+  it('centres a bonded abbreviation, where its bond now ends', () => {
     const { struct, sgroup, memberIds } = contractedSuperatom();
     const outsideId = struct.atoms.add(
       new Atom({ label: 'C', pp: OUTSIDE_POSITION }),
@@ -98,12 +104,12 @@ describe('contracted abbreviation anchor', () => {
 
     const { atomId, position } = sgroup.getContractedPosition(struct);
 
-    expect(atomId).toBe(crossingAtomId);
-    expect(position.x).toBeCloseTo(atomPosition(struct, crossingAtomId).x);
-    expect(position.y).toBeCloseTo(atomPosition(struct, crossingAtomId).y);
+    expect(atomId).toBe(memberIds[0]);
+    expect(position.x).toBeCloseTo(EXPECTED_CENTRE.x);
+    expect(position.y).toBeCloseTo(EXPECTED_CENTRE.y);
   });
 
-  it('still anchors an abbreviation with an attachment point at that atom', () => {
+  it('centres an abbreviation with an attachment point, and keeps that atom as its label atom', () => {
     const { struct, sgroup, memberIds } = contractedSuperatom();
     const anchorId = memberIds[2];
     sgroup.addAttachmentPoint(
@@ -113,7 +119,7 @@ describe('contracted abbreviation anchor', () => {
     const { atomId, position } = sgroup.getContractedPosition(struct);
 
     expect(atomId).toBe(anchorId);
-    expect(position.x).toBeCloseTo(atomPosition(struct, anchorId).x);
-    expect(position.y).toBeCloseTo(atomPosition(struct, anchorId).y);
+    expect(position.x).toBeCloseTo(EXPECTED_CENTRE.x);
+    expect(position.y).toBeCloseTo(EXPECTED_CENTRE.y);
   });
 });
