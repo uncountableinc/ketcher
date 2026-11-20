@@ -99,6 +99,14 @@
   .accordionSummary {
     flex-direction: row-reverse;
     font-size: 14px;
+
+    :global(.MuiAccordionSummary-expandIconWrapper) {
+      transform: rotate(-90deg);
+
+      &:global(.Mui-expanded) {
+        transform: rotate(0deg);
+      }
+    }
   }
 
   .groupIcon {
