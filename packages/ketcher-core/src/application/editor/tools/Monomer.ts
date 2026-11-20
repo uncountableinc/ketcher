@@ -22,8 +22,9 @@ import {
   AmbiguousMonomerRenderer,
 } from 'application/render/renderers';
 import type { MonomerOrAmbiguousType } from 'domain/types';
+import type { Command } from 'domain/entities/Command';
 import { monomerFactory } from '../operations/monomer/monomerFactory';
-import assert from 'assert';
+import { assert } from 'utilities';
 import { Coordinates } from '../shared/coordinates';
 import { isAmbiguousMonomerLibraryItem } from 'domain/helpers/monomers';
 
@@ -50,7 +51,7 @@ class MonomerTool implements BaseTool {
 
   mousedown() {
     assert(this.monomerPreviewRenderer);
-    let modelChanges;
+    let modelChanges: Command;
     const position = Coordinates.canvasToModel(
       new Vec2(
         this.editor.lastCursorPositionOfCanvas.x,

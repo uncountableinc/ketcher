@@ -25,7 +25,7 @@ import type { BaseMonomer } from 'domain/entities/BaseMonomer';
 import { MonomerMicromolecule } from 'domain/entities/monomerMicromolecule';
 import { Command } from 'domain/entities/Command';
 import type { PolymerBond } from 'domain/entities/PolymerBond';
-import assert from 'assert';
+import { assert } from 'utilities';
 import type { AttachmentPointName } from 'domain/types';
 import {
   getAttachmentPointLabel,
@@ -35,7 +35,7 @@ import { invert, isNumber } from 'lodash';
 import type { IKetAttachmentPoint } from 'application/formatters/types/ket';
 import type { MonomerToAtomBond } from 'domain/entities/MonomerToAtomBond';
 import type { Atom } from 'domain/entities/CoreAtom';
-import type { AtomLabel } from 'domain/constants';
+import type { CoreAtomLabel } from 'domain/constants';
 import { isMonomerSgroupWithAttachmentPoints } from '../../utilities/monomers';
 import { HydrogenBond } from 'domain/entities/HydrogenBond';
 import { MONOMER_CONST } from 'domain/constants/monomers';
@@ -553,7 +553,7 @@ export class MacromoleculesConverter {
             atom.pp,
             monomer,
             atomId,
-            atom.label as AtomLabel,
+            atom.label as CoreAtomLabel,
             {
               charge: atom.charge,
               explicitValence: atom.explicitValence,
@@ -562,6 +562,7 @@ export class MacromoleculesConverter {
               alias: atom.alias,
               cip: atom.cip,
               stereoLabel: atom.stereoLabel,
+              atomList: atom.atomList,
             },
           );
 

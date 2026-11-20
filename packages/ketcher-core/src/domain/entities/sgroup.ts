@@ -26,8 +26,9 @@ import type { Pool } from 'domain/entities/pool';
 import type { SGroupAttachmentPoint } from 'domain/entities/sGroupAttachmentPoint';
 import type { ReSGroup } from 'application/render';
 import { SgContexts } from 'application/editor/shared/constants';
-import assert from 'assert';
+import { assert } from 'utilities';
 import { isNumber } from 'lodash';
+import { geometricCenter, getAtomPositions } from 'domain/entities/geometry';
 
 export enum SUPERATOM_CLASS {
   SUGAR = 'SUGAR',
@@ -334,61 +335,31 @@ export class SGroup {
   }
 
   /**
-   * WHY? When group is contracted we need to understand the represent atom to calculate position.
-   * It is not always the attachmentPoint!! if no attachment point - use the first atom
+   * WHY? atomId drives which atom renders the sgroup label; position is the visual
+   * center used for movement, hit-testing and rendering. Keeping them separate lets
+   * the label always float at the geometric center of all atoms regardless of which
+   * atom happens to be the attachment point.
    */
   getContractedPosition(struct: Struct): {
     atomId: number;
     position: Vec2;
   } {
+    // atomId: prefer the first attachment point; fall back to the first atom.
     let atomId = this.attachmentPoints[0]?.atomId;
-    let representAtom = struct.atoms.get(atomId);
-    // if there is no attachment points in sgroup - use first externally connected atom if exist or just first atom
-    if (!representAtom) {
-      let externalConnectionAtom;
-      struct.bonds.forEach((bond) => {
-        const isBeginAtomInCurrentSgroup =
-          this.atoms.indexOf(bond.begin) !== -1;
-        const isEndAtomInCurrentSgroup = this.atoms.indexOf(bond.end) !== -1;
-
-        if (isBeginAtomInCurrentSgroup && !isEndAtomInCurrentSgroup) {
-          externalConnectionAtom = bond.begin;
-        } else if (isEndAtomInCurrentSgroup && !isBeginAtomInCurrentSgroup) {
-          externalConnectionAtom = bond.end;
-        }
-      });
-
-      atomId = isNumber(externalConnectionAtom)
-        ? externalConnectionAtom
-        : this.atoms[0];
-      representAtom = struct.atoms.get(atomId);
-      // With no attachment point and nothing bonded to the outside, atoms[0] is
-      // an arbitrary member of the hidden structure, so the label is drawn up to
-      // one molecule-radius away from the group it stands for. Use the group's
-      // centre instead, which is where the collapsed abbreviation belongs
-      // (MAT-77406).
-      if (!isNumber(externalConnectionAtom) && this.atoms.length > 0) {
-        const centre = new Vec2(0, 0);
-        let counted = 0;
-        for (const memberId of this.atoms) {
-          const member = struct.atoms.get(memberId);
-          if (member == null) {
-            continue;
-          }
-          centre.x += member.pp.x;
-          centre.y += member.pp.y;
-          counted += 1;
-        }
-        if (counted > 0) {
-          return {
-            atomId,
-            position: new Vec2(centre.x / counted, centre.y / counted),
-          };
-        }
-      }
+    if (!struct.atoms.has(atomId)) {
+      atomId = this.atoms[0];
     }
-    assert(representAtom != null);
-    return { atomId, position: representAtom.pp };
+
+    // position: always the geometric center of all atoms in the group.
+    const positions = getAtomPositions(this.atoms, struct.atoms);
+
+    if (positions.length > 0) {
+      return { atomId, position: geometricCenter(positions) };
+    }
+
+    const atom = struct.atoms.get(atomId);
+    assert(atom);
+    return { atomId, position: atom.pp };
   }
 
   cloneAttachmentPoints(

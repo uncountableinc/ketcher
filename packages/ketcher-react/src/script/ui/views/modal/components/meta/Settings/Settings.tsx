@@ -101,7 +101,7 @@ const HeaderContent = ({
         data={JSON.stringify(formState.result)}
         filename="ketcher-settings"
         className={classes.button}
-        data-testid="save-settings-to-file-button"
+        testId="save-settings-to-file-button"
       >
         <Icon name="save-1" />
       </SaveButton>
@@ -450,7 +450,7 @@ const mapDispatchToProps = (dispatch, ownProps: SettingsOwnProps) => ({
       initState.reactionComponentMarginSize !==
       result.reactionComponentMarginSize;
 
-    showNotification &&
+    if (showNotification) {
       dispatch(
         onAction({
           dialog: 'info-modal',
@@ -462,6 +462,7 @@ const mapDispatchToProps = (dispatch, ownProps: SettingsOwnProps) => ({
           },
         }),
       );
+    }
   },
   onACSStyle: (result) => {
     dispatch(updateFormState({ result }));
