@@ -134,7 +134,7 @@ describe('FormatterFactory: MDL Molfile V2000', () => {
     expect(formatter).not.toBeInstanceOf(MolfileV2000Formatter);
   });
 
-  it('saves a structure with query properties as V2000 through the server', async () => {
+  it('saves a structure with query properties through the server without a fixed saving mode', async () => {
     const { convert, structService } = createStructServiceMock();
     const struct = createStruct(MOLFILE_V2000_ATOM_BOND_LIMIT);
 
@@ -148,10 +148,9 @@ describe('FormatterFactory: MDL Molfile V2000', () => {
     expect(formatter).not.toBeInstanceOf(MolfileV2000Formatter);
     await formatter.getStringFromStructureAsync(struct);
 
-    // without it Indigo picks the version itself and may write V3000
-    expect(convert.mock.calls[0][1]).toMatchObject({
-      'molfile-saving-mode': '2000',
-    });
+    // server-format-routing: Indigo picks the version, so V3000-only content
+    // such as haptic bonds survives the save
+    expect(convert.mock.calls[0][1]).not.toHaveProperty('molfile-saving-mode');
   });
 
   it('upgrades an oversized structure with query properties to V3000', async () => {

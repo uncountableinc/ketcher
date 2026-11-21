@@ -98,9 +98,10 @@
       "covered": "jest __tests__/unc-regression/server-format-routing.test.ts",
       "commits": ["6576cd745", "52fc7376a", "b53ffb290"],
       "files": [
-        "packages/ketcher-core/src/application/formatters/formatterFactory.ts"
+        "packages/ketcher-core/src/application/formatters/formatterFactory.ts",
+        "packages/ketcher-core/src/application/formatters/formatProperties.ts"
       ],
-      "verdictNote": "reapply: measured 0/9 on vanilla v3.18.0. Vanilla converts MOL in the browser. At the v3.20.0-rc.1 merge, upstream (#6142) sends a MOL structure above the V2000 limit to Indigo in auto mode. The fork keeps that rule and sends every other MOL request to Indigo as plain V2000. Upstream's two tests that expect the JS formatter for a structure within the limit now expect the server conversion, with a comment that names this behaviour. At the v3.22.0-rc.1 merge upstream checks the V2000 limit before the query-property and dearomatize-on-load delegation, so an oversized structure with query properties also goes to Indigo in auto mode. The fork follows that order, which leaves the delegation flags unused, so the fork drops them and keeps the query-property parameter as _hasQueryProperties."
+      "verdictNote": "reapply: measured 0/9 on vanilla v3.18.0. Vanilla converts MOL in the browser. At the v3.20.0-rc.1 merge, upstream (#6142) sends a MOL structure above the V2000 limit to Indigo in auto mode. The fork keeps that rule and sends every other MOL request to Indigo as plain V2000. Upstream's two tests that expect the JS formatter for a structure within the limit now expect the server conversion, with a comment that names this behaviour. At the v3.22.0-rc.1 merge upstream checks the V2000 limit before the query-property and dearomatize-on-load delegation, so an oversized structure with query properties also goes to Indigo in auto mode. The fork follows that order, which leaves the delegation flags unused, so the fork drops them and keeps the query-property parameter as _hasQueryProperties. Upstream #6533 (v3.22.0-rc.1) also gives the mol format a fixed molfile-saving-mode of 2000. The fork leaves that mode off for mol, so Indigo still picks the version and V3000-only content such as haptic bonds survives a save; rxn, rdf, and sdf take upstream's fixed V2000 mode."
     },
     {
       "key": "external-zoom-scale",

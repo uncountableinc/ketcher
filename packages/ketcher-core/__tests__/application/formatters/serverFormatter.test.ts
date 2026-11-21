@@ -84,7 +84,6 @@ describe('ServerFormatter', () => {
   });
 
   it.each([
-    [SupportedFormat.mol, '2000'],
     [SupportedFormat.rxn, '2000'],
     [SupportedFormat.rdf, '2000'],
     [SupportedFormat.sdf, '2000'],
@@ -106,6 +105,17 @@ describe('ServerFormatter', () => {
       );
     },
   );
+
+  // server-format-routing: the fork saves every MOL on the server and lets
+  // Indigo pick the version, so V3000-only content such as haptic bonds
+  // survives the save.
+  it('requests no molfile saving mode for mol', async () => {
+    const { convert, formatter } = createFormatter(SupportedFormat.mol);
+
+    await formatter.getStringFromStructureAsync(new Struct());
+
+    expect(convert.mock.calls[0][1]).not.toHaveProperty('molfile-saving-mode');
+  });
 
   it('uses convert (not layout) for IDT input', () => {
     const convert = jest.fn();

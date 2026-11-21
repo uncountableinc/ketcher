@@ -31,12 +31,14 @@ const formatProperties: FormatPropertiesMap = {
     true,
     { 'molfile-saving-mode': 'auto' },
   ),
+  // server-format-routing: the fork saves every MOL on the Indigo server, so a
+  // fixed V2000 mode would drop V3000-only content such as haptic bonds.
+  // Indigo picks the version, as it did before upstream #6533.
   mol: new SupportedFormatProperties(
     'MDL Molfile V2000',
     ChemicalMimeType.Mol,
     ['.mol'],
     true,
-    { 'molfile-saving-mode': '2000' },
   ),
   molV3000: new SupportedFormatProperties(
     'MDL Molfile V3000',
