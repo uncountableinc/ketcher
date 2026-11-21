@@ -36,7 +36,14 @@ const MISSING_ATOM_ID = 999;
 const MISSING_HALF_BOND_ID = 999;
 
 function restructFor(struct: Struct) {
-  return { molecule: struct, atoms: new Map() } as never;
+  const atoms = new Map();
+  const attachmentGroups = new Map();
+  return {
+    molecule: struct,
+    atoms,
+    attachmentGroups,
+    getBondEndpoint: (id: number) => atoms.get(id) ?? attachmentGroups.get(id),
+  } as never;
 }
 
 function twoCarbonStruct() {

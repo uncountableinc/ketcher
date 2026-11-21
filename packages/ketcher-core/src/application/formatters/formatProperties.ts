@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *    https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -31,6 +31,9 @@ const formatProperties: FormatPropertiesMap = {
     true,
     { 'molfile-saving-mode': 'auto' },
   ),
+  // server-format-routing: the fork saves every MOL on the Indigo server, so a
+  // fixed V2000 mode would drop V3000-only content such as haptic bonds.
+  // Indigo picks the version, as it did before upstream #6533.
   mol: new SupportedFormatProperties(
     'MDL Molfile V2000',
     ChemicalMimeType.Mol,
@@ -49,6 +52,7 @@ const formatProperties: FormatPropertiesMap = {
     ChemicalMimeType.Rxn,
     ['.rxn'],
     true,
+    { 'molfile-saving-mode': '2000' },
   ),
   rxnV3000: new SupportedFormatProperties(
     'MDL Rxnfile V3000',
@@ -62,11 +66,14 @@ const formatProperties: FormatPropertiesMap = {
     ChemicalMimeType.DaylightSmiles,
     ['.smi', '.smiles'],
     true,
+    { 'smiles-saving-format': 'daylight' },
   ),
   smilesExt: new SupportedFormatProperties(
     'Extended SMILES',
     ChemicalMimeType.ExtendedSmiles,
     ['.cxsmi', '.cxsmiles'],
+    false,
+    { 'smiles-saving-format': 'chemaxon' },
   ),
   smarts: new SupportedFormatProperties(
     'Daylight SMARTS',
@@ -182,6 +189,7 @@ const formatProperties: FormatPropertiesMap = {
     ChemicalMimeType.RDF,
     ['.rdf'],
     true,
+    { 'molfile-saving-mode': '2000' },
   ),
   rdfV3000: new SupportedFormatProperties(
     'RDF V3000',

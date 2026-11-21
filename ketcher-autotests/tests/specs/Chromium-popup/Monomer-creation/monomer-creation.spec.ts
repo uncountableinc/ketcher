@@ -90,6 +90,17 @@ test.afterAll(async ({ closePage }) => {
 });
 test.beforeEach(async ({ MoleculesCanvas: _ }) => {});
 
+test('Create a monomer stays enabled after a mode round trip (#12252)', async () => {
+  await pasteFromClipboardAndOpenAsNewProject(page, 'CCC');
+  const createMonomerButton = LeftToolbar(page).createMonomerButton;
+  await expect(createMonomerButton).toBeEnabled();
+
+  await CommonTopRightToolbar(page).turnOnMacromoleculesEditor();
+  await CommonTopRightToolbar(page).turnOnMicromoleculesEditor();
+
+  await expect(createMonomerButton).toBeEnabled();
+});
+
 test('1. Check that a monomer creation wizard button added to the sidebar', async () => {
   /*
    * Test task: https://github.com/epam/ketcher/issues/7657
@@ -752,8 +763,8 @@ test(`12. Check that Nucleotide (preset) is placed 6 in the Type drop-down`, asy
     .locator('[data-testid$="-option"]')
     .evaluateAll((elements) =>
       elements
-        .map((element) => element.getAttribute('data-testid'))
-        .filter(Boolean),
+        .map((element) => element.dataset.testid ?? null)
+        .filter((testId): testId is string => Boolean(testId)),
     );
 
   const monomerTypeOptionsOrder = actualOptionsOrder.filter((testId) =>
