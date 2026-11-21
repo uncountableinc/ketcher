@@ -1,7 +1,7 @@
 {
-  "mergeBase": "e5cef1f655d245ad09d3e3e392c677e970896658",
+  "mergeBase": "a22256ffb5a33b4252a19ca5700d240fd4e9027a",
   "forkRef": "master",
-  "upstreamTag": "v3.20.0-rc.1",
+  "upstreamTag": "v3.21.0-rc.1",
   "behaviours": [
     {
       "key": "cip-descriptors",
@@ -123,9 +123,10 @@
       "files": [
         "packages/ketcher-core/src/application/editor/actions/action.ts",
         "packages/ketcher-core/src/application/editor/operations/CanvasLoad.ts",
-        "packages/ketcher-core/src/application/editor/operations/BaseOperation.ts"
+        "packages/ketcher-core/src/application/editor/operations/BaseOperation.ts",
+        "packages/ketcher-react/src/script/editor/Editor.history.test.ts"
       ],
-      "verdictNote": "reapply: the suite cannot load on vanilla because upstream moved operations/base.ts, so this verdict is from source inspection - isInvertible appears nowhere in v3.18.0."
+      "verdictNote": "reapply: the suite cannot load on vanilla because upstream moved operations/base.ts, so this verdict is from source inspection - isInvertible appears nowhere in v3.18.0. At v3.21.0-rc.1 upstream's mode-history test seeds the molecule with a canvas load, which the fork keeps off the undo stack, so the fork's copy of that test adds the atom as an edit."
     },
     {
       "key": "indigo-stereo-style",
@@ -220,7 +221,7 @@
       "covered": "playwright tests/specs/unc-regression/settings-state.spec.ts",
       "commits": ["4e21564a4", "8799f4afc", "6304e0cc4", "5b2e28010"],
       "files": [
-        "packages/ketcher-react/src/script/ui/state/options/index.js",
+        "packages/ketcher-react/src/script/ui/state/options/index.ts",
         "packages/ketcher-react/src/script/ui/state/index.js"
       ]
     },
@@ -332,17 +333,11 @@
         "54064df25"
       ],
       "files": [
-        "packages/ketcher-core/src/application/render/util.ts",
-        "packages/ketcher-core/src/application/render/restruct/reImage.ts",
         "packages/ketcher-core/src/application/render/restruct/rebond.ts",
-        "packages/ketcher-core/src/application/render/restruct/restruct.ts",
         "packages/ketcher-core/src/application/render/restruct/retext.ts",
-        "packages/ketcher-core/src/application/render/restruct/reatom.ts",
-        "packages/ketcher-react/src/script/editor/tool/arrow/commonArrow.ts",
-        "packages/ketcher-react/src/script/editor/tool/image.ts",
-        "packages/ketcher-react/src/script/editor/tool/reactionplus.ts"
+        "packages/ketcher-core/src/application/render/restruct/reatom.ts"
       ],
-      "verdictNote": "shrank at the v3.17.0 merge: upstream's typing now covers render.paper.canvas at the handleMovingPosibilityCursor call, so select.ts needs no @ts-ignore. Measured, not assumed: the pair was left out of the merge and npm run test:types passes."
+      "verdictNote": "shrank at the v3.17.0 merge: upstream's typing now covers render.paper.canvas at the handleMovingPosibilityCursor call, so select.ts needs no @ts-ignore. Measured, not assumed: the pair was left out of the merge and npm run test:types passes. Shrank again at the v3.21.0-rc.1 merge: upstream's raphael typing covers util.ts, restruct.ts, reImage.ts, commonArrow.ts, image.ts, and reactionplus.ts, so the merge takes upstream's files, and reatom.ts needs no @ts-ignore; npm run test:types passes."
     },
     {
       "key": "lodash-fp-entrypoints",
@@ -366,7 +361,7 @@
         "packages/ketcher-react/src/script/ui/state/editor/index.js",
         "packages/ketcher-react/src/script/ui/state/hotkeys.ts",
         "packages/ketcher-react/src/script/ui/state/index.js",
-        "packages/ketcher-react/src/script/ui/state/options/index.js",
+        "packages/ketcher-react/src/script/ui/state/options/index.ts",
         "packages/ketcher-react/src/script/ui/state/server/index.js",
         "packages/ketcher-react/src/script/ui/state/templates/index.ts",
         "packages/ketcher-react/src/script/ui/state/toolbar/index.js",
@@ -400,7 +395,6 @@
         "336054dcd"
       ],
       "files": [
-        "packages/ketcher-react/src/Editor.tsx",
         "packages/ketcher-react/src/script/ui/state/editor/index.js",
         "packages/ketcher-react/src/script/ui/views/components/StructEditor/StructEditor.tsx"
       ]

@@ -44,7 +44,7 @@ const App = () => {
           staticResourcesUrl={process.env.PUBLIC_URL}
           structServiceProvider={structServiceProvider}
           onInit={(ketcher: Ketcher) => {
-            window.ketcher = ketcher;
+            globalThis.window.ketcher = ketcher;
             ketcher.editor.setOptions(
               JSON.stringify({
                 externalZoomScale: EXTERNAL_ZOOM_SCALE,
@@ -53,7 +53,7 @@ const App = () => {
             safePostMessage({
               eventType: 'init',
             });
-            window.scrollTo(0, 0);
+            globalThis.scrollTo(0, 0);
           }}
         />
       </div>

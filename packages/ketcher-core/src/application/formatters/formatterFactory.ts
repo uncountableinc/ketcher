@@ -74,6 +74,14 @@ export class FormatterFactory {
     const [, structServiceOptions] = this.separateOptions(options);
 
     let formatter: StructFormatter;
+    // `struct` is provided only when saving, so its absence means we are loading.
+    // Dearomatizing on load has to be done by Indigo, which the JS molfile
+    // parser cannot do, so such structures are delegated to it as well.
+    const isLoading = struct === undefined;
+    const shouldDelegateToIndigo =
+      Boolean(queryPropertiesAreUsed) ||
+      (isLoading && Boolean(structServiceOptions['dearomatize-on-load']));
+
     switch (format) {
       case SupportedFormat.ket: {
         formatter = new KetFormatter(new KetSerializer());
@@ -85,7 +93,7 @@ export class FormatterFactory {
         // address more than 999 atoms/bonds, so an oversized structure goes to
         // Indigo in auto mode, which upgrades it to V3000.
         const isOversized =
-          !queryPropertiesAreUsed &&
+          !shouldDelegateToIndigo &&
           struct !== undefined &&
           exceedsMolfileV2000Limit(struct);
         formatter = new ServerFormatter(
