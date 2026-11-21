@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *    https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,7 +25,7 @@ import type { StructService, StructServiceOptions } from 'domain/services';
 import type { Struct } from 'domain/entities/struct';
 import { KetFormatter } from './ketFormatter';
 import { ServerFormatter } from './serverFormatter';
-import { exceedsMolfileV2000Limit } from './constants';
+import { isMolfileV2000LimitExceeded } from './constants';
 
 export class FormatterFactory {
   readonly #structService: StructService;
@@ -68,19 +68,12 @@ export class FormatterFactory {
   create(
     format: SupportedFormat,
     options?: FormatterFactoryOptions,
-    queryPropertiesAreUsed?: boolean,
+    _hasQueryProperties?: boolean,
     struct?: Struct,
   ): StructFormatter {
     const [, structServiceOptions] = this.separateOptions(options);
 
     let formatter: StructFormatter;
-    // `struct` is provided only when saving, so its absence means we are loading.
-    // Dearomatizing on load has to be done by Indigo, which the JS molfile
-    // parser cannot do, so such structures are delegated to it as well.
-    const isLoading = struct === undefined;
-    const shouldDelegateToIndigo =
-      Boolean(queryPropertiesAreUsed) ||
-      (isLoading && Boolean(structServiceOptions['dearomatize-on-load']));
 
     switch (format) {
       case SupportedFormat.ket: {
@@ -91,11 +84,11 @@ export class FormatterFactory {
         // server-format-routing: the fork converts MOL on the Indigo server at
         // every size, where upstream uses its JS V2000 formatter. V2000 cannot
         // address more than 999 atoms/bonds, so an oversized structure goes to
-        // Indigo in auto mode, which upgrades it to V3000.
+        // Indigo in auto mode, which upgrades it to V3000. A plain V2000
+        // request carries the query-property and dearomatize-on-load cases
+        // that upstream also sends to Indigo.
         const isOversized =
-          !shouldDelegateToIndigo &&
-          struct !== undefined &&
-          exceedsMolfileV2000Limit(struct);
+          struct !== undefined && isMolfileV2000LimitExceeded(struct);
         formatter = new ServerFormatter(
           this.#structService,
           new KetSerializer(),

@@ -83,7 +83,9 @@ export type RenderOptions = {
   hashSpacing: number;
   hashSpacingUnit: MeasurementUnits;
 
-  /* styles */
+  /*
+  styles
+  */
   lineattr: RenderOptionStyles;
   multitailArrow: RenderOptionStyles;
   arrowSnappingStyle: RenderOptionStyles;
