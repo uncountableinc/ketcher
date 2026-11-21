@@ -1,7 +1,7 @@
 {
-  "mergeBase": "a22256ffb5a33b4252a19ca5700d240fd4e9027a",
+  "mergeBase": "8e9e420e853e1570ec0b77ee4f260728d38e6d6f",
   "forkRef": "master",
-  "upstreamTag": "v3.21.0-rc.1",
+  "upstreamTag": "v3.22.0-rc.1",
   "behaviours": [
     {
       "key": "cip-descriptors",
@@ -64,12 +64,11 @@
     {
       "key": "ket-rgroup-refs",
       "summary": "Keep R-group references through a KET round trip.",
-      "verdict": "reapply",
+      "verdict": "drop",
       "covered": "jest __tests__/unc-regression/ket-rgroup-refs.test.ts",
       "commits": ["270480fe0"],
-      "files": [
-        "packages/ketcher-core/src/domain/serializers/ket/fromKet/moleculeToStruct.ts"
-      ]
+      "files": [],
+      "verdictNote": "dropped at the v3.22.0-rc.1 merge: upstream now reads (source.$refs ?? []) in rglabelToStruct, so the merge takes upstream's line. moleculeToStruct.ts still differs from upstream through sgroup-com-mix-mon. Measured, not assumed: jest __tests__/unc-regression/ket-rgroup-refs.test.ts passes with upstream's line."
     },
     {
       "key": "indigo-hydrogen-label-default",
@@ -100,7 +99,7 @@
       "files": [
         "packages/ketcher-core/src/application/formatters/formatterFactory.ts"
       ],
-      "verdictNote": "reapply: measured 0/9 on vanilla v3.18.0. Vanilla converts MOL in the browser. At the v3.20.0-rc.1 merge, upstream (#6142) sends a MOL structure above the V2000 limit to Indigo in auto mode. The fork keeps that rule and sends every other MOL request to Indigo as plain V2000. Upstream's two tests that expect the JS formatter for a structure within the limit now expect the server conversion, with a comment that names this behaviour."
+      "verdictNote": "reapply: measured 0/9 on vanilla v3.18.0. Vanilla converts MOL in the browser. At the v3.20.0-rc.1 merge, upstream (#6142) sends a MOL structure above the V2000 limit to Indigo in auto mode. The fork keeps that rule and sends every other MOL request to Indigo as plain V2000. Upstream's two tests that expect the JS formatter for a structure within the limit now expect the server conversion, with a comment that names this behaviour. At the v3.22.0-rc.1 merge upstream checks the V2000 limit before the query-property and dearomatize-on-load delegation, so an oversized structure with query properties also goes to Indigo in auto mode. The fork follows that order, which leaves the delegation flags unused, so the fork drops them and keeps the query-property parameter as _hasQueryProperties."
     },
     {
       "key": "external-zoom-scale",
@@ -222,7 +221,7 @@
       "commits": ["4e21564a4", "8799f4afc", "6304e0cc4", "5b2e28010"],
       "files": [
         "packages/ketcher-react/src/script/ui/state/options/index.ts",
-        "packages/ketcher-react/src/script/ui/state/index.js"
+        "packages/ketcher-react/src/script/ui/state/index.ts"
       ]
     },
     {
@@ -337,7 +336,7 @@
         "packages/ketcher-core/src/application/render/restruct/retext.ts",
         "packages/ketcher-core/src/application/render/restruct/reatom.ts"
       ],
-      "verdictNote": "shrank at the v3.17.0 merge: upstream's typing now covers render.paper.canvas at the handleMovingPosibilityCursor call, so select.ts needs no @ts-ignore. Measured, not assumed: the pair was left out of the merge and npm run test:types passes. Shrank again at the v3.21.0-rc.1 merge: upstream's raphael typing covers util.ts, restruct.ts, reImage.ts, commonArrow.ts, image.ts, and reactionplus.ts, so the merge takes upstream's files, and reatom.ts needs no @ts-ignore; npm run test:types passes."
+      "verdictNote": "shrank at the v3.17.0 merge: upstream's typing now covers render.paper.canvas at the handleMovingPosibilityCursor call, so select.ts needs no @ts-ignore. Measured, not assumed: the pair was left out of the merge and npm run test:types passes. Shrank again at the v3.21.0-rc.1 merge: upstream's raphael typing covers util.ts, restruct.ts, reImage.ts, commonArrow.ts, image.ts, and reactionplus.ts, so the merge takes upstream's files, and reatom.ts needs no @ts-ignore; npm run test:types passes. Shrank again at the v3.22.0-rc.1 merge: upstream now writes the stereo label colour through aamPath.node.firstChild, so reatom.ts takes upstream's lines there and keeps only the string font-weight."
     },
     {
       "key": "lodash-fp-entrypoints",
@@ -351,20 +350,20 @@
         "packages/ketcher-react/src/script/editor/Editor.ts",
         "packages/ketcher-react/src/script/editor/tool/select/select.helpers.ts",
         "packages/ketcher-react/src/script/editor/tool/sgroup.ts",
-        "packages/ketcher-react/src/script/ui/action/zoom.js",
+        "packages/ketcher-react/src/script/ui/action/zoom.ts",
         "packages/ketcher-react/src/script/ui/component/form/buttonlist.tsx",
         "packages/ketcher-react/src/script/ui/data/convert/structconv.ts",
         "packages/ketcher-react/src/script/ui/data/schema/struct-schema.ts",
         "packages/ketcher-react/src/script/ui/dialog/template/TemplateDialog.tsx",
         "packages/ketcher-react/src/script/ui/dialog/toolbox/labeledit.tsx",
         "packages/ketcher-react/src/script/ui/state/action/index.ts",
-        "packages/ketcher-react/src/script/ui/state/editor/index.js",
+        "packages/ketcher-react/src/script/ui/state/editor/index.ts",
         "packages/ketcher-react/src/script/ui/state/hotkeys.ts",
-        "packages/ketcher-react/src/script/ui/state/index.js",
+        "packages/ketcher-react/src/script/ui/state/index.ts",
         "packages/ketcher-react/src/script/ui/state/options/index.ts",
-        "packages/ketcher-react/src/script/ui/state/server/index.js",
+        "packages/ketcher-react/src/script/ui/state/server/index.ts",
         "packages/ketcher-react/src/script/ui/state/templates/index.ts",
-        "packages/ketcher-react/src/script/ui/state/toolbar/index.js",
+        "packages/ketcher-react/src/script/ui/state/toolbar/index.ts",
         "packages/ketcher-react/src/script/ui/utils/index.ts",
         "packages/ketcher-react/src/script/ui/views/components/StructEditor/StructEditor.tsx",
         "packages/ketcher-react/src/script/ui/views/modal/Modal.container.ts",
@@ -395,7 +394,7 @@
         "336054dcd"
       ],
       "files": [
-        "packages/ketcher-react/src/script/ui/state/editor/index.js",
+        "packages/ketcher-react/src/script/ui/state/editor/index.ts",
         "packages/ketcher-react/src/script/ui/views/components/StructEditor/StructEditor.tsx"
       ]
     },
@@ -466,12 +465,11 @@
       "key": "no-valence-mode-server-option",
       "summary": "Stop sending the valence-mode option on server conversions, and hide the Settings selector that sets it.",
       "verdict": "reapply",
-      "verdictNote": "interim, and removable on a known condition. Upstream added valence-mode at v3.18.0 (application/settings/schema.ts) and pickStandardServerOptions puts it in every convert request. The indigo-service deployed against this fork reports indigo 1.34.0 and answers that option with 500 {\"error\": \"'NoneType' object has no attribute 'loadMonomerLibrary'\"}, which fails every server-side conversion: getSmiles, every export, and the drawer's To Experiment path. The error names the monomer library and that is a red herring; monomerLibrary is sent by v3.10.0 too and removing it does not help. Measured by replaying the real 1.5MB request against the service and dropping one option at a time: struct alone returns 200, valence-mode alone reproduces the 500, and the full request with only valence-mode removed returns 200. REMOVE THIS DELTA once the deployed indigo-service reaches 1.45.0 or newer. valence-mode was added to indigo in 1.45.0: the option string is absent from the indigo-ketcher wasm at 1.38.0, 1.42.0 and 1.44.0, and present at 1.45.0, 1.45.1 and 1.46.0, which is the version ketcher v3.18.0 itself pins. Verify with the saved request before restoring the line. The Settings selector that sets this option was removed while the option is dropped, because a user could change it and nothing happened; restore the selector and the request line together.",
+      "verdictNote": "interim, and removable on a known condition. Upstream added valence-mode at v3.18.0 (application/settings/schema.ts) and pickStandardServerOptions puts it in every convert request. The indigo-service deployed against this fork reports indigo 1.34.0 and answers that option with 500 {\"error\": \"'NoneType' object has no attribute 'loadMonomerLibrary'\"}, which fails every server-side conversion: getSmiles, every export, and the drawer's To Experiment path. The error names the monomer library and that is a red herring; monomerLibrary is sent by v3.10.0 too and removing it does not help. Measured by replaying the real 1.5MB request against the service and dropping one option at a time: struct alone returns 200, valence-mode alone reproduces the 500, and the full request with only valence-mode removed returns 200. REMOVE THIS DELTA once the deployed indigo-service reaches 1.45.0 or newer. valence-mode was added to indigo in 1.45.0: the option string is absent from the indigo-ketcher wasm at 1.38.0, 1.42.0 and 1.44.0, and present at 1.45.0, 1.45.1 and 1.46.0, which is the version ketcher v3.18.0 itself pins. Verify with the saved request before restoring the line. The Settings selector that sets this option was removed while the option is dropped, because a user could change it and nothing happened; restore the selector and the request line together. At the v3.22.0-rc.1 merge upstream removed the valence-mode selector from the Settings dialog itself, so Settings.tsx is byte-identical to upstream and the claim keeps only remoteStructService.ts.",
       "covered": "none: proving this needs a live indigo-service, which neither the fork suite nor main's vitest talks to; replay a captured convert request against the running service instead",
       "commits": [],
       "files": [
-        "packages/ketcher-core/src/infrastructure/services/struct/remoteStructService.ts",
-        "packages/ketcher-react/src/script/ui/views/modal/components/meta/Settings/Settings.tsx"
+        "packages/ketcher-core/src/infrastructure/services/struct/remoteStructService.ts"
       ]
     },
     {
