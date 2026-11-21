@@ -20,7 +20,10 @@ import { fileURLToPath } from 'node:url';
 
 const MAX_DIFF_BYTES = 256 * 1024 * 1024;
 
-const manifestPath = join(dirname(fileURLToPath(import.meta.url)), 'unc-fork-coverage.json');
+const manifestPath = join(
+  dirname(fileURLToPath(import.meta.url)),
+  'unc-fork-coverage.json',
+);
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
 
 const forkRef = process.argv[2] ?? manifest.forkRef;
@@ -33,10 +36,14 @@ const changedFiles = execFileSync(
   .split('\n')
   .filter((path) => /^packages\/[^/]+\/src\//.test(path));
 
-const claimed = new Set(manifest.behaviours.flatMap((behaviour) => behaviour.files));
+const claimed = new Set(
+  manifest.behaviours.flatMap((behaviour) => behaviour.files),
+);
 
 const unclaimed = changedFiles.filter((path) => !claimed.has(path));
-const stale = [...claimed].filter((path) => !changedFiles.includes(path)).sort();
+const stale = [...claimed]
+  .filter((path) => !changedFiles.includes(path))
+  .sort();
 
 console.log(`merge base   ${manifest.mergeBase.slice(0, 9)}`);
 console.log(`fork ref     ${forkRef}`);
@@ -46,19 +53,27 @@ console.log(`changed src  ${changedFiles.length} files`);
 if (unclaimed.length > 0) {
   console.error(`\n${unclaimed.length} changed file(s) no behaviour claims:`);
   for (const path of unclaimed) console.error(`  ${path}`);
-  console.error('\nAdd each one to a behaviour in unc-fork-coverage.json, with a test or a');
+  console.error(
+    '\nAdd each one to a behaviour in unc-fork-coverage.json, with a test or a',
+  );
   console.error('written reason it needs none.');
 }
 
 if (stale.length > 0) {
-  console.error(`\n${stale.length} claimed file(s) the fork no longer changes:`);
+  console.error(
+    `\n${stale.length} claimed file(s) the fork no longer changes:`,
+  );
   for (const path of stale) console.error(`  ${path}`);
   console.error('\nDrop them from unc-fork-coverage.json.');
 }
 
 if (unclaimed.length > 0 || stale.length > 0) process.exit(1);
 
-const untested = manifest.behaviours.filter((behaviour) => behaviour.covered.startsWith('none:'));
+const untested = manifest.behaviours.filter((behaviour) =>
+  behaviour.covered.startsWith('none:'),
+);
 console.log(`\nAll changed source files are accounted for.`);
-console.log(`${manifest.behaviours.length - untested.length} behaviours have a test; ${untested.length} carry a written reason they need none:`);
+console.log(
+  `${manifest.behaviours.length - untested.length} behaviours have a test; ${untested.length} carry a written reason they need none:`,
+);
 for (const behaviour of untested) console.log(`  ${behaviour.key}`);

@@ -6,8 +6,6 @@ import {
   getAtomCustomQuery,
 } from 'application/render/restruct';
 import ReAtom from 'application/render/restruct/reatom';
-import type ReStruct from 'application/render/restruct/restruct';
-import type { RenderOptions } from 'application/render/render.types';
 import { StereoColoringType } from 'application/render/restruct/generalEnumTypes';
 import { Atom, Struct } from 'domain/entities';
 

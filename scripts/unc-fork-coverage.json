@@ -58,7 +58,8 @@
         "packages/ketcher-core/src/domain/serializers/ket/toKet/moleculeToKet.ts",
         "packages/ketcher-core/src/domain/serializers/mol/molfile.ts",
         "packages/ketcher-react/src/script/ui/data/schema/struct-schema.ts",
-        "packages/ketcher-react/src/script/ui/state/constants.ts"
+        "packages/ketcher-react/src/script/ui/state/constants.ts",
+        "packages/ketcher-core/src/domain/serializers/ket/types.ts"
       ]
     },
     {

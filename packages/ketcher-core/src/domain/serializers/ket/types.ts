@@ -85,6 +85,7 @@ export interface KetSGroupNode {
   atoms?: number[];
   mul?: number;
   subscript?: string;
+  compno?: number;
   connectivity?: string;
   subtype?: string | null;
   name?: string;
