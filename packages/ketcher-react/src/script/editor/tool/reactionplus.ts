@@ -37,7 +37,7 @@ class ReactionPlusTool implements Tool {
     const rnd = this.editor.render;
     const ci = this.editor.findItem(event, ['rxnPluses']);
 
-    if (ci && ci.map === 'rxnPluses') {
+    if (ci?.map === 'rxnPluses') {
       this.editor.hover(null);
       this.editor.selection({ rxnPluses: [ci.id] });
       this.dragCtx = { xy0: CoordinateTransformation.pageToModel(event, rnd) };
@@ -65,8 +65,6 @@ class ReactionPlusTool implements Tool {
 
       handleMovingPosibilityCursor(
         item,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore: raphael typing issues
         editor.render.paper.canvas,
         editor.render.options.movingStyle.cursor as string,
       );

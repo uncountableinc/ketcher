@@ -16,6 +16,7 @@
 
 import styled from '@emotion/styled';
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { shortcutStr } from 'ketcher-core';
 import { TopToolbarIconButton } from './TopToolbarIconButton';
 import { useAppContext } from 'src/hooks';
@@ -56,6 +57,7 @@ export const SystemControls = ({
   onAboutOpen,
   className,
 }: SystemControlsProps) => {
+  const { t } = useTranslation(['toolbar', 'toolbars']);
   const [isFullscreen, setIsFullscreen] = useState(getIfFullScreen);
 
   useEffect(() => {
@@ -92,7 +94,7 @@ export const SystemControls = ({
         isHidden={hiddenButtons.includes('history')}
       /> */}
       <TopToolbarIconButton
-        title="Settings"
+        title={t('menu.settings')}
         onClick={onSettingsOpen}
         iconName="settings"
         disabled={disabledButtons.includes('settings')}
@@ -100,7 +102,9 @@ export const SystemControls = ({
         testId="settings-button"
       />
       <TopToolbarIconButton
-        title={`Help (${shortcutStr(['?', '&', 'Shift+/'])})`}
+        title={t('toolbars:systemControls.help', {
+          shortcut: shortcutStr(['?', '&', 'Shift+/']),
+        })}
         onClick={onHelp}
         iconName="help"
         disabled={disabledButtons.includes('help')}
@@ -109,7 +113,7 @@ export const SystemControls = ({
       />
       {/* @TODO Temporary About button, when design is ready, reimplement */}
       <TopToolbarIconButton
-        title="About"
+        title={t('menu.about')}
         onClick={onAboutOpen}
         iconName="about"
         disabled={disabledButtons.includes('about')}
@@ -117,7 +121,7 @@ export const SystemControls = ({
         testId="about-button"
       />
       <TopToolbarIconButton
-        title="Fullscreen mode"
+        title={t('fullscreen.title')}
         onClick={onFullscreenCallback}
         iconName={isFullscreen ? 'fullscreen-exit' : 'fullscreen-enter'}
         disabled={disabledButtons.includes('fullscreen')}

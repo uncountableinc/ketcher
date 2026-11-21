@@ -1,7 +1,7 @@
 {
-  "mergeBase": "e5cef1f655d245ad09d3e3e392c677e970896658",
+  "mergeBase": "a22256ffb5a33b4252a19ca5700d240fd4e9027a",
   "forkRef": "master",
-  "upstreamTag": "v3.20.0-rc.1",
+  "upstreamTag": "v3.21.0-rc.1",
   "behaviours": [
     {
       "key": "cip-descriptors",

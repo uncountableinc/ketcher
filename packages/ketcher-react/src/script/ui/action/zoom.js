@@ -36,7 +36,7 @@ export default {
   },
   'zoom-out': {
     shortcut: ['Mod+Minus', 'Mod+NumpadSubtract'],
-    title: 'Zoom Out',
+    title: 'toolbar:zoom.out',
     enabledInViewOnly: true,
     disabled: (editor) => editor.zoom() <= zoomList[0], // unsave
     action: (event) => (editor) => {
@@ -49,7 +49,7 @@ export default {
   },
   'zoom-in': {
     shortcut: ['Mod+Equal', 'Mod+NumpadAdd'],
-    title: 'Zoom In',
+    title: 'toolbar:zoom.in',
     enabledInViewOnly: true,
     disabled: (editor) => zoomList[zoomList.length - 1] <= editor.zoom(),
     action: (event) => (editor) => {

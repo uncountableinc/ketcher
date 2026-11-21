@@ -94,6 +94,46 @@ describe('FormatterFactory: MDL Molfile V2000', () => {
     });
   });
 
+  it('delegates loading to the server when dearomatize-on-load is set', () => {
+    const { structService } = createStructServiceMock();
+
+    // no struct is passed when loading
+    const formatter = new FormatterFactory(structService).create(
+      SupportedFormat.mol,
+      { 'dearomatize-on-load': true },
+    );
+
+    expect(formatter).not.toBeInstanceOf(MolfileV2000Formatter);
+  });
+
+  it('converts a saved structure in plain V2000 mode on the server when dearomatize-on-load is set', async () => {
+    const { convert, structService } = createStructServiceMock();
+    const struct = createStruct(MOLFILE_V2000_ATOM_BOND_LIMIT);
+
+    // dearomatize-on-load only applies to loading, and saving passes a struct
+    const formatter = new FormatterFactory(structService).create(
+      SupportedFormat.mol,
+      { 'dearomatize-on-load': true },
+      false,
+      struct,
+    );
+
+    await formatter.getStringFromStructureAsync(struct);
+
+    expect(convert.mock.calls[0][1]).not.toHaveProperty('molfile-saving-mode');
+  });
+
+  it('delegates loading to the server when dearomatize-on-load is not set', () => {
+    const { structService } = createStructServiceMock();
+
+    const formatter = new FormatterFactory(structService).create(
+      SupportedFormat.mol,
+      {},
+    );
+
+    expect(formatter).not.toBeInstanceOf(MolfileV2000Formatter);
+  });
+
   it('keeps the plain V2000 server formatter when query properties are used', async () => {
     const { convert, structService } = createStructServiceMock();
     const struct = createStruct(MOLFILE_V2000_ATOM_BOND_LIMIT + 1);

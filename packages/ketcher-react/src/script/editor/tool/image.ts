@@ -20,7 +20,7 @@ const TAG = 'tool/image.ts';
 const supportedMimes = ['png', 'svg+xml'];
 
 const supportedMimesForRegex = supportedMimes
-  .map((item) => item.replace('+', '\\+'))
+  .map((item) => item.replace('+', String.raw`\+`))
   .join('|');
 
 const allowList = new RegExp(`^image/(${supportedMimesForRegex})$`);
@@ -101,8 +101,6 @@ export class ImageTool implements Tool {
       const render = this.editor.render;
       handleMovingPosibilityCursor(
         item,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore: raphael typing issues
         render.paper.canvas,
         getItemCursor(render, item),
       );

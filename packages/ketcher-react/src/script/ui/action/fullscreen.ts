@@ -64,7 +64,7 @@ const toggleFullscreen = (ketcherId: string) => {
 
 export default {
   fullscreen: {
-    title: 'Fullscreen mode',
+    title: 'toolbar:fullscreen.title',
     enabledInViewOnly: true,
     action: (ketcherId: string) => () => toggleFullscreen(ketcherId),
     hidden: (options) => isHidden(options, 'fullscreen'),
