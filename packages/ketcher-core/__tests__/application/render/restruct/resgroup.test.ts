@@ -188,6 +188,11 @@ describe('resgroup should draw brackets with attachment points correctly', () =>
 
       expect(bracketSpy).toHaveBeenCalledTimes(2);
       expect(drawnSet.length).toBe(type === 'MIX' ? 3 : 4);
+      expect(
+        drawnSet.items
+          .map((item) => item.attr('text'))
+          .filter((text) => text !== undefined),
+      ).toEqual(type === 'MIX' ? ['mix'] : ['c', 'X']);
     } finally {
       bracketSpy.mockRestore();
     }
