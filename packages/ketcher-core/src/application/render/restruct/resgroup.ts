@@ -183,6 +183,8 @@ class ReSGroup extends ReObject {
         'GEN',
         'COP',
         'queryComponent',
+        'MIX',
+        'COM',
       ];
       if (
         sgroupTypesWithBrackets.includes(sgroup.type) &&

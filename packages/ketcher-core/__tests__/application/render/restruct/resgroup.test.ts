@@ -5,6 +5,7 @@ import {
   ReSGroup,
   Render,
 } from 'application/render';
+import draw from 'application/render/draw';
 import {
   type Struct,
   Bond,
@@ -167,5 +168,28 @@ describe('resgroup should draw brackets with attachment points correctly', () =>
       .mockReturnValueOnce([1]);
     reSgroup.draw(restruct, sGroup);
     expect(attachmentsSpy).toHaveBeenCalled();
+  });
+
+  it.each(['MIX', 'COM'])('should draw brackets for %s S-groups', (type) => {
+    const bracketSpy = jest.spyOn(draw, 'bracket');
+    const formulationSGroup = new SGroup(type);
+    formulationSGroup.isNotContractible = mockFn().mockReturnValue(false);
+    SGroup.addAtom(
+      formulationSGroup,
+      2,
+      restruct.molecule as unknown as Struct,
+    );
+
+    try {
+      const drawnSet = new ReSGroup(formulationSGroup).draw(
+        restruct as unknown as ReStruct,
+        formulationSGroup,
+      );
+
+      expect(bracketSpy).toHaveBeenCalledTimes(2);
+      expect(drawnSet.length).toBe(type === 'MIX' ? 3 : 4);
+    } finally {
+      bracketSpy.mockRestore();
+    }
   });
 });
