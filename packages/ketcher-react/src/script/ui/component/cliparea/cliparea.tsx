@@ -24,6 +24,7 @@ import {
   isClipboardAPIAvailable,
   notifyCopyCut,
 } from 'ketcher-core';
+import { KETCHER_ROOT_NODE_CSS_SELECTOR } from '../../../../constants';
 
 const ieCb: DataTransfer | undefined =
   typeof window !== 'undefined'
@@ -60,6 +61,9 @@ const isUserEditing = (): boolean => {
       (el as HTMLElement).contentEditable === 'true',
   );
 };
+
+const isKetcherFocused = (): boolean =>
+  Boolean(document.activeElement?.closest(KETCHER_ROOT_NODE_CSS_SELECTOR));
 
 interface ClipboardData {
   'text/plain': string;
@@ -122,7 +126,7 @@ class ClipArea extends Component<ClipAreaProps> {
           event.preventDefault();
       },
       copy: (event: ClipboardEvent) => {
-        if (!this.props.focused() || isUserEditing()) {
+        if (!this.props.focused() || !isKetcherFocused() || isUserEditing()) {
           return;
         }
         if (isAsyncClipboardWriteAvailable()) {
@@ -173,7 +177,7 @@ class ClipArea extends Component<ClipAreaProps> {
         }
       },
       cut: (event: ClipboardEvent) => {
-        if (!this.props.focused() || isUserEditing()) {
+        if (!this.props.focused() || !isKetcherFocused() || isUserEditing()) {
           return;
         }
         if (isAsyncClipboardWriteAvailable()) {
@@ -193,7 +197,7 @@ class ClipArea extends Component<ClipAreaProps> {
         }
       },
       paste: (event: ClipboardEvent) => {
-        if (!this.props.focused() || isUserEditing()) {
+        if (!this.props.focused() || !isKetcherFocused() || isUserEditing()) {
           return;
         }
         if (isClipboardAPIAvailable()) {
@@ -217,7 +221,11 @@ class ClipArea extends Component<ClipAreaProps> {
         }
       },
       keydown: (event: KeyboardEvent) => {
-        if (!this.props.focused() || !this.props.onPaste) {
+        if (
+          !this.props.focused() ||
+          !isKetcherFocused() ||
+          !this.props.onPaste
+        ) {
           return;
         }
 
