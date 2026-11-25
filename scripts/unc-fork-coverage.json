@@ -168,6 +168,7 @@
       ],
       "files": [
         "packages/ketcher-react/src/script/ui/component/cliparea/cliparea.tsx",
+        "packages/ketcher-react/src/script/ui/component/cliparea/cliparea.test.tsx",
         "packages/ketcher-react/src/script/ui/state/shared.ts"
       ]
     },
