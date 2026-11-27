@@ -33,7 +33,7 @@ import util from '../util';
 import { toFixed } from 'utilities';
 import BracketParams from '../bracket-params';
 import type { RaphaelPaper } from 'raphael';
-import type { RenderOptions } from '../render.types';
+import type { RenderOptions, RepeatUnitNotation } from '../render.types';
 import paperjs from 'paper';
 interface SGroupdrawBracketsOptions {
   set: any;
@@ -129,7 +129,11 @@ class ReSGroup extends ReObject {
           const connectivity: string = sgroup.data.connectivity || 'eu';
           const subscript = sgroup.data.subscript || 'n';
           SGroupdrawBracketsOptions.lowerIndexText = subscript;
-          SGroupdrawBracketsOptions.upperIndexText = connectivity.toUpperCase();
+          SGroupdrawBracketsOptions.upperIndexText =
+            getRepeatUnitConnectivityLabel(
+              connectivity,
+              this.render.options.repeatUnitNotation,
+            );
           break;
         }
         case 'COP': {
@@ -403,6 +407,17 @@ class ReSGroup extends ReObject {
       this.setHover(this.hover, render); // TODO: fix this
     }
   }
+}
+
+function getRepeatUnitConnectivityLabel(
+  connectivity: string,
+  repeatUnitNotation?: RepeatUnitNotation,
+): string | null {
+  if (repeatUnitNotation !== 'standard') {
+    return connectivity.toUpperCase();
+  }
+  const label = connectivity.toLowerCase();
+  return label === 'ht' ? null : label;
 }
 
 function getRepeatUnitCrossBondBrackets(
