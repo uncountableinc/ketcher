@@ -430,7 +430,10 @@
       "attachSchema": {
         "name": {
           "title": "分子名称",
-          "invalidMessage": "模板名称必须唯一、非空，且长度不超过 128 个字符"
+          "invalidMessage": "模板名称必须唯一、非空，且长度不超过 128 个字符",
+          "invalidMessageEmpty": "模板名称不能为空",
+          "invalidMessageTooLong": "模板名称不能超过 {maxLength} 个字符",
+          "invalidMessageDuplicate": "名为“{name}”的模板已存在"
         }
       }
     },

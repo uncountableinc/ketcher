@@ -638,18 +638,61 @@ export const textSchema: StructSchema = {
   },
 };
 
-export const attachSchema: StructSchema = {
-  title: 'Template edit',
-  type: 'object',
-  required: ['name'],
-  properties: {
-    name: {
-      title: 'dialogs:toolbox.structSchema.attachSchema.name.title',
-      type: 'string',
-      minLength: 1,
-      maxLength: 128,
-      invalidMessage: () =>
-        i18n.t('dialogs:toolbox.structSchema.attachSchema.name.invalidMessage'),
+const TEMPLATE_NAME_MAX_LENGTH = 128;
+
+export interface NamedTemplate {
+  struct: { name: string };
+  props: { group?: string };
+}
+
+export function getTemplateNameValidationMessage(
+  name: string,
+  templateLib: readonly NamedTemplate[],
+): string {
+  if (!name || name.trim().length === 0) {
+    return i18n.t(
+      'dialogs:toolbox.structSchema.attachSchema.name.invalidMessageEmpty',
+    );
+  }
+  if (name.length > TEMPLATE_NAME_MAX_LENGTH) {
+    return i18n.t(
+      'dialogs:toolbox.structSchema.attachSchema.name.invalidMessageTooLong',
+      { maxLength: TEMPLATE_NAME_MAX_LENGTH },
+    );
+  }
+  if (
+    templateLib.some(
+      (tmpl) =>
+        tmpl.struct.name === name && tmpl.props.group === 'User Templates',
+    )
+  ) {
+    return i18n.t(
+      'dialogs:toolbox.structSchema.attachSchema.name.invalidMessageDuplicate',
+      { name },
+    );
+  }
+  return '';
+}
+
+export function getAttachSchema(
+  templateLib: readonly NamedTemplate[],
+): StructSchema {
+  return {
+    title: 'Template edit',
+    type: 'object',
+    required: ['name'],
+    properties: {
+      name: {
+        title: 'dialogs:toolbox.structSchema.attachSchema.name.title',
+        type: 'string',
+        minLength: 1,
+        maxLength: TEMPLATE_NAME_MAX_LENGTH,
+        invalidMessage: (name) =>
+          getTemplateNameValidationMessage(
+            typeof name === 'string' ? name : '',
+            templateLib,
+          ),
+      },
     },
-  },
-};
+  };
+}

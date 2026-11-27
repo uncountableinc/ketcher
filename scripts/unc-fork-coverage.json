@@ -482,6 +482,22 @@
       "covered": "none: an upstream fix, which upstream's own tests cover",
       "commits": ["16fd54cf4"],
       "files": []
+    },
+    {
+      "key": "template-name-validation",
+      "summary": "Explain why a template name is invalid in the Template edit dialog: empty, longer than 128 characters, or already used in User Templates (MAT-91454).",
+      "verdict": "reapply",
+      "verdictNote": "Upstream shows one combined message for every invalid template name, so a user cannot tell which rule the name breaks. The fork builds the attach schema from the template library and returns a specific i18n message for the first rule that fails; checkIsValidName uses the same function, so the Save button and the message agree. The upstream attachSchema.name.invalidMessage key stays in the locale files so the locale diff against upstream stays additive. Drop this delta when upstream reports the failing rule itself.",
+      "covered": "jest packages/ketcher-react/src/script/ui/data/schema/struct-schema.test.ts, which checks the message for each rule and that valid names return no message",
+      "commits": [],
+      "files": [
+        "packages/ketcher-react/src/locales/en/dialogs.json",
+        "packages/ketcher-react/src/locales/es/dialogs.json",
+        "packages/ketcher-react/src/locales/zh-CN/dialogs.json",
+        "packages/ketcher-react/src/script/ui/data/schema/struct-schema.test.ts",
+        "packages/ketcher-react/src/script/ui/data/schema/struct-schema.ts",
+        "packages/ketcher-react/src/script/ui/dialog/template/template-attach.tsx"
+      ]
     }
   ]
 }

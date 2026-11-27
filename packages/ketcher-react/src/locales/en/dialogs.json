@@ -430,7 +430,10 @@
       "attachSchema": {
         "name": {
           "title": "Molecule name",
-          "invalidMessage": "Template must have a unique non-empty name and no more than 128 symbols in length"
+          "invalidMessage": "Template must have a unique non-empty name and no more than 128 symbols in length",
+          "invalidMessageEmpty": "Template name cannot be empty",
+          "invalidMessageTooLong": "Template name cannot exceed {maxLength} characters",
+          "invalidMessageDuplicate": "A template named \"{name}\" already exists"
         }
       }
     },

@@ -29,7 +29,10 @@ import type { Dispatch } from 'redux';
 import type { StoreState } from '../../state/store.types';
 import { storage } from '../../storage-ext';
 import Form, { type FormState, Field } from '../../component/form/form/form';
-import { attachSchema } from '../../data/schema/struct-schema';
+import {
+  getAttachSchema,
+  getTemplateNameValidationMessage,
+} from '../../data/schema/struct-schema';
 import styled from '@emotion/styled';
 import classes from './template-lib.module.less';
 import { css } from '@emotion/react';
@@ -280,13 +283,7 @@ class Attach extends Component<AttachProps> {
 
   checkIsValidName(name: string) {
     return (
-      !!name &&
-      name.trim().length > 0 &&
-      !this.props.templateLib.some(
-        (tmpl) =>
-          tmpl.struct.name === name && tmpl.props.group === 'User Templates',
-      ) &&
-      name.length <= 128
+      getTemplateNameValidationMessage(name, this.props.templateLib) === ''
     );
   }
 
@@ -328,7 +325,7 @@ class Attach extends Component<AttachProps> {
           <div>{t('dialogs:toolbox.templateAttach.sharedComputerWarning')}</div>
         </Message>
         <Form
-          schema={attachSchema}
+          schema={getAttachSchema(this.props.templateLib)}
           customValid={{
             name: (name) => this.checkIsValidName(name),
           }}

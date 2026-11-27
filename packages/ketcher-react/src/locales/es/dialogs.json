@@ -430,7 +430,10 @@
       "attachSchema": {
         "name": {
           "title": "Nombre de la molécula",
-          "invalidMessage": "La plantilla debe tener un nombre único no vacío y no superar los 128 símbolos"
+          "invalidMessage": "La plantilla debe tener un nombre único no vacío y no superar los 128 símbolos",
+          "invalidMessageEmpty": "El nombre de la plantilla no puede estar vacío",
+          "invalidMessageTooLong": "El nombre de la plantilla no puede superar los {maxLength} caracteres",
+          "invalidMessageDuplicate": "Ya existe una plantilla llamada \"{name}\""
         }
       }
     },
