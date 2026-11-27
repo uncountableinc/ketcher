@@ -185,6 +185,9 @@ export function serverTransform(
     serverCall<LayoutResult>(state.editor, state.server, method, opts, struct)
       .then((res) => {
         const loadedStruct = new KetSerializer().deserialize(res.struct);
+        loadedStruct.hideAbsLabel = (
+          struct ?? state.editor.struct()
+        ).hideAbsLabel;
 
         return dispatch(
           load(loadedStruct, {

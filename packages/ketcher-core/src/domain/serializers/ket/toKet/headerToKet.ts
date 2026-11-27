@@ -24,6 +24,7 @@ export function headerToKet(struct: Struct): KetHeader | null {
   ifDef(header, 'moleculeName', struct.name, '');
   ifDef(header, 'creatorProgram', null, '');
   ifDef(header, 'comment', null, '');
+  ifDef(header, 'hideAbsLabel', struct.hideAbsLabel, false);
 
   return Object.keys(header).length === 0 ? null : header;
 }

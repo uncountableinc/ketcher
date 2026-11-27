@@ -29,9 +29,11 @@ import type {
 } from 'domain/services';
 
 import {
+  Action,
   type Editor,
   getSelectionFromStruct,
   MonomerLibraryConvertError,
+  StructSetHideAbsLabel,
 } from './editor';
 
 import { provideEditorInstance } from './editor/editorSingleton';
@@ -358,6 +360,28 @@ export class Ketcher {
     );
   }
 
+  getHideAbsLabel(): boolean {
+    if (globalThis.isPolymerEditorTurnedOn) {
+      return provideEditorInstance().drawingEntitiesManager
+        .micromoleculesHiddenEntities.hideAbsLabel;
+    }
+    return this.editor.struct().hideAbsLabel;
+  }
+
+  setHideAbsLabel(hideAbsLabel: boolean): void {
+    if (globalThis.isPolymerEditorTurnedOn) {
+      throw new Error('ABS label visibility cannot be set in macro mode');
+    }
+    const restruct = this.editor.render.ctab;
+    const currentValue = restruct.molecule.hideAbsLabel;
+    if (currentValue === hideAbsLabel) {
+      return;
+    }
+    const action = new Action();
+    action.addOp(new StructSetHideAbsLabel(currentValue, hideAbsLabel));
+    this.editor.update(action.perform(restruct));
+  }
+
   getFasta(): Promise<string> {
     return getStructure(
       this.id,
@@ -568,7 +592,13 @@ export class Ketcher {
 
       if (globalThis.isPolymerEditorTurnedOn) {
         deleteAllEntitiesOnCanvas();
-        await parseAndAddMacromoleculesOnCanvas(structStr, this.structService);
+        const loadedDrawingEntitiesManager =
+          await parseAndAddMacromoleculesOnCanvas(
+            structStr,
+            this.structService,
+          );
+        macromoleculesEditor.drawingEntitiesManager.micromoleculesHiddenEntities.hideAbsLabel =
+          loadedDrawingEntitiesManager.micromoleculesHiddenEntities.hideAbsLabel;
 
         if (options?.needZoom !== false) {
           macromoleculesEditor?.zoomToStructuresIfNeeded();

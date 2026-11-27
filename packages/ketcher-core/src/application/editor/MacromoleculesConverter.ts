@@ -157,6 +157,8 @@ export class MacromoleculesConverter {
     const monomerToAtomIdMap = new Map<BaseMonomer, Map<number, number>>();
 
     drawingEntitiesManager.micromoleculesHiddenEntities.mergeInto(struct);
+    struct.hideAbsLabel =
+      drawingEntitiesManager.micromoleculesHiddenEntities.hideAbsLabel;
 
     if (!shouldPreserveSource) {
       drawingEntitiesManager.clearMicromoleculesHiddenEntities();

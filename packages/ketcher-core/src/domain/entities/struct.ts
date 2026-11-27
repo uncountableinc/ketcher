@@ -94,6 +94,7 @@ export class Struct {
   rgroupAttachmentPoints: Pool<RGroupAttachmentPoint>;
   name: string;
   abbreviation?: string;
+  hideAbsLabel: boolean;
   sGroupForest: SGroupForest;
   simpleObjects: Pool<SimpleObject>;
   texts: Pool<Text>;
@@ -121,6 +122,7 @@ export class Struct {
     this.rgroupAttachmentPoints = new Pool<RGroupAttachmentPoint>();
     this.name = '';
     this.abbreviation = '';
+    this.hideAbsLabel = false;
     this.sGroupForest = new SGroupForest();
     this.simpleObjects = new Pool<SimpleObject>();
     this.texts = new Pool<Text>();
@@ -258,6 +260,7 @@ export class Struct {
       shouldCloneAttachmentPoints,
       attachmentGroupSet,
     );
+    cloneStruct.hideAbsLabel = this.hideAbsLabel;
     cloneStruct.findConnectedComponents();
     cloneStruct.setImplicitHydrogen(undefined, true);
     cloneStruct.setStereoLabelsToAtoms();

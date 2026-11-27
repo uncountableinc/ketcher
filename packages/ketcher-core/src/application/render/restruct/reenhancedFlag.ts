@@ -75,6 +75,14 @@ class ReEnhancedFlag extends ReObject {
       return;
     }
 
+    if (
+      restruct.molecule.hideAbsLabel &&
+      fragment.enhancedStereoFlag === StereoFlag.Abs
+    ) {
+      this.#path = null;
+      return;
+    }
+
     const position =
       fragment.stereoFlagPosition ||
       Fragment.getDefaultStereoFlagPosition(restruct.molecule, fragmentId);

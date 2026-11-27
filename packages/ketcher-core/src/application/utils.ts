@@ -85,4 +85,6 @@ export async function parseAndAddMacromoleculesOnCanvas(
     shouldMergeWithLatestHistoryCommand,
   );
   editor.renderersContainer.update(modelChanges);
+
+  return deserialisedKet.drawingEntitiesManager;
 }

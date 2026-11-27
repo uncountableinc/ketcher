@@ -26,6 +26,7 @@ import type { Point, Vec2 } from 'domain/entities/vec2';
 
 export interface KetHeader {
   moleculeName?: string;
+  hideAbsLabel?: boolean;
 }
 
 export interface KetAtomNode {

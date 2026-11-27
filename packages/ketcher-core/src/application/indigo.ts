@@ -101,6 +101,14 @@ export class Indigo {
     this.#ketSerializer = new KetSerializer();
   }
 
+  #deserializeTransformResult(source: StructOrString, result: string): Struct {
+    const struct = this.#ketSerializer.deserialize(result);
+    if (typeof source !== 'string') {
+      struct.hideAbsLabel = source.hideAbsLabel;
+    }
+    return struct;
+  }
+
   info(): Promise<InfoResult> {
     return this.#structService.info();
   }
@@ -137,7 +145,7 @@ export class Indigo {
         },
         options,
       )
-      .then((data) => this.#ketSerializer.deserialize(data.struct));
+      .then((data) => this.#deserializeTransformResult(struct, data.struct));
   }
 
   clean(struct: StructOrString): Promise<Struct> {
@@ -146,7 +154,7 @@ export class Indigo {
         struct: convertStructToString(struct, this.#ketSerializer),
         output_format: ChemicalMimeType.KET,
       })
-      .then((data) => this.#ketSerializer.deserialize(data.struct));
+      .then((data) => this.#deserializeTransformResult(struct, data.struct));
   }
 
   aromatize(struct: StructOrString): Promise<Struct> {
@@ -155,7 +163,7 @@ export class Indigo {
         struct: convertStructToString(struct, this.#ketSerializer),
         output_format: ChemicalMimeType.KET,
       })
-      .then((data) => this.#ketSerializer.deserialize(data.struct));
+      .then((data) => this.#deserializeTransformResult(struct, data.struct));
   }
 
   dearomatize(struct: StructOrString): Promise<Struct> {
@@ -164,7 +172,7 @@ export class Indigo {
         struct: convertStructToString(struct, this.#ketSerializer),
         output_format: ChemicalMimeType.KET,
       })
-      .then((data) => this.#ketSerializer.deserialize(data.struct));
+      .then((data) => this.#deserializeTransformResult(struct, data.struct));
   }
 
   calculateCip(struct: StructOrString): Promise<Struct> {
@@ -173,7 +181,7 @@ export class Indigo {
         struct: convertStructToString(struct, this.#ketSerializer),
         output_format: ChemicalMimeType.KET,
       })
-      .then((data) => this.#ketSerializer.deserialize(data.struct));
+      .then((data) => this.#deserializeTransformResult(struct, data.struct));
   }
 
   automap(struct: StructOrString, options?: AutomapOptions): Promise<Struct> {
@@ -185,7 +193,7 @@ export class Indigo {
         output_format: ChemicalMimeType.KET,
         mode,
       })
-      .then((data) => this.#ketSerializer.deserialize(data.struct));
+      .then((data) => this.#deserializeTransformResult(struct, data.struct));
   }
 
   check(struct: StructOrString, options?: CheckOptions): Promise<CheckResult> {
@@ -242,7 +250,7 @@ export class Indigo {
         struct: convertStructToString(struct, this.#ketSerializer),
         output_format: ChemicalMimeType.KET,
       })
-      .then((data) => this.#ketSerializer.deserialize(data.struct));
+      .then((data) => this.#deserializeTransformResult(struct, data.struct));
   }
 
   calculateMacromoleculeProperties(

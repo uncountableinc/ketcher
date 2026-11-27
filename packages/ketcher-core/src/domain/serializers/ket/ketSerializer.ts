@@ -302,6 +302,7 @@ export class KetSerializer implements Serializer<Struct> {
       attachmentGroupEntityIdMap,
     );
     resultingStruct.name = ket.header?.moleculeName ?? '';
+    resultingStruct.hideAbsLabel = ket.header?.hideAbsLabel === true;
 
     return resultingStruct;
   }
@@ -1130,6 +1131,8 @@ export class KetSerializer implements Serializer<Struct> {
     });
 
     drawingEntitiesManager.micromoleculesHiddenEntities.mergeInto(struct);
+    struct.hideAbsLabel =
+      drawingEntitiesManager.micromoleculesHiddenEntities.hideAbsLabel;
 
     return {
       serializedMacromolecules: fileContent,

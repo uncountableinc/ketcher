@@ -25,6 +25,7 @@ export * from './ifThen';
 export * from './fragment';
 export * from './fragmentStereoAtom';
 export * from './FragmentStereoFlag';
+export * from './StructSetHideAbsLabel';
 export * from './calcimplicitH';
 export * from './LoopMove';
 export * from './OperationType';

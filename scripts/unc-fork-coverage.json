@@ -482,6 +482,32 @@
       "covered": "none: an upstream fix, which upstream's own tests cover",
       "commits": ["16fd54cf4"],
       "files": []
+    },
+    {
+      "key": "hide-abs-label",
+      "summary": "Hide the ABS enhanced stereo flag per structure through a struct-level hideAbsLabel marker kept in the KET header.",
+      "verdict": "reapply",
+      "verdictNote": "fork feature: upstream has no per-structure ABS label visibility, only the global showStereoFlags option.",
+      "covered": "jest __tests__/unc-regression/hide-abs-label.test.ts and ketcher-react src/script/ui/state/server/serverTransform.hideAbsLabel.test.ts",
+      "commits": [],
+      "files": [
+        "packages/ketcher-core/src/application/editor/MacromoleculesConverter.ts",
+        "packages/ketcher-core/src/application/editor/operations/OperationType.ts",
+        "packages/ketcher-core/src/application/editor/operations/StructSetHideAbsLabel.ts",
+        "packages/ketcher-core/src/application/editor/operations/index.ts",
+        "packages/ketcher-core/src/application/indigo.ts",
+        "packages/ketcher-core/src/application/ketcher.ts",
+        "packages/ketcher-core/src/application/render/restruct/reenhancedFlag.ts",
+        "packages/ketcher-core/src/application/utils.ts",
+        "packages/ketcher-core/src/domain/entities/DrawingEntitiesManager.ts",
+        "packages/ketcher-core/src/domain/entities/struct.ts",
+        "packages/ketcher-core/src/domain/serializers/ket/ketSerializer.ts",
+        "packages/ketcher-core/src/domain/serializers/ket/schema.json",
+        "packages/ketcher-core/src/domain/serializers/ket/toKet/headerToKet.ts",
+        "packages/ketcher-core/src/domain/serializers/ket/types.ts",
+        "packages/ketcher-react/src/script/ui/state/server/index.ts",
+        "packages/ketcher-react/src/script/ui/state/server/serverTransform.hideAbsLabel.test.ts"
+      ]
     }
   ]
 }
