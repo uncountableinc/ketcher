@@ -1,4 +1,4 @@
-import { Bond } from 'ketcher-core';
+import { Bond, Render, type RenderOptions } from 'ketcher-core';
 import Editor from './Editor';
 
 type MockBond = {
@@ -220,5 +220,53 @@ describe('Editor.isMonomerCreationWizardEnabled', () => {
     const terminalRGroupAtoms = getTerminalRGroupAtoms(editor);
     expect(terminalRGroupAtoms.length).toBe(1);
     expect(terminalRGroupAtoms[0][0]).toBe(0);
+  });
+});
+
+describe('Editor.options', () => {
+  const rebuildWithSettings = (
+    hostOptions: Partial<RenderOptions>,
+    settings: Partial<RenderOptions>,
+  ): RenderOptions => {
+    const editor = {
+      render: new Render(
+        document as unknown as HTMLElement,
+        {
+          microModeScale: 40,
+          ...hostOptions,
+        } as RenderOptions,
+      ),
+      updateToolAfterOptionsChange: jest.fn(),
+      struct: jest.fn(),
+    };
+
+    return Reflect.apply(Editor.prototype.options, editor, [settings]);
+  };
+
+  it('keeps host render options when settings rebuild the renderer', () => {
+    const options = rebuildWithSettings(
+      { externalZoomScale: 2, repeatUnitNotation: 'standard' },
+      { showAtomIds: true },
+    );
+
+    expect(options.externalZoomScale).toBe(2);
+    expect(options.repeatUnitNotation).toBe('standard');
+    expect(options.showAtomIds).toBe(true);
+  });
+
+  it('keeps host render options over stale saved settings', () => {
+    const options = rebuildWithSettings(
+      { repeatUnitNotation: 'box' },
+      { repeatUnitNotation: 'standard' },
+    );
+
+    expect(options.repeatUnitNotation).toBe('box');
+  });
+
+  it('adds no host render option that the host did not set', () => {
+    const options = rebuildWithSettings({}, { showAtomIds: true });
+
+    expect(options).not.toHaveProperty('externalZoomScale');
+    expect(options).not.toHaveProperty('repeatUnitNotation');
   });
 });

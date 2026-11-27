@@ -83,6 +83,7 @@ import {
   LayerMap,
   Visel,
   paperPathFromSVGElement,
+  pickHostRenderOptions,
   fromFragmentDeletion,
 } from 'ketcher-core';
 import {
@@ -468,6 +469,7 @@ class Editor implements KetcherEditor {
     this.render = new Render(this.render.clientArea, {
       microModeScale: SCALE,
       ...(value ?? {}),
+      ...pickHostRenderOptions(this.render.options),
     });
     this.updateToolAfterOptionsChange(wasViewOnlyEnabled);
     this.render.setMolecule(struct);

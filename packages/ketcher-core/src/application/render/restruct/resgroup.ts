@@ -16,6 +16,8 @@
 
 import { FunctionalGroup } from 'domain/entities/functionalGroup';
 import { SGroup, SUPERATOM_CLASS } from 'domain/entities/sgroup';
+import type { Bond } from 'domain/entities/bond';
+import { Pile } from 'domain/entities/pile';
 import { MonomerMicromolecule } from 'domain/entities/monomerMicromolecule';
 import { Box2Abs } from 'domain/entities/box2Abs';
 import { Vec2 } from 'domain/entities/vec2';
@@ -403,9 +405,40 @@ class ReSGroup extends ReObject {
   }
 }
 
+function getRepeatUnitCrossBondBrackets(
+  render: Render,
+  sgroup: SGroup,
+): BracketParams[] | null {
+  if (
+    render.options.repeatUnitNotation !== 'standard' ||
+    sgroup.type !== 'SRU'
+  ) {
+    return null;
+  }
+  const molecule = render.ctab.molecule;
+  const atomSet = new Pile<number>(sgroup.atoms);
+  const crossBondsPerAtom = SGroup.getCrossBonds(molecule, atomSet);
+  const crossBondAtomCount = Object.keys(crossBondsPerAtom).length;
+  const crossBondCount = Object.values(crossBondsPerAtom).flat().length;
+  if (crossBondAtomCount !== 2 || crossBondCount !== 2) {
+    return null;
+  }
+  return SGroup.getBracketParameters(
+    molecule,
+    crossBondsPerAtom as unknown as { [key: number]: Array<Bond> },
+    atomSet,
+    sgroup.bracketBox,
+    sgroup.bracketDirection,
+    sgroup.bracketDirection.rotateSC(1, 0),
+  ).map(
+    (bracket) => new BracketParams(bracket.c, bracket.d, bracket.w, bracket.h),
+  );
+}
+
 function SGroupdrawBrackets({
   set,
   render,
+  sgroup,
   bracketBox,
   direction,
   lowerIndexText,
@@ -413,7 +446,9 @@ function SGroupdrawBrackets({
   indexAttribute,
   superatomClass,
 }: SGroupdrawBracketsOptions): void {
-  const brackets = getBracketParameters(bracketBox, direction);
+  const brackets =
+    getRepeatUnitCrossBondBrackets(render, sgroup) ??
+    getBracketParameters(bracketBox, direction);
   let rightBracketIndex = -1;
 
   for (let i = 0; i < brackets.length; ++i) {

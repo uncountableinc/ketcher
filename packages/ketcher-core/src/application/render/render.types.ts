@@ -7,6 +7,8 @@ export { UsageInMacromolecule } from './render.constants';
 
 export type RenderOptionStyles = Record<string, string | number>;
 
+export type RepeatUnitNotation = 'box' | 'standard';
+
 export enum MeasurementUnits {
   Px = 'px',
   Cm = 'cm',
@@ -55,6 +57,7 @@ export type RenderOptions = {
   macroModeScale: number;
   zoom: number;
   externalZoomScale?: number;
+  repeatUnitNotation?: RepeatUnitNotation;
   offset: Vec2;
   lineWidth: number;
 
