@@ -20,10 +20,7 @@ import { SGroup } from 'domain/entities/sgroup';
 import type { Atom } from 'domain/entities/atom';
 import type { Bond } from 'domain/entities/bond';
 import type { Struct } from 'domain/entities/struct';
-import {
-  getLonePairDataPosition,
-  LONE_PAIR_DATA_FIELD_NAME,
-} from 'domain/helpers/lonePairDataPosition';
+import { getDatPositionContribution } from 'domain/helpers/datPositionContributions';
 
 import type { Mapping } from './mol.types';
 import utils from './utils';
@@ -357,13 +354,14 @@ function saveDatToMolfile(
   const idstr = (sgMap[sgroup.id] + '').padStart(3);
 
   const data = sgroup.data;
-  if (!sgroup.pp && data.fieldName !== LONE_PAIR_DATA_FIELD_NAME) {
+  const getDatPosition = getDatPositionContribution(data.fieldName);
+  const datPosition = getDatPosition
+    ? getDatPosition(mol, sgroup.atoms[0])
+    : sgroup.pp;
+  if (!datPosition) {
     throw new Error('SGroup pp is not set');
   }
-  let pp =
-    data.fieldName === LONE_PAIR_DATA_FIELD_NAME
-      ? getLonePairDataPosition(mol, sgroup.atoms[0])
-      : sgroup.pp!;
+  let pp = datPosition;
   if (!data.absolute) pp = pp.sub(SGroup.getMassCentre(mol, sgroup.atoms));
   let lines: string[] = [];
   lines = lines.concat(makeAtomBondLines('SAL', idstr, sgroup.atoms, atomMap));

@@ -12,7 +12,13 @@ export function getLonePairDataPosition(struct: Struct, atomId: number): Vec2 {
   }
 
   const angles = atom.neighbors
-    .map((halfBondId) => struct.halfBonds.get(halfBondId)!.ang)
+    .map((halfBondId) => {
+      const halfBond = struct.halfBonds.get(halfBondId);
+      if (!halfBond) {
+        throw new Error(`Half-bond ${halfBondId} not found`);
+      }
+      return halfBond.ang;
+    })
     .sort((angle, nextAngle) => angle - nextAngle);
   let largestAngle = 0;
   let neighborAngle = -Math.PI / 2;

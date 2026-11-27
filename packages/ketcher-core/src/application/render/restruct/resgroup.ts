@@ -26,10 +26,7 @@ import type { Render } from '../raphaelRender';
 import { LayerMap } from './generalEnumTypes';
 import ReObject from './reobject';
 import { Scale } from 'domain/helpers';
-import {
-  getLonePairDataPosition,
-  LONE_PAIR_DATA_FIELD_NAME,
-} from 'domain/helpers/lonePairDataPosition';
+import { getDatPositionContribution } from 'domain/helpers/datPositionContributions';
 import draw from '../draw';
 import util from '../util';
 import { toFixed } from 'utilities';
@@ -628,22 +625,20 @@ function drawAttachedDat(restruct: ReStruct, sgroup: SGroup): any {
   const options = render.options;
   const paper = render.paper;
   const set = paper.set();
-  const isLonePair = sgroup.data.fieldName === LONE_PAIR_DATA_FIELD_NAME;
+  const getDatPosition = getDatPositionContribution(sgroup.data.fieldName);
 
   SGroup.getAtoms(restruct.molecule, sgroup).forEach((aid) => {
     const atom = restruct.atoms.get(aid);
     if (
       atom &&
-      (!isLonePair ||
+      (!getDatPosition ||
         !SGroup.isAtomInContractedSGroup(atom.a, restruct.molecule.sgroups))
     ) {
       const p = Scale.modelToCanvas(
-        isLonePair
-          ? getLonePairDataPosition(restruct.molecule, aid)
-          : atom.a.pp,
+        getDatPosition ? getDatPosition(restruct.molecule, aid) : atom.a.pp,
         options,
       );
-      if (!isLonePair) {
+      if (!getDatPosition) {
         const bb = atom.visel.boundingBox;
         if (bb !== null) p.x = Math.max(p.x, bb.p1.x);
         p.x += options.lineWidth; // shift a bit to the right

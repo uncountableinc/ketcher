@@ -480,9 +480,10 @@
       "key": "lone-pair-data-placement",
       "summary": "Place attached lone-pair data S-groups in the widest free bond sector.",
       "verdict": "reapply",
-      "covered": "jest packages/ketcher-core/src/domain/helpers/lonePairDataPosition.test.ts",
+      "covered": "jest packages/ketcher-core/__tests__/domain/helpers/lonePairDataPosition.test.ts",
       "commits": ["55da67f30"],
       "files": [
+        "packages/ketcher-core/src/domain/helpers/datPositionContributions.ts",
         "packages/ketcher-core/src/domain/helpers/lonePairDataPosition.ts"
       ]
     }

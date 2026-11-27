@@ -24,10 +24,7 @@ import { switchIntoChemistryCoordSystem } from 'domain/serializers/ket/helpers';
 
 import { ifDef } from 'utilities';
 import { getAttachmentPointLabelWithBinaryShift } from 'domain/helpers/attachmentPointCalculations';
-import {
-  getLonePairDataPosition,
-  LONE_PAIR_DATA_FIELD_NAME,
-} from 'domain/helpers/lonePairDataPosition';
+import { getDatPositionContribution } from 'domain/helpers/datPositionContributions';
 import { isNumber } from 'lodash';
 
 function fromRlabel(rg) {
@@ -239,9 +236,10 @@ function sgroupToKet(struct: Struct, source: SGroup) {
       ifDef(result, 'fieldName', data.fieldName);
       ifDef(result, 'fieldData', data.fieldValue);
       ifDef(result, 'bonds', SGroup.getBonds(struct, source));
-      if (data.fieldName === LONE_PAIR_DATA_FIELD_NAME) {
+      const getDatPosition = getDatPositionContribution(data.fieldName);
+      if (getDatPosition) {
         const position = switchIntoChemistryCoordSystem(
-          getLonePairDataPosition(struct, source.atoms[0]),
+          getDatPosition(struct, source.atoms[0]),
         );
         ifDef(result, 'x', position.x);
         ifDef(result, 'y', position.y);

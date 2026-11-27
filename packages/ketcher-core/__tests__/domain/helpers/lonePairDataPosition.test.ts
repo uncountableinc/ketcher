@@ -75,6 +75,26 @@ describe('lone-pair data position', () => {
       { [oxygenId]: 1 },
       {},
     );
-    expect(mol).toMatch(/M  SDD\s+1\s+0\.0000\s+-0\.6000/);
+    expect(mol).toMatch(/M {2}SDD\s+1\s+0\.0000\s+-0\.6000/);
+  });
+
+  it('keeps the stored position of data without a position contribution', () => {
+    const { oxygenId, struct } = createEtherStructure();
+    const { sgroup, sgroupId } = addLonePairData(struct, oxygenId);
+    sgroup.data.fieldName = 'OTHER_DATA';
+    sgroup.pp = new Vec2(2, 3);
+
+    const ket = moleculeToKet(struct);
+    expect(ket.sgroups[0]).not.toHaveProperty('x');
+    expect(ket.sgroups[0]).not.toHaveProperty('y');
+
+    const mol = molfile.saveToMolfile.DAT(
+      sgroup,
+      struct,
+      { [sgroupId]: 1 },
+      { [oxygenId]: 1 },
+      {},
+    );
+    expect(mol).toMatch(/M {2}SDD\s+1\s+2\.0000\s+-3\.0000/);
   });
 });
