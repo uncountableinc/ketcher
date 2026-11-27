@@ -26,6 +26,8 @@ import {
   ketcherProvider,
   SettingsManager,
   getSelectionFromStruct,
+  fromPaste,
+  CoordinateTransformation,
 } from 'ketcher-core';
 import { showSnackbarNotification } from './notifications';
 
@@ -221,8 +223,21 @@ export function load(struct: string | Struct, options?) {
         if (parsedStruct.isBlank()) {
           dispatch(removeStructAction());
           dispatch(showSnackbarNotification('No structure'));
-        } else {
+        } else if (isPaste) {
           dispatch(onAction({ tool: 'paste', opts: parsedStruct }));
+        } else {
+          const rnd = editor.render;
+          const clientAreaRect = rnd.clientArea.getBoundingClientRect();
+          const point = CoordinateTransformation.pageToModel(
+            {
+              clientX: clientAreaRect.left + clientAreaRect.width / 2,
+              clientY: clientAreaRect.top + clientAreaRect.height / 2,
+            },
+            rnd,
+          );
+          const [action] = fromPaste(rnd.ctab, parsedStruct, point);
+          editor.update(action, false);
+          editor.centerStruct();
         }
       } else {
         editor.struct(parsedStruct, method === 'layout');
@@ -244,7 +259,7 @@ export function load(struct: string | Struct, options?) {
         editor.selection(getSelectionFromStruct(editor.struct()));
       }
       editor.struct().disableInitiallySelected();
-      if (isIndigoFunctionCalled && !fragment) {
+      if (!fragment) {
         editor.event.change.dispatch();
         ketcherProvider.getKetcher(editor.ketcherId).changeEvent.dispatch();
       }

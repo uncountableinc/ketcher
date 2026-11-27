@@ -482,6 +482,18 @@
       "covered": "none: an upstream fix, which upstream's own tests cover",
       "commits": ["16fd54cf4"],
       "files": []
+    },
+    {
+      "key": "load-fragment-commit",
+      "summary": "Commit a structure that the Open dialog adds to the canvas, and emit change events on every structure load (MAT-98529).",
+      "verdict": "reapply",
+      "verdictNote": "Upstream loads an added fragment through the paste tool, which only previews the structure under the cursor and discards it when the cursor leaves the canvas, so Add to Canvas from the Open dialog left nothing to save. This fork commits a fragment that is not a paste at the center of the canvas with an undoable action, and keeps the paste tool for a real paste. Upstream also emits the editor and ketcher change events only for Indigo calls, so a host that saves on change missed a structure loaded from the Open dialog; this fork emits them for every load that is not a fragment. Moved from the interim ketcher-react patch in uncountableinc/main. Drop this delta when upstream commits an added fragment and emits change events on load.",
+      "covered": "jest packages/ketcher-react/src/script/ui/state/shared.test.ts, which checks the centered commit of a fragment, the paste tool for a pasted fragment, and the change events for a load that is not an Indigo call",
+      "commits": [],
+      "files": [
+        "packages/ketcher-react/src/script/ui/state/shared.test.ts",
+        "packages/ketcher-react/src/script/ui/state/shared.ts"
+      ]
     }
   ]
 }
