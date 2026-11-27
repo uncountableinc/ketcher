@@ -26,6 +26,7 @@ import type { Render } from '../raphaelRender';
 import { LayerMap } from './generalEnumTypes';
 import ReObject from './reobject';
 import { Scale } from 'domain/helpers';
+import { getDatPositionContribution } from 'domain/helpers/datPositionContributions';
 import draw from '../draw';
 import util from '../util';
 import { toFixed } from 'utilities';
@@ -624,14 +625,24 @@ function drawAttachedDat(restruct: ReStruct, sgroup: SGroup): any {
   const options = render.options;
   const paper = render.paper;
   const set = paper.set();
+  const getDatPosition = getDatPositionContribution(sgroup.data.fieldName);
 
   SGroup.getAtoms(restruct.molecule, sgroup).forEach((aid) => {
     const atom = restruct.atoms.get(aid);
-    if (atom) {
-      const p = Scale.modelToCanvas(atom.a.pp, options);
-      const bb = atom.visel.boundingBox;
-      if (bb !== null) p.x = Math.max(p.x, bb.p1.x);
-      p.x += options.lineWidth; // shift a bit to the right
+    if (
+      atom &&
+      (!getDatPosition ||
+        !SGroup.isAtomInContractedSGroup(atom.a, restruct.molecule.sgroups))
+    ) {
+      const p = Scale.modelToCanvas(
+        getDatPosition ? getDatPosition(restruct.molecule, aid) : atom.a.pp,
+        options,
+      );
+      if (!getDatPosition) {
+        const bb = atom.visel.boundingBox;
+        if (bb !== null) p.x = Math.max(p.x, bb.p1.x);
+        p.x += options.lineWidth; // shift a bit to the right
+      }
       const nameI = showValue(paper, p, sgroup, options);
       const boxI = util.relBox(nameI.getBBox());
       nameI.translateAbs(0.5 * boxI.width, -0.3 * boxI.height);
