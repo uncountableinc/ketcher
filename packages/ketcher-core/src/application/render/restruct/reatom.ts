@@ -349,6 +349,10 @@ class ReAtom extends ReObject implements ReBondEndpoint {
   }
 
   getSelectionContour(render: Render, highlightPadding = 0) {
+    if (isResinBeadAtom(this.a)) {
+      return getResinBeadSelectionContour(this, render, highlightPadding);
+    }
+
     const hasLabel =
       (this.a.pseudo?.length > 1 && !getQueryAttrsText(this)) ||
       (this.showLabel && this.a.implicitH !== 0) ||
@@ -1719,6 +1723,78 @@ function getTextRelBox(path: Element, options: RenderOptions) {
   return rbb;
 }
 
+const RESIN_BEAD_PSEUDO_LABEL = 'Resin';
+const RESIN_BEAD_RADIUS_IN_BOND_LENGTHS = 0.4;
+const RESIN_BEAD_OUTLINE_COLOR = '#2f2f2f';
+const RESIN_BEAD_SHADES = [
+  { radiusScale: 1, offsetScale: 0, fill: '#6f6f6f' },
+  { radiusScale: 0.72, offsetScale: 0.18, fill: '#9b9b9b' },
+  { radiusScale: 0.46, offsetScale: 0.32, fill: '#c8c8c8' },
+  { radiusScale: 0.2, offsetScale: 0.44, fill: '#f4f4f4' },
+];
+
+function isResinBeadAtom(atom: Atom) {
+  return atom.pseudo === RESIN_BEAD_PSEUDO_LABEL;
+}
+
+function getResinBeadRadius(options: RenderOptions) {
+  return options.microModeScale * RESIN_BEAD_RADIUS_IN_BOND_LENGTHS;
+}
+
+function getResinBeadSelectionContour(
+  reAtom: ReAtom,
+  render: Render,
+  highlightPadding: number,
+) {
+  const { paper, options } = render;
+  const ps = Scale.modelToCanvas(reAtom.a.pp, options);
+  return paper.circle(
+    ps.x,
+    ps.y,
+    getResinBeadRadius(options) +
+      options.fontszInPx * options.radiusScaleFactor +
+      highlightPadding,
+  );
+}
+
+function buildResinBeadLabel(
+  atom: ReAtom,
+  paper: Render['paper'],
+  ps: Vec2,
+  options: RenderOptions,
+): {
+  rightMargin: number;
+  leftMargin: number;
+  label: ElemAttr;
+} {
+  const radius = getResinBeadRadius(options) - options.lineWidth / 2;
+  const path = paper.set();
+  RESIN_BEAD_SHADES.forEach((shade) => {
+    const offset = radius * shade.offsetScale;
+    path.push(
+      paper
+        .circle(ps.x - offset, ps.y - offset, radius * shade.radiusScale)
+        .attr({ fill: shade.fill, stroke: 'none' }),
+    );
+  });
+  path[0].attr({
+    stroke: RESIN_BEAD_OUTLINE_COLOR,
+    'stroke-width': options.lineWidth,
+  });
+  path.attr({
+    'fill-opacity': atom.a.isPreview ? options.previewOpacity : 1,
+  });
+
+  const label: ElemAttr = {
+    text: RESIN_BEAD_PSEUDO_LABEL,
+    path,
+    rbb: util.relBox(path.getBBox()),
+  };
+  const margin = radius * Math.min(options.zoom, 1);
+  atom.label = label;
+  return { label, rightMargin: margin, leftMargin: -margin };
+}
+
 function buildLabel(
   atom: ReAtom,
   paper: Render['paper'],
@@ -1732,6 +1808,10 @@ function buildLabel(
   leftMargin: number;
   label: ElemAttr;
 } {
+  if (isResinBeadAtom(atom.a) && !renderAsCarbon) {
+    return buildResinBeadLabel(atom, paper, ps, options);
+  }
+
   const {
     atomColoring: shouldColorAtoms,
     font,

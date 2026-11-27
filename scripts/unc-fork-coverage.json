@@ -482,6 +482,17 @@
       "covered": "none: an upstream fix, which upstream's own tests cover",
       "commits": ["16fd54cf4"],
       "files": []
+    },
+    {
+      "key": "resin-bead-render",
+      "summary": "Draw the Resin special atom as a shaded bead sized to the atom hit area, with a circular selection contour.",
+      "verdict": "reapply",
+      "verdictNote": "Upstream draws a special atom label as italic text, so a solid-phase synthesis structure shows the word Resin where chemists expect the usual bead drawing. This delta replaces the label of a special atom whose label is exactly Resin with four nested shaded circles, insets the outline by half the line width so it stays inside the atom hit radius, and selects the atom with a circle around the bead. It replaces the reatom hunks of the ketcher-core patch file in uncountableinc/main (uncountableinc/main#281467). Drop this delta when upstream draws a resin bead for that special atom.",
+      "covered": "jest packages/ketcher-core/__tests__/unc-regression/resin-bead-render.test.ts, which checks the bead circles, the outline inset, and the circular selection contour",
+      "commits": [],
+      "files": [
+        "packages/ketcher-core/src/application/render/restruct/reatom.ts"
+      ]
     }
   ]
 }
