@@ -480,14 +480,15 @@
       "key": "repeat-unit-notation",
       "summary": "Draw repeat-unit brackets across exactly two crossing bonds when the embedder sets repeatUnitNotation to standard, and keep embedder-set render options across a settings rebuild.",
       "verdict": "reapply",
-      "covered": "jest __tests__/unc-regression/repeat-unit-notation.test.ts",
-      "commits": [],
+      "covered": "jest __tests__/unc-regression/repeat-unit-notation.test.ts and packages/ketcher-react/src/script/editor/Editor.test.ts",
+      "commits": ["df3778cf4"],
       "files": [
         "packages/ketcher-core/src/application/render/hostRenderOptions.ts",
         "packages/ketcher-core/src/application/render/index.ts",
         "packages/ketcher-core/src/application/render/render.types.ts",
         "packages/ketcher-core/src/application/render/restruct/resgroup.ts",
-        "packages/ketcher-react/src/script/editor/Editor.ts"
+        "packages/ketcher-react/src/script/editor/Editor.ts",
+        "packages/ketcher-react/src/script/editor/Editor.test.ts"
       ]
     }
   ]
