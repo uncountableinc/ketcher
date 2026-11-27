@@ -227,9 +227,9 @@ export const Dialog: FC<PropsWithChildren & Props> = (props) => {
 
   useEffect(() => {
     const keyDown = (event: KeyboardEvent) => {
-      const isFocusInsideDialog = dialogRef.current?.contains(
-        document.activeElement,
-      );
+      const isFocusInsideDialog =
+        event.target instanceof Node &&
+        dialogRef.current?.contains(event.target);
 
       if (!isFocusInsideDialog) {
         return;

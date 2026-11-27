@@ -201,6 +201,7 @@ const TextEditorInner = (props: {
       buttonsNameMap={{ OK: t('common:button.apply') }}
       buttons={['Cancel', 'OK']}
       withDivider
+      focusable={false}
     >
       <div
         className={classes.controlPanel}

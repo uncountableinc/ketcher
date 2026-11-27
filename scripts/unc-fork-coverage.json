@@ -482,6 +482,19 @@
       "covered": "none: an upstream fix, which upstream's own tests cover",
       "commits": ["16fd54cf4"],
       "files": []
+    },
+    {
+      "key": "text-editor-dialog-focus",
+      "summary": "Keep focus in the Text Editor field when its dialog opens, and close a dialog on an Escape that starts inside it (MAT-99766).",
+      "verdict": "reapply",
+      "verdictNote": "Upstream Dialog focuses its own dialog element after mount, which runs after the Lexical AutoFocusPlugin focused the Text Editor field, so typed text did not land until the user clicked the field. The Text Editor now opts out of dialog focus with focusable={false}, as the atom label edit dialog does. Upstream Dialog also cancels on Escape only when document.activeElement is inside the dialog, but Lexical blurs its editor on Escape before the document keydown handler runs, so Escape in the Text Editor did nothing. The handler now checks the event target. Replaces the interim ketcher-react patch hunks of uncountableinc/main#271382. Drop this delta when upstream keeps focus in the Text Editor field and cancels on an Escape from inside the dialog.",
+      "covered": "jest packages/ketcher-react/src/components/Dialog/Dialog.test.tsx, which checks that an Escape from inside the dialog cancels after focus left the dialog; the Text Editor focus order needs the Lexical AutoFocusPlugin in a browser, and uncountableinc/main#271382 records that browser check",
+      "commits": [],
+      "files": [
+        "packages/ketcher-react/src/components/Dialog/Dialog.test.tsx",
+        "packages/ketcher-react/src/components/Dialog/Dialog.tsx",
+        "packages/ketcher-react/src/script/ui/views/modal/components/Text/Text.tsx"
+      ]
     }
   ]
 }
