@@ -6,4 +6,5 @@ export * from './coordinateTransformation';
 export * from './scrollbar';
 export * from './notifyRenderComplete';
 export { getOptionsWithConvertedUnits } from './options';
+export { pickHostRenderOptions } from './hostRenderOptions';
 export * from './render.types';
