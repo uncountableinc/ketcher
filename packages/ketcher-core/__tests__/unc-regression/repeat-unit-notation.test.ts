@@ -17,6 +17,10 @@ import { Atom, Bond, SGroup, Struct, Vec2 } from 'domain/entities';
  * the Indigo renderer already draw it. Every other group, and every group with
  * the option unset or `box`, keeps the axis-aligned box brackets.
  *
+ * With `standard`, the SRU label also follows the Indigo renderer: no label
+ * for head-to-tail, and lower-case hh and eu. Otherwise the label stays upper
+ * case.
+ *
  * The option is set by the embedder, not by the user settings, so it must
  * survive the renderer rebuild that a settings change triggers.
  */
@@ -29,10 +33,12 @@ function verticalChainFixture({
   sgroupType,
   memberIndexes,
   repeatUnitNotation,
+  connectivity = 'ht',
 }: {
   sgroupType: string;
   memberIndexes: number[];
   repeatUnitNotation?: RepeatUnitNotation;
+  connectivity?: string;
 }) {
   const struct = new Struct();
   const atomIds = [0, 1, 2, 3].map((y) =>
@@ -56,7 +62,7 @@ function verticalChainFixture({
   );
   if (sgroupType === 'SRU') {
     sgroup.data.subscript = 'n';
-    sgroup.data.connectivity = 'ht';
+    sgroup.data.connectivity = connectivity;
   } else if (sgroupType === 'MUL') {
     sgroup.data.mul = 2;
   }
@@ -88,6 +94,17 @@ function drawnBracketSegments(
       end: new Vec2(path[2][1], path[2][2]),
     };
   });
+}
+
+function drawnLabels(sgroup: SGroup, restruct: ReStruct): string[] {
+  const set = new ReSGroup(sgroup).draw(restruct, sgroup);
+  const labels: string[] = [];
+  set.forEach((element) => {
+    if (element.type === 'text') {
+      labels.push(element.attr('text'));
+    }
+  });
+  return labels;
 }
 
 function expectSegmentsAcrossBondCenters(
@@ -165,6 +182,36 @@ describe('repeat-unit notation option for SRU brackets', () => {
 
     expectBoxSegments(drawnBracketSegments(sgroup, restruct));
   });
+});
+
+describe('repeat-unit notation option for SRU labels', () => {
+  it.each([
+    ['ht', ['n']],
+    ['hh', ['n', 'hh']],
+    ['eu', ['n', 'eu']],
+  ])('shows the standard label for %s connectivity', (connectivity, labels) => {
+    const { sgroup, restruct } = verticalChainFixture({
+      sgroupType: 'SRU',
+      memberIndexes: [1, 2],
+      repeatUnitNotation: 'standard',
+      connectivity,
+    });
+
+    expect(drawnLabels(sgroup, restruct)).toEqual(labels);
+  });
+
+  it.each([undefined, 'box' as const])(
+    'keeps the upper-case label for the %s notation',
+    (repeatUnitNotation) => {
+      const { sgroup, restruct } = verticalChainFixture({
+        sgroupType: 'SRU',
+        memberIndexes: [1, 2],
+        repeatUnitNotation,
+      });
+
+      expect(drawnLabels(sgroup, restruct)).toEqual(['n', 'HT']);
+    },
+  );
 });
 
 describe('host render options', () => {
