@@ -475,6 +475,16 @@
         "packages/ketcher-core/src/infrastructure/services/struct/remoteStructService.ts",
         "packages/ketcher-react/src/script/ui/views/modal/components/meta/Settings/Settings.tsx"
       ]
+    },
+    {
+      "key": "lone-pair-data-placement",
+      "summary": "Place attached lone-pair data S-groups in the widest free bond sector.",
+      "verdict": "reapply",
+      "covered": "jest packages/ketcher-core/src/domain/helpers/lonePairDataPosition.test.ts",
+      "commits": ["55da67f30"],
+      "files": [
+        "packages/ketcher-core/src/domain/helpers/lonePairDataPosition.ts"
+      ]
     }
   ]
 }
