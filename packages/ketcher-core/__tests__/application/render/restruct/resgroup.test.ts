@@ -16,6 +16,7 @@ import {
 import { restruct } from '../../../mock-data';
 import { mockFn } from 'jest-mock-extended';
 import type { RenderOptions } from 'application/render/render.types';
+import draw from 'application/render/draw';
 
 describe('resgroup should draw brackets with attachment points correctly', () => {
   const mockBonds = [
@@ -168,4 +169,63 @@ describe('resgroup should draw brackets with attachment points correctly', () =>
     reSgroup.draw(restruct, sGroup);
     expect(attachmentsSpy).toHaveBeenCalled();
   });
+});
+
+describe('formulation S-group rendering', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it.each([
+    {
+      type: 'MIX',
+      subscript: 'mix',
+      compno: undefined,
+      expectedSetLength: 3,
+      expectedLabels: ['mix'],
+    },
+    {
+      type: 'COM',
+      subscript: 'c',
+      compno: '2',
+      expectedSetLength: 4,
+      expectedLabels: ['c', '2'],
+    },
+    {
+      type: 'MON',
+      subscript: 'mon',
+      compno: undefined,
+      expectedSetLength: 0,
+      expectedLabels: [],
+    },
+  ])(
+    'draws the expected bracket set for %s',
+    ({ type, subscript, compno, expectedSetLength, expectedLabels }) => {
+      const option = {
+        microModeScale: 20,
+        width: 100,
+        height: 100,
+      } as RenderOptions;
+      const render = new Render(document as unknown as HTMLElement, option);
+      render.ctab = restruct as unknown as ReStruct;
+      restruct.render = render as any;
+      const labelSpy = jest.spyOn(render.paper, 'text');
+      const sgroup = new SGroup(type);
+      sgroup.data.subscript = subscript;
+      sgroup.data.compno = compno;
+      SGroup.addAtom(sgroup, 2, restruct.molecule as unknown as Struct);
+      const bracketSpy = jest.spyOn(draw, 'bracket');
+
+      const set = new ReSGroup(sgroup).draw(
+        restruct as unknown as ReStruct,
+        sgroup,
+      );
+
+      expect(bracketSpy).toHaveBeenCalledTimes(type === 'MON' ? 0 : 2);
+      expect(set.length).toBe(expectedSetLength);
+      expect(labelSpy.mock.calls.map(([, , label]) => label)).toEqual(
+        expectedLabels,
+      );
+    },
+  );
 });
