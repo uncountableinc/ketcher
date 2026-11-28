@@ -182,6 +182,8 @@ class ReSGroup extends ReObject {
         'SUP',
         'GEN',
         'COP',
+        'MIX',
+        'COM',
         'queryComponent',
       ];
       if (
